@@ -1887,25 +1887,121 @@ func (at *AutoTrader) checkPositionDrawdown() {
 
 // emergencyClosePosition emergency close position function
 func (at *AutoTrader) emergencyClosePosition(symbol, side string) error {
+	return at.closePositionWithReason(symbol, side, "emergency_close", "Emergency/Drawdown close")
+}
+
+// closePositionWithReason closes a position and records it with a specific reason
+// reason: "sell_trigger", "eod_exit", "emergency_close", etc.
+// reasoning: Human-readable explanation for the decision log
+func (at *AutoTrader) closePositionWithReason(symbol, side, reason, reasoning string) error {
 	side = strings.ToLower(side)
+
+	// Get current market price and position data before closing
+	marketData, _ := market.Get(symbol)
+	currentPrice := 0.0
+	if marketData != nil {
+		currentPrice = marketData.CurrentPrice
+	}
+
+	// Get entry price from position
+	var entryPrice float64
+	var quantity float64
+	positions, _ := at.trader.GetPositions()
+	for _, pos := range positions {
+		if pos["symbol"] == symbol {
+			posSide := strings.ToLower(pos["side"].(string))
+			if posSide == side || (posSide == "long" && side == "buy") || (posSide == "short" && side == "sell") {
+				if ep, ok := pos["entryPrice"].(float64); ok {
+					entryPrice = ep
+				}
+				if amt, ok := pos["positionAmt"].(float64); ok {
+					quantity = amt
+					if quantity < 0 {
+						quantity = -quantity
+					}
+				}
+				break
+			}
+		}
+	}
+
+	// Execute the close
+	var order map[string]interface{}
+	var err error
+	var action string
+
 	switch side {
 	case "long", "buy":
-		order, err := at.trader.CloseLong(symbol, 0) // 0 = close all
+		order, err = at.trader.CloseLong(symbol, 0) // 0 = close all
+		action = "close_long"
 		if err != nil {
 			return err
 		}
-		logger.Infof("✅ Emergency close long position succeeded, order ID: %v", order["orderId"])
+		logger.Infof("✅ Close long position succeeded (%s), order ID: %v", reason, order["orderId"])
 	case "short", "sell":
-		order, err := at.trader.CloseShort(symbol, 0) // 0 = close all
+		order, err = at.trader.CloseShort(symbol, 0) // 0 = close all
+		action = "close_short"
 		if err != nil {
 			return err
 		}
-		logger.Infof("✅ Emergency close short position succeeded, order ID: %v", order["orderId"])
+		logger.Infof("✅ Close short position succeeded (%s), order ID: %v", reason, order["orderId"])
 	default:
 		return fmt.Errorf("unknown position direction: %s", side)
 	}
 
+	// Record the position closure in database
+	at.recordAndConfirmOrder(order, symbol, action, quantity, currentPrice, 0, entryPrice)
+
+	// Create and save a decision record so it shows in the UI
+	at.saveVWAPSellDecision(symbol, side, action, reason, reasoning, currentPrice, entryPrice, quantity)
+
 	return nil
+}
+
+// saveVWAPSellDecision saves a VWAP sell decision to the decision log
+func (at *AutoTrader) saveVWAPSellDecision(symbol, side, action, reason, reasoning string, exitPrice, entryPrice, quantity float64) {
+	if at.store == nil {
+		return
+	}
+
+	// Calculate P&L
+	pnlPct := 0.0
+	if entryPrice > 0 && exitPrice > 0 {
+		if strings.Contains(strings.ToLower(side), "long") || side == "buy" {
+			pnlPct = ((exitPrice - entryPrice) / entryPrice) * 100
+		} else {
+			pnlPct = ((entryPrice - exitPrice) / entryPrice) * 100
+		}
+	}
+
+	// Create decision record
+	record := &store.DecisionRecord{
+		TraderID:     at.id,
+		Timestamp:    time.Now().UTC(),
+		Success:      true,
+		ExecutionLog: []string{fmt.Sprintf("✓ %s %s succeeded (%s)", symbol, action, reason)},
+		Decisions: []store.DecisionAction{
+			{
+				Action:    action,
+				Symbol:    symbol,
+				Quantity:  quantity,
+				Price:     exitPrice,
+				Reasoning: fmt.Sprintf("%s | Entry: $%.2f → Exit: $%.2f | PnL: %.2f%%", reasoning, entryPrice, exitPrice, pnlPct),
+				Timestamp: time.Now(),
+				Success:   true,
+			},
+		},
+	}
+
+	// Increment cycle number and save
+	at.cycleNumber++
+	record.CycleNumber = at.cycleNumber
+
+	if err := at.store.Decision().LogDecision(record); err != nil {
+		logger.Infof("⚠️ Failed to save VWAP sell decision: %v", err)
+	} else {
+		logger.Infof("📝 VWAP sell decision recorded: %s %s (cycle #%d)", symbol, action, at.cycleNumber)
+	}
 }
 
 // GetPeakPnLCache gets peak profit cache
@@ -2399,7 +2495,8 @@ func (at *AutoTrader) runVWAPPositionManagement() {
 		if isNearMarketClose {
 			logger.Infof("🔔 [VWAP] END-OF-DAY EXIT: Market closing in %d min - selling %s at %.2f%% PnL",
 				timeToClose, symbol, pnlPct)
-			if err := at.emergencyClosePosition(symbol, side); err != nil {
+			reasoning := fmt.Sprintf("End-of-day exit (market closes in %d min) | PnL: %.2f%%", timeToClose, pnlPct)
+			if err := at.closePositionWithReason(symbol, side, "eod_exit", reasoning); err != nil {
 				logger.Infof("❌ [VWAP] Failed to close %s: %v", symbol, err)
 			} else {
 				logger.Infof("✅ [VWAP] Successfully closed %s before market close", symbol)
@@ -2411,7 +2508,8 @@ func (at *AutoTrader) runVWAPPositionManagement() {
 		if pnlPct >= tpPct {
 			logger.Infof("🎯 [VWAP] SELL TRIGGER HIT: %s at %.2f%% (target: %.2f%%) - closing position",
 				symbol, pnlPct, tpPct)
-			if err := at.emergencyClosePosition(symbol, side); err != nil {
+			reasoning := fmt.Sprintf("Sell trigger hit: %.2f%% >= %.2f%% target", pnlPct, tpPct)
+			if err := at.closePositionWithReason(symbol, side, "sell_trigger", reasoning); err != nil {
 				logger.Infof("❌ [VWAP] Failed to close %s: %v", symbol, err)
 			} else {
 				logger.Infof("✅ [VWAP] Successfully closed %s on sell trigger", symbol)
