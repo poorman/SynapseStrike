@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Architect - Info</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">🏛️ AI Architect</div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-item">💬 Chat</a>
+                <a href="/info" class="nav-item active">ℹ️ Info</a>
+                <a href="/execute" class="nav-item">⚙️ Execute</a>
+            </nav>
+            <div class="sidebar-footer"><span class="status-dot"></span> Connected</div>
+        </aside>
+
+        <main class="page-main">
+            <div class="page-header">
+                <h1>📖 How AI Architect Works</h1>
+            </div>
+            <div class="page-content full-width">
+                <section class="info-section">
+                    <h2>🎯 System Overview</h2>
+                    <p>AI Architect is a <strong>local, offline-capable AI trading decision system</strong> that learns
+                        from completed trades using memory, reflection, and controlled retraining.</p>
+                    <p>This system is consumed via API by an external app. The app makes ONE request and receives ONE
+                        response, while all reasoning, memory recall, and learning happens internally.</p>
+
+                    <div class="arch-grid">
+                        <div class="arch-box highlight">
+                            <div class="arch-icon">💬</div>
+                            <div class="arch-title">Your Request</div>
+                            <div class="arch-desc">Trading question or completed trade</div>
+                        </div>
+                        <div class="arch-box">
+                            <div class="arch-icon">⚡</div>
+                            <div class="arch-title">FastAPI Backend</div>
+                            <div class="arch-desc">Orchestrates all components</div>
+                        </div>
+                        <div class="arch-box">
+                            <div class="arch-icon">🧠</div>
+                            <div class="arch-title">Main LLM</div>
+                            <div class="arch-desc">gpt-oss-20b via LocalAI</div>
+                        </div>
+                        <div class="arch-box">
+                            <div class="arch-icon">🔍</div>
+                            <div class="arch-title">Critic LLM</div>
+                            <div class="arch-desc">DeepSeek-R1-14B</div>
+                        </div>
+                        <div class="arch-box storage">
+                            <div class="arch-icon">🗃️</div>
+                            <div class="arch-title">Qdrant</div>
+                            <div class="arch-desc">Vector Memory (port 8063)</div>
+                        </div>
+                        <div class="arch-box storage">
+                            <div class="arch-icon">🗄️</div>
+                            <div class="arch-title">PostgreSQL</div>
+                            <div class="arch-desc">Trade Logs (port 8064)</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <h2>📥 Decision Pipeline (Synchronous)</h2>
+                    <p>When you ask for a trading decision, this pipeline executes:</p>
+                    <div class="pipeline-steps">
+                        <div class="step"><span class="step-num">1</span> <strong>Embed Context</strong> - Convert
+                            market data to vector representation</div>
+                        <div class="step"><span class="step-num">2</span> <strong>Search Memory</strong> - Query Qdrant
+                            for similar past trades</div>
+                        <div class="step"><span class="step-num">3</span> <strong>Retrieve Rules</strong> - Get
+                            high-confidence trading rules</div>
+                        <div class="step"><span class="step-num">4</span> <strong>Build Prompt</strong> - Create dynamic
+                            system prompt with context</div>
+                        <div class="step"><span class="step-num">5</span> <strong>Call LLM</strong> - Get trading
+                            decision from main LLM</div>
+                        <div class="step"><span class="step-num">6</span> <strong>Return Response</strong> - TAKE_TRADE
+                            or NO_TRADE with confidence</div>
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <h2>📚 Learning Pipeline (Asynchronous)</h2>
+                    <p>When you submit a completed trade, learning happens in the background:</p>
+                    <div class="pipeline-steps">
+                        <div class="step"><span class="step-num">1</span> <strong>Summarize Trade</strong> - Create
+                            structured trade summary</div>
+                        <div class="step"><span class="step-num">2</span> <strong>Critique</strong> - Critic LLM
+                            analyzes what went right/wrong</div>
+                        <div class="step"><span class="step-num">3</span> <strong>Extract Rules</strong> - Identify
+                            patterns and mistakes</div>
+                        <div class="step"><span class="step-num">4</span> <strong>Score Confidence</strong> - Rate rule
+                            reliability</div>
+                        <div class="step"><span class="step-num">5</span> <strong>Store</strong> - Save to Qdrant
+                            (semantic) + PostgreSQL (structured)</div>
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <h2>🔌 API Endpoints</h2>
+                    <div class="api-cards">
+                        <div class="api-card">
+                            <div class="api-method post">POST</div>
+                            <code>/api/chat</code>
+                            <p>Chat with AI Architect about trading</p>
+                        </div>
+                        <div class="api-card">
+                            <div class="api-method post">POST</div>
+                            <code>/api/decision</code>
+                            <p>Get trading decision with confidence level</p>
+                        </div>
+                        <div class="api-card">
+                            <div class="api-method post">POST</div>
+                            <code>/api/trade/closed</code>
+                            <p>Submit completed trade for learning</p>
+                        </div>
+                        <div class="api-card">
+                            <div class="api-method get">GET</div>
+                            <code>/health</code>
+                            <p>Health check endpoint</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <h2>🛡️ Core Philosophy</h2>
+                    <div class="philosophy-grid">
+                        <div class="philosophy-item">
+                            <span class="phi-icon">🎯</span>
+                            <strong>Deterministic</strong>
+                            <p>LLM never controls execution</p>
+                        </div>
+                        <div class="philosophy-item">
+                            <span class="phi-icon">📋</span>
+                            <strong>Auditable</strong>
+                            <p>All decisions are logged</p>
+                        </div>
+                        <div class="philosophy-item">
+                            <span class="phi-icon">↩️</span>
+                            <strong>Reversible</strong>
+                            <p>Mistakes can be removed</p>
+                        </div>
+                        <div class="philosophy-item">
+                            <span class="phi-icon">🔒</span>
+                            <strong>Safe</strong>
+                            <p>Performance > Autonomy</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="info-section">
+                    <h2>🚀 Quick Start</h2>
+                    <div class="code-block">
+                        <code>cd ~/scripts/AIArchitect<br>
+docker compose up -d --build<br>
+# Access: http://localhost:8065</code>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Architect</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">🏛️ AI Architect</div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-item active">💬 Chat</a>
+                <a href="/info" class="nav-item">ℹ️ Info</a>
+                <a href="/execute" class="nav-item">⚙️ Execute</a>
+            </nav>
+            <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+            <div class="sidebar-footer"><span class="status-dot"></span> Connected</div>
+        </aside>
+
+        <main class="chat-main">
+            <div class="chat-header">
+                <h1>AI Architect</h1><span>Trading Decision Assistant</span>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="message assistant">
+                    <div class="message-avatar">🏛️</div>
+                    <div class="message-content">
+                        <p>Hello! I'm <strong>AI Architect</strong>, your trading assistant.</p>
+                        <p>📊 Analyze markets • ✅ Make decisions • 📝 Review trades</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea id="messageInput" placeholder="Ask about trading..." rows="1"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"></textarea>
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let sessionId = '{{ session_id }}';
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+
+        function newChat() {
+            sessionId = crypto.randomUUID();
+            messagesContainer.innerHTML = '<div class="message assistant"><div class="message-avatar">🏛️</div><div class="message-content"><p>New chat started.</p></div></div>';
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            addMessage('user', message);
+            messageInput.value = '';
+            const assistantDiv = addMessage('assistant', '...', true);
+            const contentDiv = assistantDiv.querySelector('.message-content');
+            try {
+                const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, session_id: sessionId }) });
+                const data = await response.json();
+                contentDiv.innerHTML = '<p>' + data.response.replace(/\n/g, '</p><p>') + '</p>';
+                sessionId = data.session_id;
+            } catch (e) { contentDiv.innerHTML = '<p class="error">Error: ' + e + '</p>'; }
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addMessage(role, content, loading = false) {
+            const div = document.createElement('div');
+            div.className = 'message ' + role;
+            div.innerHTML = role === 'user' ? '<div class="message-content"><p>' + content + '</p></div><div class="message-avatar">👤</div>' : '<div class="message-avatar">🏛️</div><div class="message-content"><p>' + content + '</p></div>';
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return div;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Architect - Execute</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">🏛️ AI Architect</div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-item">💬 Chat</a>
+                <a href="/info" class="nav-item">ℹ️ Info</a>
+                <a href="/execute" class="nav-item active">⚙️ Execute</a>
+            </nav>
+            <div class="sidebar-footer"><span class="status-dot"></span> Connected</div>
+        </aside>
+
+        <main class="page-main">
+            <div class="page-header">
+                <h1>🔧 Master Prompt & Configuration</h1>
+                <button class="copy-btn" onclick="copyToClipboard()">📋 Copy All</button>
+            </div>
+            <div class="page-content full-width">
+                <div class="code-container">
+                    <pre id="masterPrompt"><code># MASTER PROMPT FOR CLAUDE OPUS 4.5
+
+You are Claude Opus 4.5 acting as a **principal AI systems architect, quantitative trading engineer, and backend engineer**.
+
+Your task is to design and generate **production-ready code and architecture** for a **local, offline-capable AI trading decision system** that **learns from completed trades** using memory, reflection, and controlled retraining.
+
+This system will be consumed via **API by an external app**. The app makes ONE request and receives ONE response, while all reasoning, memory recall, and learning happens internally.
+
+---
+
+## HARD CONSTRAINTS (NON-NEGOTIABLE)
+
+1. **All services must run locally via Docker Compose**
+2. **All exposed ports must start at 8060 and increment upward**
+3. **No cloud services**
+4. **OpenAI-compatible APIs for all LLM endpoints**
+5. **Deterministic orchestration (no autonomous agents)**
+6. **Learning occurs ONLY via memory + reflection, not live weight updates**
+
+---
+
+## HARDWARE & OS CONTEXT
+
+* OS: Windows 11
+* Runtime: WSL2 (Ubuntu)
+* CPU: Intel i9-14900K
+* GPU: NVIDIA RTX 3090 (24GB VRAM)
+* Docker Engine (inside WSL, not Docker Desktop)
+
+---
+
+## SYSTEM GOALS
+
+* Provide **trading decisions** based on current market context
+* Recall **similar past trades** and **rules**
+* Learn from **finished trades**
+* Improve decision quality over time
+* Remain explainable, auditable, and reversible
+
+---
+
+## REQUIRED COMPONENTS (YOU MUST USE ALL)
+
+### 1. Main Reasoning LLM
+* Model: Qwen2.5-32B-Instruct (quantized)
+* Purpose: Make trading decisions
+
+### 2. Critic / Reflection LLM
+* Model: DeepSeek-R1-Distill-14B
+* Purpose: Post-trade critique, rule extraction
+
+### 3. Embeddings Model
+* Model: BAAI/bge-large-en-v1.5
+* Purpose: Semantic memory
+
+### 4. Vector Database
+* Qdrant
+* Purpose: Long-term experiential memory
+
+### 5. Structured Database
+* PostgreSQL
+* Purpose: Trade logs, P/L, statistics
+
+### 6. Backend API
+* FastAPI (Python)
+* Purpose: Orchestrate all steps
+
+---
+
+## API CONTRACT (MANDATORY)
+
+### Decision Endpoint
+POST /api/decision
+
+Input:
+{
+  "symbol": "ES",
+  "timeframe": "1m",
+  "market_context": { ... },
+  "question": "Should I take this trade?"
+}
+
+Output:
+{
+  "decision": "TAKE_TRADE | NO_TRADE",
+  "confidence": 0.0-1.0,
+  "reason": "string"
+}
+
+---
+
+### Trade Closed Endpoint
+POST /api/trade/closed
+
+Input:
+{
+  "trade_id": "string",
+  "entry": number,
+  "exit": number,
+  "result": number,
+  "context": { ... }
+}
+
+This endpoint must trigger **asynchronous learning**.
+
+---
+
+## REQUIRED INTERNAL PIPELINE (STEP-BY-STEP)
+
+### Decision Pipeline (SYNC)
+1. Embed current market context
+2. Query vector DB for similar cases
+3. Retrieve high-confidence rules
+4. Build system prompt dynamically
+5. Call main LLM
+6. Return single response
+
+### Learning Pipeline (ASYNC)
+1. Summarize finished trade
+2. Critique trade using critic LLM
+3. Extract rules + mistakes
+4. Assign confidence score
+5. Store:
+   * Semantic memory → Qdrant
+   * Structured data → PostgreSQL
+   * Rules → JSON/YAML
+
+---
+
+## OUTPUTS YOU MUST GENERATE
+
+1. **Full system architecture explanation**
+2. **FastAPI backend code** (clean, modular)
+3. **Prompt templates** (decision + reflection)
+4. **Database schemas**
+5. **Qdrant collection schema**
+6. **Background worker for learning**
+7. **Docker Compose file** using ports starting at **8060**
+8. **Clear run instructions**
+
+---
+
+## QUALITY BAR
+
+* No placeholders
+* No pseudo-code where real code is possible
+* Strong typing
+* Production-ready patterns
+* Explain WHY each component exists
+
+---
+
+## IMPORTANT PHILOSOPHY (DO NOT VIOLATE)
+
+* The LLM never controls execution
+* The system is deterministic
+* Memory is auditable
+* Mistakes must be removable
+* Performance and safety > autonomy
+
+---
+
+Deliver this as if it will be deployed in a real trading environment.
+Do NOT simplify. Do NOT omit steps.
+
+---
+END OF PROMPT
+---
+
+# DOCKER COMPOSE (PORTS 8060+)
+
+version: "3.9"
+
+services:
+  llm_main:
+    image: vllm/vllm-openai:latest
+    container_name: llm_main_qwen32b
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: >
+      --model Qwen/Qwen2.5-32B-Instruct
+      --quantization awq
+      --dtype float16
+      --max-model-len 8192
+      --gpu-memory-utilization 0.90
+    ports:
+      - "8060:8000"
+
+  llm_critic:
+    image: vllm/vllm-openai:latest
+    container_name: llm_critic_deepseek
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: >
+      --model deepseek-ai/DeepSeek-R1-Distill-14B
+      --quantization awq
+      --dtype float16
+    ports:
+      - "8061:8000"
+
+  embeddings:
+    image: vllm/vllm-openai:latest
+    container_name: embeddings_bge
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: >
+      --model BAAI/bge-large-en-v1.5
+      --dtype float16
+    ports:
+      - "8062:8000"
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_memory
+    ports:
+      - "8063:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  postgres:
+    image: postgres:16
+    container_name: trades_postgres
+    environment:
+      POSTGRES_DB: trades
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD: traderpass
+    ports:
+      - "8064:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: trading_backend
+    ports:
+      - "8065:8065"
+    depends_on:
+      - llm_main
+      - llm_critic
+      - embeddings
+      - qdrant
+      - postgres
+
+volumes:
+  qdrant_data:
+  pg_data:</code></pre>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const text = document.getElementById('masterPrompt').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.innerHTML = '✓ Copied!';
+                setTimeout(() => btn.innerHTML = '📋 Copy All', 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

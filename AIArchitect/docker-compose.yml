@@ -1,0 +1,164 @@
+# =============================================================================
+# AI Architect - Trading Decision System
+# Production Docker Compose - Full Setup with LLM Containers
+# =============================================================================
+#
+# USAGE:
+#   docker compose up -d
+#
+# PORTS:
+#   8060 - Main LLM (Qwen2.5-32B)
+#   8061 - Critic LLM (DeepSeek-R1-14B)
+#   8062 - Embeddings (BGE-large)
+#   8063 - Qdrant (Vector Database)
+#   8064 - PostgreSQL (Trade Logs)
+#   8065 - Backend Web UI
+#
+# GPU REQUIREMENTS:
+#   Running all LLMs simultaneously requires ~40GB VRAM
+#   For RTX 3090 (24GB), run one LLM at a time or use LocalAI instead
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # MAIN LLM - Qwen2.5-32B-Instruct
+  # ---------------------------------------------------------------------------
+  llm_main:
+    image: vllm/vllm-openai:latest
+    container_name: llm_main_qwen32b
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: >
+      --model Qwen/Qwen2.5-32B-Instruct-AWQ
+      --quantization awq
+      --dtype float16
+      --max-model-len 8192
+      --gpu-memory-utilization 0.85
+      --trust-remote-code
+    ports:
+      - "8060:8000"
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ---------------------------------------------------------------------------
+  # CRITIC LLM - DeepSeek-R1-Distill-14B
+  # ---------------------------------------------------------------------------
+  llm_critic:
+    image: vllm/vllm-openai:latest
+    container_name: llm_critic_deepseek
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: >
+      --model deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+      --dtype float16
+      --max-model-len 4096
+      --gpu-memory-utilization 0.40
+      --trust-remote-code
+    ports:
+      - "8061:8000"
+    volumes:
+      - huggingface_cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ---------------------------------------------------------------------------
+  # EMBEDDINGS - BGE-large-en-v1.5
+  # ---------------------------------------------------------------------------
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    container_name: embeddings_bge
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    command: --model-id BAAI/bge-large-en-v1.5
+    ports:
+      - "8062:80"
+    volumes:
+      - huggingface_cache:/data
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # ---------------------------------------------------------------------------
+  # QDRANT - Vector Database for Semantic Memory
+  # ---------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: aiarchitect_qdrant
+    restart: unless-stopped
+    ports:
+      - "8063:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # ---------------------------------------------------------------------------
+  # POSTGRESQL - Trade Logs & Statistics
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: aiarchitect_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trades
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-traderpass}
+    ports:
+      - "8064:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  # ---------------------------------------------------------------------------
+  # BACKEND - FastAPI Application with Web UI
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aiarchitect_backend
+    restart: unless-stopped
+    ports:
+      - "8065:8065"
+    environment:
+      # LLM Configuration - Use vLLM containers or LocalAI
+      - LLM_URL=${LLM_URL:-http://llm_main:8000}
+      - LLM_MODEL=${LLM_MODEL:-Qwen/Qwen2.5-32B-Instruct-AWQ}
+      - LLM_CRITIC_URL=http://llm_critic:8000
+      - EMBEDDINGS_URL=http://embeddings:80
+      # Database
+      - DATABASE_URL=postgresql+asyncpg://trader:${POSTGRES_PASSWORD:-traderpass}@postgres:5432/trades
+      # Qdrant
+      - QDRANT_URL=http://qdrant:6333
+    depends_on:
+      - qdrant
+      - postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./rules:/app/rules
+
+volumes:
+  qdrant_data:
+    name: aiarchitect_qdrant_data
+  pg_data:
+    name: aiarchitect_postgres_data
+  huggingface_cache:
+    name: aiarchitect_hf_cache
