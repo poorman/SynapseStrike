@@ -9,15 +9,15 @@ const MODEL_COLORS: Record<string, string> = {
   deepseek: '#4A90E2',
   qwen: '#9B59B6',
   claude: '#D97757',
-  kimi: '#6366F1',
+  kimi: 'rgb(195, 245, 60)',
   gemini: '#4285F4',
   grok: '#000000',
   openai: '#10A37F',
 }
 
-// 获取AI模型图标的函数
+// Function to get AI model icon
 export const getModelIcon = (modelType: string, props: IconProps = {}) => {
-  // 支持完整ID或类型名
+  // Supports full ID or type name
   const type = modelType.includes('_') ? modelType.split('_').pop() : modelType
 
   let iconPath: string | null = null
@@ -59,7 +59,7 @@ export const getModelIcon = (modelType: string, props: IconProps = {}) => {
   )
 }
 
-// 获取模型颜色（用于没有图标时的fallback）
+// Get model color（Used as fallback when no icon）
 export const getModelColor = (modelType: string): string => {
   const type = modelType.includes('_') ? modelType.split('_').pop() : modelType
   return MODEL_COLORS[type || ''] || '#60a5fa'

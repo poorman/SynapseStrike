@@ -154,9 +154,9 @@ describe('Registration Toggle Logic', () => {
     it('should parse backend response with registration_enabled', () => {
       const apiResponse = {
         beta_mode: false,
-        default_coins: ['BTCUSDT'],
-        btc_eth_leverage: 5,
-        altcoin_leverage: 5,
+        default_stocks: ['BTC'],
+        btc_eth_margin: 5,
+        altstock_margin: 5,
         registration_enabled: true,
       }
 
@@ -166,9 +166,9 @@ describe('Registration Toggle Logic', () => {
     it('should handle backend response without registration_enabled', () => {
       const apiResponse = {
         beta_mode: false,
-        default_coins: ['BTCUSDT'],
-        btc_eth_leverage: 5,
-        altcoin_leverage: 5,
+        default_stocks: ['BTC'],
+        btc_eth_margin: 5,
+        altstock_margin: 5,
       }
 
       const registrationEnabled =

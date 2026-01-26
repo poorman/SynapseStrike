@@ -22,278 +22,169 @@ function getHashValue(hash: number, position: number, max: number): number {
   return ((hash >> (position * 4)) & 0xF) % max
 }
 
-// Color palettes - Web3/Crypto aesthetic
-const BACKGROUNDS = [
-  '#1a1a2e', '#16213e', '#0f3460', '#1b1b2f', '#162447',
-  '#1f1f3d', '#2d132c', '#1e1e3f', '#0d1b2a', '#1b263b',
-  '#252538', '#2a2a4a', '#1e2a3a', '#0f172a', '#1a1f35',
+// Modern gradient color combinations - brand green palette
+const GRADIENT_PAIRS = [
+  ['rgb(0, 200, 5)', 'rgb(195, 245, 60)'],     // Darker green to lighter green
+  ['rgb(195, 245, 60)', 'rgb(204, 255, 0)'],   // Lighter green to light green
+  ['rgb(0, 200, 5)', 'rgb(204, 255, 0)'],      // Darker green to light green
+  ['rgb(204, 255, 0)', 'rgb(195, 245, 60)'],   // Light green to lighter green
+  ['rgb(0, 200, 5)', 'rgb(0, 200, 5)'],        // Solid darker green
+  ['rgb(195, 245, 60)', 'rgb(0, 200, 5)'],     // Lighter green to darker green
+  ['rgb(204, 255, 0)', 'rgb(0, 200, 5)'],      // Light green to darker green
+  ['rgb(0, 200, 5)', 'rgb(195, 245, 60)'],     // Darker green to lighter green (repeat for variety)
+  ['rgb(195, 245, 60)', 'rgb(195, 245, 60)'],  // Solid lighter green
+  ['rgb(204, 255, 0)', 'rgb(204, 255, 0)'],    // Solid light green
+  ['rgb(0, 200, 5)', 'rgb(204, 255, 0)'],      // Darker to light (repeat)
+  ['rgb(195, 245, 60)', 'rgb(204, 255, 0)'],   // Lighter to light (repeat)
+  ['rgb(0, 200, 5)', 'rgb(195, 245, 60)'],     // Darker to lighter (repeat)
+  ['rgb(204, 255, 0)', 'rgb(195, 245, 60)'],   // Light to lighter (repeat)
+  ['rgb(0, 200, 5)', 'rgb(0, 200, 5)'],        // Solid darker green (repeat)
 ]
 
-const SKIN_TONES = [
-  '#ffd5c8', '#f5c5b5', '#daa06d', '#c68642', '#8d5524',
-  '#6b4423', '#4a3728', '#ffdbac', '#f1c27d', '#e0ac69',
-]
-
-const HAIR_COLORS = [
-  '#090806', '#2c222b', '#3b3024', '#4a4035', '#504444',
-  '#6a4e42', '#a55728', '#b55239', '#8d4a43', '#91553d',
-  '#e6cea8', '#e5c8a8', '#debc99', '#977961', '#343434',
-  '#9a3300', '#ff6b6b', '#4ecdc4', '#ffe66d', '#a855f7',
-]
-
-const ACCESSORY_COLORS = [
-  '#F0B90B', '#0ECB81', '#F6465D', '#60a5fa', '#a855f7',
-  '#ec4899', '#14b8a6', '#f97316', '#84cc16', '#06b6d4',
-]
+// Icon patterns for avatar - simple geometric shapes
+const ICON_PATTERNS = ['circle', 'diamond', 'hexagon', 'star', 'triangle', 'square', 'ring', 'dots']
 
 export function PunkAvatar({ seed, size = 40, className = '' }: PunkAvatarProps) {
   const avatar = useMemo(() => {
     const hash = hashCode(seed)
 
     // Deterministic selections based on hash
-    const bgColor = BACKGROUNDS[getHashValue(hash, 0, BACKGROUNDS.length)]
-    const skinColor = SKIN_TONES[getHashValue(hash, 1, SKIN_TONES.length)]
-    const hairColor = HAIR_COLORS[getHashValue(hash, 2, HAIR_COLORS.length)]
-    const accColor = ACCESSORY_COLORS[getHashValue(hash, 3, ACCESSORY_COLORS.length)]
+    const gradientPair = GRADIENT_PAIRS[getHashValue(hash, 0, GRADIENT_PAIRS.length)]
+    const iconPattern = ICON_PATTERNS[getHashValue(hash, 1, ICON_PATTERNS.length)]
+    const rotation = getHashValue(hash, 2, 8) * 45 // 0, 45, 90, 135, 180, 225, 270, 315
+    const hasSecondary = getHashValue(hash, 3, 3) === 0
 
-    const hairStyle = getHashValue(hash, 4, 8)
-    const eyeStyle = getHashValue(hash, 5, 6)
-    const mouthStyle = getHashValue(hash, 6, 5)
-    const hasGlasses = getHashValue(hash, 7, 4) === 0
-    const hasEarring = getHashValue(hash, 8, 5) === 0
-    const hasMask = getHashValue(hash, 9, 8) === 0
-    const hasLaser = getHashValue(hash, 10, 12) === 0
+    // Generate initials from seed - the seed format is "{traderId}|{traderName}"
+    // We need to extract just the trader name part and get first letters of first 2 words
+    const pipeIndex = seed.indexOf('|')
+    // Get the name part (everything after the pipe, which separates traderId from name)
+    const namePart = pipeIndex > -1 ? seed.substring(pipeIndex + 1) : seed
+    // Split name by spaces and other separators to get words (keep numbers as valid words)
+    const words = namePart.split(/[\s_]+/).filter(p => p.length > 0)
+    let initials = ''
+    if (words.length >= 2) {
+      // Take first character of first word and first character of second word
+      initials = (words[0][0] + words[1][0]).toUpperCase()
+    } else if (words.length === 1 && words[0].length >= 2) {
+      initials = words[0].substring(0, 2).toUpperCase()
+    } else {
+      initials = 'AI'
+    }
 
     return {
-      bgColor,
-      skinColor,
-      hairColor,
-      accColor,
-      hairStyle,
-      eyeStyle,
-      mouthStyle,
-      hasGlasses,
-      hasEarring,
-      hasMask,
-      hasLaser,
+      gradientPair,
+      iconPattern,
+      rotation,
+      hasSecondary,
+      initials,
     }
   }, [seed])
 
-  // Pixel size for 24x24 grid
-  const px = size / 24
+  const renderPattern = () => {
+    const { iconPattern, hasSecondary } = avatar
+    const center = size / 2
+    const patternSize = size * 0.3
 
-  const renderHair = () => {
-    const { hairColor, hairStyle } = avatar
-    switch (hairStyle) {
-      case 0: // Mohawk
+    switch (iconPattern) {
+      case 'circle':
         return (
           <>
-            <rect x={11*px} y={2*px} width={2*px} height={5*px} fill={hairColor} />
-            <rect x={10*px} y={3*px} width={4*px} height={1*px} fill={hairColor} />
+            <circle
+              cx={center}
+              cy={center}
+              r={patternSize}
+              fill="rgba(255,255,255,0.15)"
+            />
+            {hasSecondary && (
+              <circle
+                cx={center}
+                cy={center}
+                r={patternSize * 0.5}
+                fill="rgba(255,255,255,0.1)"
+              />
+            )}
           </>
         )
-      case 1: // Messy
+      case 'diamond':
+        return (
+          <rect
+            x={center - patternSize * 0.7}
+            y={center - patternSize * 0.7}
+            width={patternSize * 1.4}
+            height={patternSize * 1.4}
+            fill="rgba(255,255,255,0.15)"
+            transform={`rotate(45 ${center} ${center})`}
+          />
+        )
+      case 'hexagon':
+        const hexPoints = Array.from({ length: 6 }, (_, i) => {
+          const angle = (i * 60 - 30) * Math.PI / 180
+          return `${center + patternSize * Math.cos(angle)},${center + patternSize * Math.sin(angle)}`
+        }).join(' ')
+        return (
+          <polygon
+            points={hexPoints}
+            fill="rgba(255,255,255,0.15)"
+          />
+        )
+      case 'star':
+        const starPoints = Array.from({ length: 10 }, (_, i) => {
+          const angle = (i * 36 - 90) * Math.PI / 180
+          const r = i % 2 === 0 ? patternSize : patternSize * 0.5
+          return `${center + r * Math.cos(angle)},${center + r * Math.sin(angle)}`
+        }).join(' ')
+        return (
+          <polygon
+            points={starPoints}
+            fill="rgba(255,255,255,0.15)"
+          />
+        )
+      case 'triangle':
+        const triPoints = Array.from({ length: 3 }, (_, i) => {
+          const angle = (i * 120 - 90) * Math.PI / 180
+          return `${center + patternSize * Math.cos(angle)},${center + patternSize * Math.sin(angle)}`
+        }).join(' ')
+        return (
+          <polygon
+            points={triPoints}
+            fill="rgba(255,255,255,0.15)"
+          />
+        )
+      case 'ring':
+        return (
+          <circle
+            cx={center}
+            cy={center}
+            r={patternSize}
+            fill="none"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth={size * 0.08}
+          />
+        )
+      case 'dots':
         return (
           <>
-            <rect x={7*px} y={4*px} width={10*px} height={3*px} fill={hairColor} />
-            <rect x={8*px} y={3*px} width={8*px} height={1*px} fill={hairColor} />
-            <rect x={6*px} y={5*px} width={2*px} height={2*px} fill={hairColor} />
-            <rect x={16*px} y={5*px} width={2*px} height={2*px} fill={hairColor} />
+            <circle cx={center} cy={center - patternSize * 0.6} r={size * 0.06} fill="rgba(255,255,255,0.2)" />
+            <circle cx={center - patternSize * 0.5} cy={center + patternSize * 0.3} r={size * 0.06} fill="rgba(255,255,255,0.2)" />
+            <circle cx={center + patternSize * 0.5} cy={center + patternSize * 0.3} r={size * 0.06} fill="rgba(255,255,255,0.2)" />
           </>
         )
-      case 2: // Cap
+      default: // square
         return (
-          <>
-            <rect x={6*px} y={5*px} width={12*px} height={3*px} fill={avatar.accColor} />
-            <rect x={5*px} y={7*px} width={14*px} height={1*px} fill={avatar.accColor} />
-            <rect x={7*px} y={4*px} width={10*px} height={1*px} fill={avatar.accColor} />
-          </>
+          <rect
+            x={center - patternSize * 0.7}
+            y={center - patternSize * 0.7}
+            width={patternSize * 1.4}
+            height={patternSize * 1.4}
+            fill="rgba(255,255,255,0.15)"
+            rx={size * 0.05}
+          />
         )
-      case 3: // Long
-        return (
-          <>
-            <rect x={7*px} y={4*px} width={10*px} height={4*px} fill={hairColor} />
-            <rect x={6*px} y={6*px} width={2*px} height={8*px} fill={hairColor} />
-            <rect x={16*px} y={6*px} width={2*px} height={8*px} fill={hairColor} />
-          </>
-        )
-      case 4: // Bald with shine
-        return (
-          <rect x={9*px} y={5*px} width={2*px} height={1*px} fill="rgba(255,255,255,0.3)" />
-        )
-      case 5: // Spiky
-        return (
-          <>
-            <rect x={7*px} y={5*px} width={10*px} height={2*px} fill={hairColor} />
-            <rect x={8*px} y={3*px} width={2*px} height={2*px} fill={hairColor} />
-            <rect x={11*px} y={2*px} width={2*px} height={3*px} fill={hairColor} />
-            <rect x={14*px} y={3*px} width={2*px} height={2*px} fill={hairColor} />
-          </>
-        )
-      case 6: // Hoodie
-        return (
-          <>
-            <rect x={5*px} y={6*px} width={14*px} height={6*px} fill={avatar.accColor} />
-            <rect x={6*px} y={5*px} width={12*px} height={1*px} fill={avatar.accColor} />
-            <rect x={8*px} y={8*px} width={8*px} height={4*px} fill={avatar.skinColor} />
-          </>
-        )
-      case 7: // Crown
-        return (
-          <>
-            <rect x={7*px} y={4*px} width={10*px} height={1*px} fill="#F0B90B" />
-            <rect x={8*px} y={2*px} width={2*px} height={2*px} fill="#F0B90B" />
-            <rect x={11*px} y={1*px} width={2*px} height={3*px} fill="#F0B90B" />
-            <rect x={14*px} y={2*px} width={2*px} height={2*px} fill="#F0B90B" />
-          </>
-        )
-      default:
-        return null
     }
   }
 
-  const renderEyes = () => {
-    const { eyeStyle, accColor } = avatar
-    const eyeY = 10 * px
-
-    switch (eyeStyle) {
-      case 0: // Normal
-        return (
-          <>
-            <rect x={8*px} y={eyeY} width={2*px} height={2*px} fill="#000" />
-            <rect x={14*px} y={eyeY} width={2*px} height={2*px} fill="#000" />
-            <rect x={8*px} y={eyeY} width={1*px} height={1*px} fill="#fff" />
-            <rect x={14*px} y={eyeY} width={1*px} height={1*px} fill="#fff" />
-          </>
-        )
-      case 1: // Angry
-        return (
-          <>
-            <rect x={8*px} y={eyeY} width={2*px} height={2*px} fill="#000" />
-            <rect x={14*px} y={eyeY} width={2*px} height={2*px} fill="#000" />
-            <rect x={7*px} y={9*px} width={3*px} height={1*px} fill={avatar.skinColor} />
-            <rect x={14*px} y={9*px} width={3*px} height={1*px} fill={avatar.skinColor} />
-          </>
-        )
-      case 2: // Wink
-        return (
-          <>
-            <rect x={8*px} y={eyeY} width={2*px} height={2*px} fill="#000" />
-            <rect x={14*px} y={10.5*px} width={2*px} height={1*px} fill="#000" />
-          </>
-        )
-      case 3: // Sleepy
-        return (
-          <>
-            <rect x={8*px} y={10.5*px} width={2*px} height={1*px} fill="#000" />
-            <rect x={14*px} y={10.5*px} width={2*px} height={1*px} fill="#000" />
-          </>
-        )
-      case 4: // Big eyes
-        return (
-          <>
-            <rect x={7*px} y={9*px} width={3*px} height={3*px} fill="#fff" />
-            <rect x={14*px} y={9*px} width={3*px} height={3*px} fill="#fff" />
-            <rect x={8*px} y={10*px} width={2*px} height={2*px} fill="#000" />
-            <rect x={15*px} y={10*px} width={2*px} height={2*px} fill="#000" />
-          </>
-        )
-      case 5: // Robot
-        return (
-          <>
-            <rect x={7*px} y={9*px} width={3*px} height={3*px} fill={accColor} />
-            <rect x={14*px} y={9*px} width={3*px} height={3*px} fill={accColor} />
-            <rect x={8*px} y={10*px} width={1*px} height={1*px} fill="#000" />
-            <rect x={15*px} y={10*px} width={1*px} height={1*px} fill="#000" />
-          </>
-        )
-      default:
-        return null
-    }
-  }
-
-  const renderMouth = () => {
-    const { mouthStyle } = avatar
-    const mouthY = 14 * px
-
-    switch (mouthStyle) {
-      case 0: // Smile
-        return (
-          <>
-            <rect x={10*px} y={mouthY} width={4*px} height={1*px} fill="#000" />
-            <rect x={9*px} y={13*px} width={1*px} height={1*px} fill="#000" />
-            <rect x={14*px} y={13*px} width={1*px} height={1*px} fill="#000" />
-          </>
-        )
-      case 1: // Neutral
-        return <rect x={10*px} y={mouthY} width={4*px} height={1*px} fill="#000" />
-      case 2: // Smirk
-        return (
-          <>
-            <rect x={11*px} y={mouthY} width={3*px} height={1*px} fill="#000" />
-            <rect x={14*px} y={13*px} width={1*px} height={1*px} fill="#000" />
-          </>
-        )
-      case 3: // Open
-        return (
-          <>
-            <rect x={10*px} y={13*px} width={4*px} height={2*px} fill="#000" />
-            <rect x={11*px} y={14*px} width={2*px} height={1*px} fill="#ff6b6b" />
-          </>
-        )
-      case 4: // Teeth
-        return (
-          <>
-            <rect x={10*px} y={mouthY} width={4*px} height={2*px} fill="#000" />
-            <rect x={10*px} y={mouthY} width={4*px} height={1*px} fill="#fff" />
-          </>
-        )
-      default:
-        return null
-    }
-  }
-
-  const renderAccessories = () => {
-    const { hasGlasses, hasEarring, hasMask, hasLaser, accColor } = avatar
-    const elements = []
-
-    if (hasGlasses) {
-      elements.push(
-        <g key="glasses">
-          <rect x={6*px} y={9*px} width={5*px} height={4*px} fill="transparent" stroke={accColor} strokeWidth={px} />
-          <rect x={13*px} y={9*px} width={5*px} height={4*px} fill="transparent" stroke={accColor} strokeWidth={px} />
-          <rect x={11*px} y={10*px} width={2*px} height={1*px} fill={accColor} />
-        </g>
-      )
-    }
-
-    if (hasEarring) {
-      elements.push(
-        <circle key="earring" cx={5*px} cy={12*px} r={px} fill="#F0B90B" />
-      )
-    }
-
-    if (hasMask) {
-      elements.push(
-        <g key="mask">
-          <rect x={7*px} y={13*px} width={10*px} height={4*px} fill="#1a1a2e" />
-          <rect x={8*px} y={14*px} width={2*px} height={1*px} fill={accColor} />
-          <rect x={14*px} y={14*px} width={2*px} height={1*px} fill={accColor} />
-        </g>
-      )
-    }
-
-    if (hasLaser) {
-      elements.push(
-        <g key="laser">
-          <rect x={9*px} y={10*px} width={15*px} height={2*px} fill="#F6465D" opacity={0.8} />
-          <rect x={10*px} y={10.5*px} width={14*px} height={1*px} fill="#fff" opacity={0.5} />
-        </g>
-      )
-    }
-
-    return elements
-  }
+  const gradientId = `avatar-gradient-${seed.replace(/[^a-zA-Z0-9]/g, '')}`
+  const borderRadius = size * 0.2
 
   return (
     <svg
@@ -301,43 +192,51 @@ export function PunkAvatar({ seed, size = 40, className = '' }: PunkAvatarProps)
       height={size}
       viewBox={`0 0 ${size} ${size}`}
       className={className}
-      style={{ imageRendering: 'pixelated' }}
+      style={{
+        borderRadius: borderRadius,
+        overflow: 'hidden'
+      }}
     >
-      {/* Background */}
-      <rect width={size} height={size} fill={avatar.bgColor} rx={size * 0.15} />
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={avatar.gradientPair[0]} />
+          <stop offset="100%" stopColor={avatar.gradientPair[1]} />
+        </linearGradient>
+      </defs>
 
-      {/* Head shape */}
-      <rect x={7*px} y={6*px} width={10*px} height={12*px} fill={avatar.skinColor} />
-      <rect x={8*px} y={5*px} width={8*px} height={1*px} fill={avatar.skinColor} />
-      <rect x={8*px} y={18*px} width={8*px} height={1*px} fill={avatar.skinColor} />
+      {/* Background gradient */}
+      <rect
+        width={size}
+        height={size}
+        fill={`url(#${gradientId})`}
+        rx={borderRadius}
+      />
 
-      {/* Ears */}
-      <rect x={6*px} y={10*px} width={1*px} height={3*px} fill={avatar.skinColor} />
-      <rect x={17*px} y={10*px} width={1*px} height={3*px} fill={avatar.skinColor} />
+      {/* Decorative pattern */}
+      <g transform={`rotate(${avatar.rotation} ${size / 2} ${size / 2})`}>
+        {renderPattern()}
+      </g>
 
-      {/* Neck */}
-      <rect x={10*px} y={18*px} width={4*px} height={3*px} fill={avatar.skinColor} />
-
-      {/* Hair (rendered before accessories) */}
-      {renderHair()}
-
-      {/* Eyes */}
-      {renderEyes()}
-
-      {/* Nose */}
-      <rect x={11*px} y={12*px} width={2*px} height={1*px} fill={avatar.skinColor} style={{ filter: 'brightness(0.9)' }} />
-
-      {/* Mouth */}
-      {renderMouth()}
-
-      {/* Accessories (glasses, earrings, etc.) */}
-      {renderAccessories()}
+      {/* Initials text */}
+      <text
+        x="50%"
+        y="50%"
+        dominantBaseline="central"
+        textAnchor="middle"
+        fill="#000"
+        fontSize={size * 0.38}
+        fontWeight="600"
+        fontFamily="'Capsule Sans Text', system-ui, sans-serif"
+        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}
+      >
+        {avatar.initials}
+      </text>
     </svg>
   )
 }
 
-// Pre-defined punk collection for special traders
+// Pre-defined avatars for special traders
 export function getTraderAvatar(traderId: string, traderName: string): string {
-  // Use a combination of ID and name for more unique results
-  return `${traderId}-${traderName}`
+  // Use pipe separator so dashes in UUID don't interfere with parsing
+  return `${traderId}|${traderName}`
 }

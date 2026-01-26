@@ -1,12 +1,12 @@
 package provider
 
 import (
+	"SynapseStrike/security"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"nofx/security"
 	"strings"
 	"time"
 )
@@ -54,6 +54,337 @@ func SetOITopAPI(apiURL string) {
 	oiTopConfig.APIURL = apiURL
 }
 
+// AI100Config AI100 Stocks data provider configuration
+// API must return JSON: { "success": true, "data": { "stocks": [{ "pair": "SYMBOL", "score": 0.0 }] } }
+var ai100Config = struct {
+	APIURL  string
+	Timeout time.Duration
+}{
+	APIURL:  "http://24.12.59.214:8082/api/ai100/list?auth=pluq8P0XTgucCN6kyxey5EPTof36R54lQc3rfgQsoNQ&sort=fin&limit=100",
+	Timeout: 30 * time.Second,
+}
+
+// AI100APIResponse raw data structure returned by AI100 API (uses "stocks" instead of "coins")
+type AI100APIResponse struct {
+	Success bool `json:"success"`
+	Data    struct {
+		Stocks []CoinData `json:"stocks"`
+		Count  int        `json:"count"`
+	} `json:"data"`
+}
+
+// SetAI100API sets AI100 Stocks data provider API
+func SetAI100API(apiURL string) {
+	ai100Config.APIURL = apiURL
+}
+
+// TopWinnersConfig Top Winners Stocks data provider configuration
+// API returns JSON: { "success": true, "data": { "stocks": [{ "pair": "SYMBOL", "change": 0.0 }] } }
+var topWinnersConfig = struct {
+	APIURL  string
+	Timeout time.Duration
+}{
+	APIURL:  "https://invest-soft.com/api/winners/list?sort=des&limit=100&auth=pluq8P0XTgucCN6kyxey5EPTof36R54lQc3rfgQsoNQ",
+	Timeout: 30 * time.Second,
+}
+
+// TopLosersConfig Top Losers Stocks data provider configuration
+var topLosersConfig = struct {
+	APIURL  string
+	Timeout time.Duration
+}{
+	APIURL:  "https://invest-soft.com/api/losers/list?sort=des&limit=100&auth=pluq8P0XTgucCN6kyxey5EPTof36R54lQc3rfgQsoNQ",
+	Timeout: 30 * time.Second,
+}
+
+// MoversTopStock stock data for Top Winners/Top Losers
+type MoversTopStock struct {
+	Pair   string  `json:"pair"`
+	Change float64 `json:"change"`
+	Score  float64 `json:"score"`
+}
+
+// MoversTopAPIResponse raw data structure returned by Movers Top API
+type MoversTopAPIResponse struct {
+	Success bool `json:"success"`
+	Data    struct {
+		Stocks []MoversTopStock `json:"stocks"`
+		Count  int              `json:"count"`
+	} `json:"data"`
+}
+
+// SetTopWinnersAPI sets Top Winners Stocks data provider API
+func SetTopWinnersAPI(apiURL string) {
+	topWinnersConfig.APIURL = apiURL
+}
+
+// SetTopLosersAPI sets Top Losers Stocks data provider API
+func SetTopLosersAPI(apiURL string) {
+	topLosersConfig.APIURL = apiURL
+}
+
+// GetTopWinnersData retrieves Top Winners list (with retry mechanism)
+func GetTopWinnersData() ([]MoversTopStock, error) {
+	if strings.TrimSpace(topWinnersConfig.APIURL) == "" {
+		return nil, fmt.Errorf("Top Winners API URL not configured")
+	}
+
+	maxRetries := 3
+	var lastErr error
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		if attempt > 1 {
+			log.Printf("⚠️  Retry attempt %d of %d to fetch Top Winners data...", attempt, maxRetries)
+			time.Sleep(2 * time.Second)
+		}
+
+		stocks, err := fetchMoversData(topWinnersConfig.APIURL, topWinnersConfig.Timeout)
+		if err == nil {
+			return stocks, nil
+		}
+
+		lastErr = err
+		log.Printf("❌ Top Winners request attempt %d failed: %v", attempt, err)
+	}
+
+	return nil, fmt.Errorf("all Top Winners API requests failed: %w", lastErr)
+}
+
+// GetTopLosersData retrieves Top Losers list (with retry mechanism)
+func GetTopLosersData() ([]MoversTopStock, error) {
+	if strings.TrimSpace(topLosersConfig.APIURL) == "" {
+		return nil, fmt.Errorf("Top Losers API URL not configured")
+	}
+
+	maxRetries := 3
+	var lastErr error
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		if attempt > 1 {
+			log.Printf("⚠️  Retry attempt %d of %d to fetch Top Losers data...", attempt, maxRetries)
+			time.Sleep(2 * time.Second)
+		}
+
+		stocks, err := fetchMoversData(topLosersConfig.APIURL, topLosersConfig.Timeout)
+		if err == nil {
+			return stocks, nil
+		}
+
+		lastErr = err
+		log.Printf("❌ Top Losers request attempt %d failed: %v", attempt, err)
+	}
+
+	return nil, fmt.Errorf("all Top Losers API requests failed: %w", lastErr)
+}
+
+// fetchMoversData fetches data from winners/losers API
+func fetchMoversData(apiURL string, timeout time.Duration) ([]MoversTopStock, error) {
+	log.Printf("🔄 Requesting movers data from %s...", apiURL)
+
+	resp, err := security.SafeGet(apiURL, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("failed to request API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	var response MoversTopAPIResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("JSON parsing failed: %w", err)
+	}
+
+	if !response.Success {
+		return nil, fmt.Errorf("API returned failure status")
+	}
+
+	return response.Data.Stocks, nil
+}
+
+// GetTopWinnersStocks retrieves top N stocks from Top Winners by change
+func GetTopWinnersStocks(limit int) ([]string, error) {
+	stocks, err := GetTopWinnersData()
+	if err != nil {
+		return nil, err
+	}
+	return sortAndLimitStocks(stocks, limit)
+}
+
+// GetTopLosersStocks retrieves top N stocks from Top Losers by change
+func GetTopLosersStocks(limit int) ([]string, error) {
+	stocks, err := GetTopLosersData()
+	if err != nil {
+		return nil, err
+	}
+	return sortAndLimitStocks(stocks, limit)
+}
+
+// sortAndLimitStocks sorts by change descending and returns top N symbols
+func sortAndLimitStocks(stocks []MoversTopStock, limit int) ([]string, error) {
+	if len(stocks) == 0 {
+		return nil, fmt.Errorf("stock list is empty")
+	}
+
+	// Sort by Change descending (bubble sort)
+	for i := 0; i < len(stocks); i++ {
+		for j := i + 1; j < len(stocks); j++ {
+			if stocks[i].Change < stocks[j].Change {
+				stocks[i], stocks[j] = stocks[j], stocks[i]
+			}
+		}
+	}
+
+	// Take top N
+	maxCount := limit
+	if len(stocks) < maxCount {
+		maxCount = len(stocks)
+	}
+
+	var symbols []string
+	for i := 0; i < maxCount; i++ {
+		symbol := normalizeSymbol(stocks[i].Pair)
+		symbols = append(symbols, symbol)
+	}
+
+	return symbols, nil
+}
+
+// Deprecated: Use GetTopWinnersStocks instead
+func GetMoversTopStocks(limit int) ([]string, error) {
+	return GetTopWinnersStocks(limit)
+}
+
+// Deprecated: Use SetTopWinnersAPI instead
+func SetMoversTopAPI(apiURL string) {
+	SetTopWinnersAPI(apiURL)
+}
+
+// GetAI100Data retrieves AI100 Stocks stock list (with retry mechanism)
+// The API should return JSON with structure: { "success": true, "data": { "stocks": [{ "pair": "SYMBOL", "score": 0.0 }], "count": N } }
+func GetAI100Data() ([]CoinData, error) {
+	// Check if API URL is configured
+	if strings.TrimSpace(ai100Config.APIURL) == "" {
+		return nil, fmt.Errorf("AI100 API URL not configured")
+	}
+
+	maxRetries := 3
+	var lastErr error
+
+	// Try to fetch from API
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		if attempt > 1 {
+			log.Printf("⚠️  Retry attempt %d of %d to fetch AI100 data...", attempt, maxRetries)
+			time.Sleep(2 * time.Second)
+		}
+
+		stocks, err := fetchAI100()
+		if err == nil {
+			if attempt > 1 {
+				log.Printf("✓ Retry attempt %d succeeded", attempt)
+			}
+			return stocks, nil
+		}
+
+		lastErr = err
+		log.Printf("❌ AI100 request attempt %d failed: %v", attempt, err)
+	}
+
+	return nil, fmt.Errorf("all AI100 API requests failed: %w", lastErr)
+}
+
+// fetchAI100 actually executes AI100 request
+func fetchAI100() ([]CoinData, error) {
+	log.Printf("🔄 Requesting AI100 Stocks data...")
+
+	// SSRF Protection: Validate URL before making request
+	resp, err := security.SafeGet(ai100Config.APIURL, ai100Config.Timeout)
+	if err != nil {
+		return nil, fmt.Errorf("failed to request AI100 API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read AI100 response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("AI100 API returned error (status %d): %s", resp.StatusCode, string(body))
+	}
+
+	// Parse API response (uses "stocks" field)
+	var response AI100APIResponse
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, fmt.Errorf("AI100 JSON parsing failed: %w", err)
+	}
+
+	if !response.Success {
+		return nil, fmt.Errorf("AI100 API returned failure status")
+	}
+
+	if len(response.Data.Stocks) == 0 {
+		return nil, fmt.Errorf("AI100 stock list is empty")
+	}
+
+	// Set IsAvailable flag
+	stocks := response.Data.Stocks
+	for i := range stocks {
+		stocks[i].IsAvailable = true
+	}
+
+	log.Printf("✓ Successfully fetched %d AI100 stocks", len(stocks))
+	return stocks, nil
+}
+
+// GetAI100TopStocks retrieves top N stocks from AI100 by score
+func GetAI100TopStocks(limit int) ([]string, error) {
+	stocks, err := GetAI100Data()
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter available stocks
+	var availableStocks []CoinData
+	for _, stock := range stocks {
+		if stock.IsAvailable {
+			availableStocks = append(availableStocks, stock)
+		}
+	}
+
+	if len(availableStocks) == 0 {
+		return nil, fmt.Errorf("no available AI100 stocks")
+	}
+
+	// Sort by Score descending (bubble sort)
+	for i := 0; i < len(availableStocks); i++ {
+		for j := i + 1; j < len(availableStocks); j++ {
+			if availableStocks[i].Score < availableStocks[j].Score {
+				availableStocks[i], availableStocks[j] = availableStocks[j], availableStocks[i]
+			}
+		}
+	}
+
+	// Take top N
+	maxCount := limit
+	if len(availableStocks) < maxCount {
+		maxCount = len(availableStocks)
+	}
+
+	var symbols []string
+	for i := 0; i < maxCount; i++ {
+		symbol := normalizeSymbol(availableStocks[i].Pair)
+		symbols = append(symbols, symbol)
+	}
+
+	return symbols, nil
+}
 
 // GetAI500Data retrieves AI500 coin list (with retry mechanism)
 func GetAI500Data() ([]CoinData, error) {
@@ -196,13 +527,10 @@ func GetTopRatedCoins(limit int) ([]string, error) {
 	return symbols, nil
 }
 
-// normalizeSymbol normalizes coin symbol
+// normalizeSymbol normalizes stock symbol to uppercase
 func normalizeSymbol(symbol string) string {
 	symbol = trimSpaces(symbol)
 	symbol = toUpper(symbol)
-	if !endsWith(symbol, "USDT") {
-		symbol = symbol + "USDT"
-	}
 	return symbol
 }
 
@@ -235,7 +563,6 @@ func endsWith(s, suffix string) bool {
 	}
 	return s[len(s)-len(suffix):] == suffix
 }
-
 
 // ========== OI Top (Open Interest Growth Top 20) Data ==========
 
@@ -458,13 +785,13 @@ func FormatOIRankingForAI(data *OIRankingData) string {
 
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("## 📊 市场持仓量变化数据 (Open Interest Changes in %s / %s)\n\n", data.TimeRange, data.Duration))
+	sb.WriteString(fmt.Sprintf("## 📊 Market Position Changes (Open Interest Changes in %s / %s)\n\n", data.TimeRange, data.Duration))
 
 	if len(data.TopPositions) > 0 {
-		sb.WriteString("### 🔺 持仓量增加排行 (OI Increase Ranking)\n")
-		sb.WriteString("市场资金正在流入以下币种，可能表示趋势延续或新仓位建立:\n\n")
-		sb.WriteString("| 排名 | 币种 | 持仓变化值(USDT) | 变化幅度 | 价格变化 |\n")
-		sb.WriteString("|------|------|------------------|----------|----------|\n")
+		sb.WriteString("### 🔺 OI Increase Ranking\n")
+		sb.WriteString("Capital is flowing into the following stocks, indicating trend continuation or new position building:\n\n")
+		sb.WriteString("| Rank | Symbol | Position Change (USD) | Change % | Price Change |\n")
+		sb.WriteString("|------|--------|----------------------|----------|-------------|\n")
 		for _, pos := range data.TopPositions {
 			sb.WriteString(fmt.Sprintf("| #%d | %s | %s | %+.2f%% | %+.2f%% |\n",
 				pos.Rank,
@@ -475,14 +802,14 @@ func FormatOIRankingForAI(data *OIRankingData) string {
 			))
 		}
 		sb.WriteString("\n")
-		sb.WriteString("**解读**: 持仓增加 + 价格上涨 = 多头主导; 持仓增加 + 价格下跌 = 空头主导\n\n")
+		sb.WriteString("**Analysis**: OI increase + price up = bullish; OI increase + price down = bearish\n\n")
 	}
 
 	if len(data.LowPositions) > 0 {
-		sb.WriteString("### 🔻 持仓量减少排行 (OI Decrease Ranking)\n")
-		sb.WriteString("市场资金正在流出以下币种，可能表示趋势反转或仓位平仓:\n\n")
-		sb.WriteString("| 排名 | 币种 | 持仓变化值(USDT) | 变化幅度 | 价格变化 |\n")
-		sb.WriteString("|------|------|------------------|----------|----------|\n")
+		sb.WriteString("### 🔻 OI Decrease Ranking\n")
+		sb.WriteString("Capital is flowing out of the following stocks, indicating trend reversal or position closing:\n\n")
+		sb.WriteString("| Rank | Symbol | Position Change (USD) | Change % | Price Change |\n")
+		sb.WriteString("|------|--------|----------------------|----------|-------------|\n")
 		for _, pos := range data.LowPositions {
 			sb.WriteString(fmt.Sprintf("| #%d | %s | %s | %+.2f%% | %+.2f%% |\n",
 				pos.Rank,
@@ -493,7 +820,7 @@ func FormatOIRankingForAI(data *OIRankingData) string {
 			))
 		}
 		sb.WriteString("\n")
-		sb.WriteString("**解读**: 持仓减少 + 价格上涨 = 空头平仓(反弹); 持仓减少 + 价格下跌 = 多头平仓(回调)\n\n")
+		sb.WriteString("**Analysis**: OI decrease + price up = short covering (bounce); OI decrease + price down = long liquidation (pullback)\n\n")
 	}
 
 	return sb.String()

@@ -1,13 +1,13 @@
 package api
 
 import (
+	"SynapseStrike/decision"
+	"SynapseStrike/market"
+	"SynapseStrike/mcp"
+	"SynapseStrike/store"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"nofx/decision"
-	"nofx/market"
-	"nofx/mcp"
-	"nofx/store"
 	"strings"
 	"time"
 
@@ -184,12 +184,23 @@ func (s *Server) handleUpdateStrategy(c *gin.Context) {
 		return
 	}
 
+	// Debug logging
+	fmt.Printf("🔍 Strategy update - StaticStocks received: %v", req.Config.CoinSource.StaticStocks)
+	fmt.Printf("🔍 Strategy update - StaticCoins received: %v", req.Config.CoinSource.StaticCoins)
+	fmt.Printf("🔍 Strategy update - SourceType: %s", req.Config.CoinSource.SourceType)
+
 	// Serialize configuration
 	configJSON, err := json.Marshal(req.Config)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to serialize configuration"})
 		return
 	}
+
+	jsonLen := len(configJSON)
+	if jsonLen > 500 {
+		jsonLen = 500
+	}
+	fmt.Printf("🔍 Strategy update - Config JSON: %s", string(configJSON)[:jsonLen])
 
 	strategy := &store.Strategy{
 		ID:          strategyID,
@@ -249,6 +260,24 @@ func (s *Server) handleActivateStrategy(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Strategy activated successfully"})
+}
+
+// handleDeactivateStrategy Deactivate strategy
+func (s *Server) handleDeactivateStrategy(c *gin.Context) {
+	userID := c.GetString("user_id")
+	strategyID := c.Param("id")
+
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	if err := s.store.Strategy().Deactivate(userID, strategyID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to deactivate strategy: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Strategy deactivated successfully"})
 }
 
 // handleDuplicateStrategy Duplicate strategy
@@ -334,9 +363,9 @@ func (s *Server) handlePreviewPrompt(c *gin.Context) {
 	}
 
 	var req struct {
-		Config          store.StrategyConfig `json:"config" binding:"required"`
-		AccountEquity   float64              `json:"account_equity"`
-		PromptVariant   string               `json:"prompt_variant"`
+		Config        store.StrategyConfig `json:"config" binding:"required"`
+		AccountEquity float64              `json:"account_equity"`
+		PromptVariant string               `json:"prompt_variant"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -365,11 +394,11 @@ func (s *Server) handlePreviewPrompt(c *gin.Context) {
 		"system_prompt":  systemPrompt,
 		"prompt_variant": req.PromptVariant,
 		"config_summary": gin.H{
-			"coin_source":      req.Config.CoinSource.SourceType,
-			"primary_tf":       req.Config.Indicators.Klines.PrimaryTimeframe,
-			"btc_eth_leverage": req.Config.RiskControl.BTCETHMaxLeverage,
-			"altcoin_leverage": req.Config.RiskControl.AltcoinMaxLeverage,
-			"max_positions":    req.Config.RiskControl.MaxPositions,
+			"stock source":       req.Config.CoinSource.SourceType,
+			"primary_tf":         req.Config.Indicators.Klines.PrimaryTimeframe,
+			"large_cap_leverage": req.Config.RiskControl.LargeCapMaxMargin,
+			"small_cap_leverage": req.Config.RiskControl.SmallCapMaxMargin,
+			"max_positions":      req.Config.RiskControl.MaxPositions,
 		},
 	})
 }
@@ -380,6 +409,12 @@ func (s *Server) handleStrategyTestRun(c *gin.Context) {
 	if userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
+	}
+
+	// Load Alpaca credentials from user's brokerage connections
+	if err := s.loadAlpacaCredentialsForBacktest(userID); err != nil {
+		fmt.Printf("⚠️ Warning: Could not load Alpaca credentials: %v\n", err)
+		// Continue anyway - credentials might be in environment
 	}
 
 	var req struct {
@@ -398,14 +433,22 @@ func (s *Server) handleStrategyTestRun(c *gin.Context) {
 		req.PromptVariant = "balanced"
 	}
 
+	// Debug: Log incoming config to trace stock source
+	fmt.Printf("🔍 [Test Run] StockSource config: Type=%s, StaticStocks=%v, StaticCoins=%v, UseStockPool=%v, UseCoinPool=%v\n",
+		req.Config.CoinSource.SourceType,
+		req.Config.CoinSource.StaticStocks,
+		req.Config.CoinSource.StaticCoins,
+		req.Config.CoinSource.UseStockPool,
+		req.Config.CoinSource.UseCoinPool)
+
 	// Create strategy engine to build prompt
 	engine := decision.NewStrategyEngine(&req.Config)
 
-	// Get candidate coins
-	candidates, err := engine.GetCandidateCoins()
+	// Get candidate stocks
+	candidates, err := engine.GetCandidateStocks()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":       "Failed to get candidate coins: " + err.Error(),
+			"error":       "Failed to get candidate stocks: " + err.Error(),
 			"ai_response": "",
 		})
 		return
@@ -433,6 +476,20 @@ func (s *Server) handleStrategyTestRun(c *gin.Context) {
 	}
 	if klineCount <= 0 {
 		klineCount = 30
+	}
+
+	// Merge confluence timeframes if enabled
+	if req.Config.Indicators.EnableConfluence && len(req.Config.Indicators.ConfluenceTimeframes) > 0 {
+		existingTfs := make(map[string]bool)
+		for _, tf := range timeframes {
+			existingTfs[tf] = true
+		}
+		for _, tf := range req.Config.Indicators.ConfluenceTimeframes {
+			if !existingTfs[tf] {
+				timeframes = append(timeframes, tf)
+				existingTfs[tf] = true
+			}
+		}
 	}
 
 	fmt.Printf("📊 Using timeframes: %v, primary: %s, kline count: %d\n", timeframes, primaryTimeframe, klineCount)
@@ -474,12 +531,12 @@ func (s *Server) handleStrategyTestRun(c *gin.Context) {
 			MarginUsedPct:    0,
 			PositionCount:    0,
 		},
-		Positions:      []decision.PositionInfo{},
-		CandidateCoins: candidates,
-		PromptVariant:  req.PromptVariant,
-		MarketDataMap:  marketDataMap,
-		QuantDataMap:   quantDataMap,
-		OIRankingData:  oiRankingData,
+		Positions:       []decision.PositionInfo{},
+		CandidateStocks: candidates,
+		PromptVariant:   req.PromptVariant,
+		MarketDataMap:   marketDataMap,
+		QuantDataMap:    quantDataMap,
+		OIRankingData:   oiRankingData,
 	}
 
 	// Build System Prompt
@@ -571,6 +628,9 @@ func (s *Server) runRealAITest(userID, modelID, systemPrompt, userPrompt string)
 	case "openai":
 		aiClient = mcp.NewOpenAIClient()
 		aiClient.SetAPIKey(model.APIKey, model.CustomAPIURL, model.CustomModelName)
+	case "localai":
+		aiClient = mcp.NewLocalAIClient()
+		aiClient.SetAPIKey(model.APIKey, model.CustomAPIURL, model.CustomModelName)
 	default:
 		// Use generic client
 		aiClient = mcp.NewClient()
@@ -585,4 +645,3 @@ func (s *Server) runRealAITest(userID, modelID, systemPrompt, userPrompt string)
 
 	return response, nil
 }
-

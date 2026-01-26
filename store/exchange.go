@@ -3,7 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strings"
 	"time"
 

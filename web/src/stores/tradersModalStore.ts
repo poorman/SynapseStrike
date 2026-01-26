@@ -2,34 +2,34 @@ import { create } from 'zustand'
 import type { TraderConfigData } from '../types'
 
 interface TradersModalState {
-  // Modal 显示状态
+  // Modal showstatus
   showCreateModal: boolean
   showEditModal: boolean
   showModelModal: boolean
-  showExchangeModal: boolean
+  showBrokerageModal: boolean
 
-  // 编辑状态
+  // editstatus
   editingModel: string | null
-  editingExchange: string | null
+  editingBrokerage: string | null
   editingTrader: TraderConfigData | null
 
   // Actions
   setShowCreateModal: (show: boolean) => void
   setShowEditModal: (show: boolean) => void
   setShowModelModal: (show: boolean) => void
-  setShowExchangeModal: (show: boolean) => void
+  setShowBrokerageModal: (show: boolean) => void
 
   setEditingModel: (modelId: string | null) => void
-  setEditingExchange: (exchangeId: string | null) => void
+  setEditingBrokerage: (brokerageId: string | null) => void
   setEditingTrader: (trader: TraderConfigData | null) => void
 
-  // 便捷方法
+  // convenience method
   openModelModal: (modelId?: string) => void
   closeModelModal: () => void
-  openExchangeModal: (exchangeId?: string) => void
-  closeExchangeModal: () => void
+  openBrokerageModal: (brokerageId?: string) => void
+  closeBrokerageModal: () => void
 
-  // 重置
+  // reset
   reset: () => void
 }
 
@@ -37,9 +37,9 @@ const initialState = {
   showCreateModal: false,
   showEditModal: false,
   showModelModal: false,
-  showExchangeModal: false,
+  showBrokerageModal: false,
   editingModel: null,
-  editingExchange: null,
+  editingBrokerage: null,
   editingTrader: null,
 }
 
@@ -49,10 +49,10 @@ export const useTradersModalStore = create<TradersModalState>((set) => ({
   setShowCreateModal: (show) => set({ showCreateModal: show }),
   setShowEditModal: (show) => set({ showEditModal: show }),
   setShowModelModal: (show) => set({ showModelModal: show }),
-  setShowExchangeModal: (show) => set({ showExchangeModal: show }),
+  setShowBrokerageModal: (show) => set({ showBrokerageModal: show }),
 
   setEditingModel: (modelId) => set({ editingModel: modelId }),
-  setEditingExchange: (exchangeId) => set({ editingExchange: exchangeId }),
+  setEditingBrokerage: (brokerageId) => set({ editingBrokerage: brokerageId }),
   setEditingTrader: (trader) => set({ editingTrader: trader }),
 
   openModelModal: (modelId) => {
@@ -63,12 +63,12 @@ export const useTradersModalStore = create<TradersModalState>((set) => ({
     set({ showModelModal: false, editingModel: null })
   },
 
-  openExchangeModal: (exchangeId) => {
-    set({ editingExchange: exchangeId || null, showExchangeModal: true })
+  openBrokerageModal: (brokerageId) => {
+    set({ editingBrokerage: brokerageId || null, showBrokerageModal: true })
   },
 
-  closeExchangeModal: () => {
-    set({ showExchangeModal: false, editingExchange: null })
+  closeBrokerageModal: () => {
+    set({ showBrokerageModal: false, editingBrokerage: null })
   },
 
   reset: () => set(initialState),

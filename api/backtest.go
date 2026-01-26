@@ -11,8 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"nofx/backtest"
-	"nofx/store"
+	"SynapseStrike/backtest"
+	"SynapseStrike/market"
+	"SynapseStrike/store"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,6 +71,12 @@ func (s *Server) handleBacktestStart(c *gin.Context) {
 		return
 	}
 
+	// Load Alpaca credentials from user's brokerage config for market data
+	if err := s.loadAlpacaCredentialsForBacktest(cfg.UserID); err != nil {
+		// Log warning but don't fail - env vars might be set
+		fmt.Printf("⚠️ Could not load Alpaca credentials from brokerage: %v\n", err)
+	}
+
 	runner, err := s.backtestManager.Start(context.Background(), cfg)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -78,6 +85,42 @@ func (s *Server) handleBacktestStart(c *gin.Context) {
 
 	meta := runner.CurrentMetadata()
 	c.JSON(http.StatusOK, meta)
+}
+
+// loadAlpacaCredentialsForBacktest loads Alpaca API credentials from user's brokerage config
+func (s *Server) loadAlpacaCredentialsForBacktest(userID string) error {
+	if s.store == nil {
+		return fmt.Errorf("store not available")
+	}
+
+	// Get all exchanges for user
+	exchanges, err := s.store.Exchange().List(userID)
+	if err != nil {
+		return fmt.Errorf("failed to list exchanges: %w", err)
+	}
+
+	// Find most recently updated Alpaca exchange (in case user has multiple)
+	var bestExchange *store.Exchange
+	for i := range exchanges {
+		ex := exchanges[i]
+		exchangeType := strings.ToLower(ex.ExchangeType)
+		if exchangeType == "alpaca" || exchangeType == "alpaca-paper" || exchangeType == "alpaca-live" {
+			if ex.Enabled && ex.APIKey != "" && ex.SecretKey != "" {
+				if bestExchange == nil || ex.UpdatedAt.After(bestExchange.UpdatedAt) {
+					bestExchange = ex
+				}
+			}
+		}
+	}
+
+	if bestExchange != nil {
+		// Set global Alpaca credentials for market data fetching
+		market.SetAlpacaCredentials(bestExchange.APIKey, bestExchange.SecretKey)
+		fmt.Printf("✓ Loaded Alpaca credentials from brokerage: %s (updated: %s)\n", bestExchange.AccountName, bestExchange.UpdatedAt.Format("2006-01-02 15:04:05"))
+		return nil
+	}
+
+	return fmt.Errorf("no enabled Alpaca brokerage found with API credentials")
 }
 
 func (s *Server) handleBacktestPause(c *gin.Context) {

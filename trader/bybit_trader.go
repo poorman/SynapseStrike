@@ -10,7 +10,7 @@ import (
 	"io"
 	"math"
 	"net/http"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strconv"
 	"strings"
 	"sync"

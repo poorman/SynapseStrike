@@ -96,7 +96,7 @@ export function LoginPage() {
         toast.dismiss(expiredToastId)
       }
     }
-    // 成功的话AuthContext会自动处理登录状态
+    // success'sthenAuthContextwill autohandleLoginstatus
 
     setLoading(false)
   }
@@ -109,24 +109,23 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <img
-              src="/icons/nofx.svg"
-              alt="NoFx Logo"
-              className="w-16 h-16 object-contain"
-            />
-          </div>
           <h1
-            className="text-2xl font-bold"
+            className="text-3xl font-bold"
+            style={{ color: 'var(--primary)' }}
+          >
+            SynapseStrike
+          </h1>
+          <h2
+            className="text-xl font-semibold mt-2"
             style={{ color: 'var(--brand-light-gray)' }}
           >
-            登录 NOFX
-          </h1>
+            Sign In
+          </h2>
           <p
             className="text-sm mt-2"
             style={{ color: 'var(--text-secondary)' }}
           >
-            {step === 'login' ? '请输入您的邮箱和密码' : '请输入两步验证码'}
+            {step === 'login' ? 'Enter your email and password' : 'Enter two-factor code'}
           </p>
         </div>
 
@@ -145,7 +144,7 @@ export function LoginPage() {
                   className="block text-sm font-semibold mb-2"
                   style={{ color: 'var(--brand-light-gray)' }}
                 >
-                  管理员密码
+                  Admin Password
                 </label>
                 <input
                   type="password"
@@ -157,7 +156,7 @@ export function LoginPage() {
                     border: '1px solid var(--panel-border)',
                     color: 'var(--brand-light-gray)',
                   }}
-                  placeholder="请输入管理员密码"
+                  placeholder="Enter admin password"
                   required
                 />
               </div>
@@ -183,7 +182,7 @@ export function LoginPage() {
                   color: 'var(--brand-black)',
                 }}
               >
-                {loading ? t('loading', language) : '登录'}
+                {loading ? t('loading', language) : 'Login'}
               </button>
             </form>
           ) : step === 'login' ? (
@@ -222,7 +221,7 @@ export function LoginPage() {
                   />
                   <button
                     type="button"
-                    aria-label={showPassword ? '隐藏密码' : '显示密码'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute inset-y-0 right-2 w-8 h-10 flex items-center justify-center rounded bg-transparent p-0 m-0 border-0 outline-none focus:outline-none focus:ring-0 appearance-none cursor-pointer btn-icon"
@@ -238,7 +237,7 @@ export function LoginPage() {
                       window.location.href = '/reset-password'
                     }}
                     className="text-xs hover:underline"
-                    style={{ color: '#F0B90B' }}
+                    style={{ color: 'var(--primary)' }}
                   >
                     {t('forgotPassword', language)}
                   </button>
@@ -260,10 +259,10 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-4 py-2 rounded text-sm font-semibold transition-all hover:scale-105 disabled:opacity-50"
+                className="w-full px-4 py-3 rounded text-sm font-semibold transition-all hover:scale-105 disabled:opacity-50"
                 style={{
-                  background: 'var(--brand-yellow)',
-                  color: 'var(--brand-black)',
+                  background: 'var(--primary)',
+                  color: '#000',
                 }}
               >
                 {loading ? t('loading', language) : t('loginButton', language)}
@@ -273,7 +272,7 @@ export function LoginPage() {
             <form onSubmit={handleOTPVerify} className="space-y-4">
               <div className="text-center mb-4">
                 <div className="text-4xl mb-2">📱</div>
-                <p className="text-sm" style={{ color: '#848E9C' }}>
+                <p className="text-sm" style={{ color: '#9CA3AF' }}>
                   {t('scanQRCodeInstructions', language)}
                   <br />
                   {t('enterOTPCode', language)}
@@ -333,7 +332,7 @@ export function LoginPage() {
                   type="submit"
                   disabled={loading || otpCode.length !== 6}
                   className="flex-1 px-4 py-2 rounded text-sm font-semibold transition-all hover:scale-105 disabled:opacity-50"
-                  style={{ background: '#F0B90B', color: '#000' }}
+                  style={{ background: 'var(--primary)', color: '#000' }}
                 >
                   {loading ? t('loading', language) : t('verifyOTP', language)}
                 </button>
@@ -346,7 +345,7 @@ export function LoginPage() {
         {!adminMode && registrationEnabled && (
           <div className="text-center mt-6">
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              还没有账户？{' '}
+              Don't have an account?{' '}
               <button
                 onClick={() => {
                   window.location.href = '/register'
@@ -354,7 +353,7 @@ export function LoginPage() {
                 className="font-semibold hover:underline transition-colors"
                 style={{ color: 'var(--brand-yellow)' }}
               >
-                立即注册
+                Register now
               </button>
             </p>
           </div>

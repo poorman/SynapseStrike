@@ -10,6 +10,10 @@ import { CompetitionPage } from './components/CompetitionPage'
 import { LandingPage } from './pages/LandingPage'
 import { FAQPage } from './pages/FAQPage'
 import { StrategyStudioPage } from './pages/StrategyStudioPage'
+import { CursorStrategyPage } from './pages/CursorStrategyPage'
+import { TacticsStudioPage } from './pages/TacticsStudioPage'
+import { StrategyOpusPage } from './pages/StrategyOpusPage'
+import { StrategyCurrentPage } from './pages/StrategyCurrentPage'
 import { DebateArenaPage } from './pages/DebateArenaPage'
 import HeaderBar from './components/HeaderBar'
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
@@ -20,7 +24,7 @@ import { confirmToast, notify } from './lib/notify'
 import { useSystemConfig } from './hooks/useSystemConfig'
 import { DecisionCard } from './components/DecisionCard'
 import { PunkAvatar, getTraderAvatar } from './components/PunkAvatar'
-import { OFFICIAL_LINKS } from './constants/branding'
+
 import { BacktestPage } from './components/BacktestPage'
 import { LogOut, Loader2 } from 'lucide-react'
 import type {
@@ -30,7 +34,7 @@ import type {
   DecisionRecord,
   Statistics,
   TraderInfo,
-  Exchange,
+  Brokerage,
 } from './types'
 
 type Page =
@@ -39,12 +43,14 @@ type Page =
   | 'trader'
   | 'backtest'
   | 'strategy'
+  | 'cursor-strategy'
+  | 'tactics'
   | 'debate'
   | 'faq'
   | 'login'
   | 'register'
 
-// 获取友好的AI模型名称
+// getfriendly'sAImodelname
 function getModelDisplayName(modelId: string): string {
   switch (modelId.toLowerCase()) {
     case 'deepseek':
@@ -58,29 +64,29 @@ function getModelDisplayName(modelId: string): string {
   }
 }
 
-// Helper function to get exchange display name from exchange ID (UUID)
-function getExchangeDisplayNameFromList(
-  exchangeId: string | undefined,
-  exchanges: Exchange[] | undefined
+// Helper function to get brokerage display name from brokerage ID (UUID)
+function getBrokerageDisplayNameFromList(
+  brokerageId: string | undefined,
+  brokerages: Brokerage[] | undefined
 ): string {
-  if (!exchangeId) return 'Unknown'
-  const exchange = exchanges?.find((e) => e.id === exchangeId)
-  if (!exchange) return exchangeId.substring(0, 8).toUpperCase() + '...'
-  const typeName = exchange.exchange_type?.toUpperCase() || exchange.name
-  return exchange.account_name
-    ? `${typeName} - ${exchange.account_name}`
+  if (!brokerageId) return 'Unknown'
+  const brokerage = brokerages?.find((e) => e.id === brokerageId)
+  if (!brokerage) return brokerageId.substring(0, 8).toUpperCase() + '...'
+  const typeName = brokerage.brokerage_type?.toUpperCase() || brokerage.name
+  return brokerage.account_name
+    ? `${typeName} - ${brokerage.account_name}`
     : typeName
 }
 
-// Helper function to get exchange type from exchange ID (UUID) - for TradingView charts
-function getExchangeTypeFromList(
-  exchangeId: string | undefined,
-  exchanges: Exchange[] | undefined
+// Helper function to get brokerage type from brokerage ID (UUID) - for TradingView charts
+function getBrokerageTypeFromList(
+  brokerageId: string | undefined,
+  brokerages: Brokerage[] | undefined
 ): string {
-  if (!exchangeId) return 'BINANCE'
-  const exchange = exchanges?.find((e) => e.id === exchangeId)
-  if (!exchange) return 'BINANCE' // Default to BINANCE for charts
-  return exchange.exchange_type?.toUpperCase() || 'BINANCE'
+  if (!brokerageId) return 'NASDAQ'
+  const brokerage = brokerages?.find((e) => e.id === brokerageId)
+  if (!brokerage) return 'NASDAQ' // Default to NASDAQ for charts
+  return brokerage.brokerage_type?.toUpperCase() || 'NASDAQ'
 }
 
 function App() {
@@ -89,26 +95,43 @@ function App() {
   const { loading: configLoading } = useSystemConfig()
   const [route, setRoute] = useState(window.location.pathname)
 
-  // 从URL路径读取初始页面状态（支持刷新保持页面）
+  // fromURLread initial from pathPagestatus（supportrefresh keepPage）
   const getInitialPage = (): Page => {
     const path = window.location.pathname
-    const hash = window.location.hash.slice(1) // 去掉 #
+    const hash = window.location.hash.slice(1) // remove #
 
     if (path === '/traders' || hash === 'traders') return 'traders'
     if (path === '/backtest' || hash === 'backtest') return 'backtest'
-    if (path === '/strategy' || hash === 'strategy') return 'strategy'
+    if (path === '/strategy/sonnet' || path === '/tactics' || hash === 'tactics') return 'tactics'
+    if (path === '/strategy/cursor') return 'cursor-strategy'
+    if (path === '/strategy/opus') return 'strategy' // Route check handles opus page
+    if (path === '/strategy/current') return 'strategy' // Route check handles current page
+    if (path === '/strategy' || path.startsWith('/strategy/') || hash === 'strategy') return 'strategy'
     if (path === '/debate' || hash === 'debate') return 'debate'
     if (path === '/dashboard' || hash === 'trader' || hash === 'details')
       return 'trader'
-    return 'competition' // 默认为竞赛页面
+    return 'competition' // defaultasCompetition Page
   }
 
   const [currentPage, setCurrentPage] = useState<Page>(getInitialPage())
-  const [selectedTraderId, setSelectedTraderId] = useState<string | undefined>()
+  // Persist selectedTraderId to localStorage
+  const [selectedTraderId, setSelectedTraderId] = useState<string | undefined>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedTraderId') || undefined
+    }
+    return undefined
+  })
   const [lastUpdate, setLastUpdate] = useState<string>('--:--:--')
   const [decisionsLimit, setDecisionsLimit] = useState<number>(5)
 
-  // 监听URL变化，同步页面状态
+  // Save selectedTraderId to localStorage when it changes
+  useEffect(() => {
+    if (selectedTraderId) {
+      localStorage.setItem('selectedTraderId', selectedTraderId)
+    }
+  }, [selectedTraderId])
+
+  // listenURLchange，SyncPagestatus
   useEffect(() => {
     const handleRouteChange = () => {
       const path = window.location.pathname
@@ -118,7 +141,13 @@ function App() {
         setCurrentPage('traders')
       } else if (path === '/backtest' || hash === 'backtest') {
         setCurrentPage('backtest')
-      } else if (path === '/strategy' || hash === 'strategy') {
+      } else if (path === '/strategy/sonnet' || path === '/tactics' || hash === 'tactics') {
+        setCurrentPage('tactics')
+      } else if (path === '/strategy/opus') {
+        setCurrentPage('strategy') // Uses route check for opus in render
+      } else if (path === '/strategy/current') {
+        setCurrentPage('strategy') // Uses route check for current in render
+      } else if (path === '/strategy' || path.startsWith('/strategy/') || hash === 'strategy') {
         setCurrentPage('strategy')
       } else if (path === '/debate' || hash === 'debate') {
         setCurrentPage('debate')
@@ -146,49 +175,59 @@ function App() {
     }
   }, [])
 
-  // 切换页面时更新URL hash (当前通过按钮直接调用setCurrentPage，这个函数暂时保留用于未来扩展)
+  // togglePagewhenUpdateURL hash (currentcall directly via buttonsetCurrentPage，thisitemsfunctiontempwhenkeepused fornotto extend)
   // const navigateToPage = (page: Page) => {
   //   setCurrentPage(page);
   //   window.location.hash = page === 'competition' ? '' : 'trader';
   // };
 
-  // 获取trader列表（仅在用户登录时）
+  // gettraderlist（onlyatuserLoginwhen）
   const { data: traders, error: tradersError } = useSWR<TraderInfo[]>(
     user && token ? 'traders' : null,
     api.getTraders,
     {
       refreshInterval: 10000,
-      shouldRetryOnError: false, // 避免在后端未运行时无限重试
+      shouldRetryOnError: false, // avoidatbackendnotrunlinewheninfinite retry
     }
   )
 
-  // 获取exchanges列表（用于显示交易所名称）
-  const { data: exchanges } = useSWR<Exchange[]>(
-    user && token ? 'exchanges' : null,
-    api.getExchangeConfigs,
+  // getbrokerageslist（used forshowbrokeragename）
+  const { data: brokerages } = useSWR<Brokerage[]>(
+    user && token ? 'brokerages' : null,
+    api.getBrokerageConfigs,
     {
-      refreshInterval: 60000, // 1分钟刷新一次
+      refreshInterval: 60000, // 1minutesrefreshonetimes
       shouldRetryOnError: false,
     }
   )
 
-  // 当获取到traders后，设置默认选中第一个
+  // When traders load, validate selectedTraderId or set to first trader
   useEffect(() => {
-    if (traders && traders.length > 0 && !selectedTraderId) {
-      setSelectedTraderId(traders[0].trader_id)
+    if (traders && traders.length > 0) {
+      // Check if stored selectedTraderId is valid
+      if (selectedTraderId) {
+        const traderExists = traders.some(t => t.trader_id === selectedTraderId)
+        if (!traderExists) {
+          // Stored trader no longer exists, use first trader
+          setSelectedTraderId(traders[0].trader_id)
+        }
+      } else {
+        // No trader selected, use first one
+        setSelectedTraderId(traders[0].trader_id)
+      }
     }
   }, [traders, selectedTraderId])
 
-  // 如果在trader页面，获取该trader的数据
+  // ifattraderPage，getthistrader'sdata
   const { data: status } = useSWR<SystemStatus>(
     currentPage === 'trader' && selectedTraderId
       ? `status-${selectedTraderId}`
       : null,
     () => api.getStatus(selectedTraderId),
     {
-      refreshInterval: 15000, // 15秒刷新（配合后端15秒缓存）
-      revalidateOnFocus: false, // 禁用聚焦时重新验证，减少请求
-      dedupingInterval: 10000, // 10秒去重，防止短时间内重复请求
+      refreshInterval: 15000, // 15sec refresh（Match backend15sec cache）
+      revalidateOnFocus: false, // Disable revalidate on focus，Reduce requests
+      dedupingInterval: 10000, // 10sec dedup，Prevent duplicate requests
     }
   )
 
@@ -198,9 +237,9 @@ function App() {
       : null,
     () => api.getAccount(selectedTraderId),
     {
-      refreshInterval: 15000, // 15秒刷新（配合后端15秒缓存）
-      revalidateOnFocus: false, // 禁用聚焦时重新验证，减少请求
-      dedupingInterval: 10000, // 10秒去重，防止短时间内重复请求
+      refreshInterval: 15000, // 15sec refresh（Match backend15sec cache）
+      revalidateOnFocus: false, // Disable revalidate on focus，Reduce requests
+      dedupingInterval: 10000, // 10sec dedup，Prevent duplicate requests
     }
   )
 
@@ -210,9 +249,9 @@ function App() {
       : null,
     () => api.getPositions(selectedTraderId),
     {
-      refreshInterval: 15000, // 15秒刷新（配合后端15秒缓存）
-      revalidateOnFocus: false, // 禁用聚焦时重新验证，减少请求
-      dedupingInterval: 10000, // 10秒去重，防止短时间内重复请求
+      refreshInterval: 15000, // 15sec refresh（Match backend15sec cache）
+      revalidateOnFocus: false, // Disable revalidate on focus，Reduce requests
+      dedupingInterval: 10000, // 10sec dedup，Prevent duplicate requests
     }
   )
 
@@ -222,7 +261,7 @@ function App() {
       : null,
     () => api.getLatestDecisions(selectedTraderId, decisionsLimit),
     {
-      refreshInterval: 30000, // 30秒刷新（决策更新频率较低）
+      refreshInterval: 30000, // 30sec refresh（decisionUpdatelower frequency）
       revalidateOnFocus: false,
       dedupingInterval: 20000,
     }
@@ -234,7 +273,7 @@ function App() {
       : null,
     () => api.getStatistics(selectedTraderId),
     {
-      refreshInterval: 30000, // 30秒刷新（统计数据更新频率较低）
+      refreshInterval: 30000, // 30sec refresh（statisticsdataUpdatelower frequency）
       revalidateOnFocus: false,
       dedupingInterval: 20000,
     }
@@ -274,15 +313,15 @@ function App() {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: '#0B0E11' }}
+        style={{ background: 'var(--bg-secondary)' }}
       >
         <div className="text-center">
           <img
-            src="/icons/nofx.svg"
-            alt="NoFx Logo"
+            src="/images/logo.png"
+            alt="SynapseStrike Logo"
             className="w-16 h-16 mx-auto mb-4 animate-pulse"
           />
-          <p style={{ color: '#EAECEF' }}>{t('loading', language)}</p>
+          <p style={{ color: '#F9FAFB' }}>{t('loading', language)}</p>
         </div>
       </div>
     )
@@ -299,7 +338,7 @@ function App() {
     return (
       <div
         className="min-h-screen"
-        style={{ background: '#0B0E11', color: '#EAECEF' }}
+        style={{ background: 'var(--bg-secondary)', color: '#F9FAFB' }}
       >
         <HeaderBar
           isLoggedIn={!!user}
@@ -332,6 +371,10 @@ function App() {
               window.history.pushState({}, '', '/strategy')
               setRoute('/strategy')
               setCurrentPage('strategy')
+            } else if (page === 'tactics') {
+              window.history.pushState({}, '', '/tactics')
+              setRoute('/tactics')
+              setCurrentPage('tactics')
             } else if (page === 'debate') {
               window.history.pushState({}, '', '/debate')
               setRoute('/debate')
@@ -350,7 +393,7 @@ function App() {
     return (
       <div
         className="min-h-screen"
-        style={{ background: '#000000', color: '#EAECEF' }}
+        style={{ background: 'var(--bg-secondary)', color: '#F9FAFB' }}
       >
         <HeaderBar
           isLoggedIn={!!user}
@@ -392,6 +435,16 @@ function App() {
               window.history.pushState({}, '', '/strategy')
               setRoute('/strategy')
               setCurrentPage('strategy')
+            } else if (page === 'cursor-strategy') {
+              console.log('Navigating to cursor strategy')
+              window.history.pushState({}, '', '/strategy/cursor')
+              setRoute('/strategy/cursor')
+              setCurrentPage('cursor-strategy')
+            } else if (page === 'tactics') {
+              console.log('Navigating to tactics')
+              window.history.pushState({}, '', '/tactics')
+              setRoute('/tactics')
+              setCurrentPage('tactics')
             } else if (page === 'debate') {
               console.log('Navigating to debate')
               window.history.pushState({}, '', '/debate')
@@ -419,13 +472,13 @@ function App() {
     return <LandingPage />
   }
 
-  // Allow unauthenticated users to open backtest page directly (others仍展示 Landing)
+  // Allow unauthenticated users to open backtest page directly (othersstill show Landing)
   if (!user || !token) {
     if (route === '/backtest' || currentPage === 'backtest') {
       return (
         <div
           className="min-h-screen"
-          style={{ background: '#0B0E11', color: '#EAECEF' }}
+          style={{ background: 'var(--bg-secondary)', color: '#F9FAFB' }}
         >
           <HeaderBar
             isLoggedIn={false}
@@ -462,7 +515,7 @@ function App() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: '#0B0E11', color: '#EAECEF' }}
+      style={{ background: 'var(--bg-secondary)', color: '#F9FAFB' }}
     >
       <HeaderBar
         isLoggedIn={!!user}
@@ -494,6 +547,10 @@ function App() {
             window.history.pushState({}, '', '/strategy')
             setRoute('/strategy')
             setCurrentPage('strategy')
+          } else if (page === 'tactics') {
+            window.history.pushState({}, '', '/tactics')
+            setRoute('/tactics')
+            setCurrentPage('tactics')
           } else if (page === 'faq') {
             window.history.pushState({}, '', '/faq')
             setRoute('/faq')
@@ -526,8 +583,16 @@ function App() {
           />
         ) : currentPage === 'backtest' ? (
           <BacktestPage />
+        ) : route === '/strategy/opus' ? (
+          <StrategyOpusPage />
+        ) : route === '/strategy/current' ? (
+          <StrategyCurrentPage />
         ) : currentPage === 'strategy' ? (
           <StrategyStudioPage />
+        ) : currentPage === 'cursor-strategy' ? (
+          <CursorStrategyPage />
+        ) : currentPage === 'tactics' ? (
+          <TacticsStudioPage />
         ) : currentPage === 'debate' ? (
           <DebateArenaPage />
         ) : (
@@ -551,7 +616,7 @@ function App() {
               setRoute('/traders')
               setCurrentPage('traders')
             }}
-            exchanges={exchanges}
+            brokerages={brokerages}
           />
         )}
       </main>
@@ -560,112 +625,12 @@ function App() {
       {currentPage !== 'debate' && (
         <footer
           className="mt-16"
-          style={{ borderTop: '1px solid #2B3139', background: '#181A20' }}
+          style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(22, 27, 34, 0.88)' }}
         >
           <div
             className="max-w-[1920px] mx-auto px-6 py-6 text-center text-sm"
-            style={{ color: '#5E6673' }}
+            style={{ color: '#6B7280' }}
           >
-            <p>{t('footerTitle', language)}</p>
-            <p className="mt-1">{t('footerWarning', language)}</p>
-            <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
-              {/* GitHub */}
-              <a
-                href={OFFICIAL_LINKS.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded text-sm font-semibold transition-all hover:scale-105"
-                style={{
-                  background: '#1E2329',
-                  color: '#848E9C',
-                  border: '1px solid #2B3139',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#2B3139'
-                  e.currentTarget.style.color = '#EAECEF'
-                  e.currentTarget.style.borderColor = '#F0B90B'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#1E2329'
-                  e.currentTarget.style.color = '#848E9C'
-                  e.currentTarget.style.borderColor = '#2B3139'
-                }}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-                </svg>
-                GitHub
-              </a>
-              {/* Twitter/X */}
-              <a
-                href={OFFICIAL_LINKS.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded text-sm font-semibold transition-all hover:scale-105"
-                style={{
-                  background: '#1E2329',
-                  color: '#848E9C',
-                  border: '1px solid #2B3139',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#2B3139'
-                  e.currentTarget.style.color = '#EAECEF'
-                  e.currentTarget.style.borderColor = '#1DA1F2'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#1E2329'
-                  e.currentTarget.style.color = '#848E9C'
-                  e.currentTarget.style.borderColor = '#2B3139'
-                }}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                Twitter
-              </a>
-              {/* Telegram */}
-              <a
-                href={OFFICIAL_LINKS.telegram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-2 rounded text-sm font-semibold transition-all hover:scale-105"
-                style={{
-                  background: '#1E2329',
-                  color: '#848E9C',
-                  border: '1px solid #2B3139',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#2B3139'
-                  e.currentTarget.style.color = '#EAECEF'
-                  e.currentTarget.style.borderColor = '#0088cc'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#1E2329'
-                  e.currentTarget.style.color = '#848E9C'
-                  e.currentTarget.style.borderColor = '#2B3139'
-                }}
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                </svg>
-                Telegram
-              </a>
-            </div>
           </div>
         </footer>
       )}
@@ -689,7 +654,7 @@ function TraderDetailsPage({
   selectedTraderId,
   onTraderSelect,
   onNavigateToTraders,
-  exchanges,
+  brokerages,
 }: {
   selectedTrader?: TraderInfo
   traders?: TraderInfo[]
@@ -706,7 +671,7 @@ function TraderDetailsPage({
   stats?: Statistics
   lastUpdate: string
   language: Language
-  exchanges?: Exchange[]
+  brokerages?: Brokerage[]
 }) {
   const [closingPosition, setClosingPosition] = useState<string | null>(null)
   const [selectedChartSymbol, setSelectedChartSymbol] = useState<
@@ -715,19 +680,19 @@ function TraderDetailsPage({
   const [chartUpdateKey, setChartUpdateKey] = useState<number>(0)
   const chartSectionRef = useRef<HTMLDivElement>(null)
 
-  // 平仓操作
+  // close positionaction
   const handleClosePosition = async (symbol: string, side: string) => {
     if (!selectedTraderId) return
 
     const confirmMsg =
-      language === 'zh'
-        ? `确定要平仓 ${symbol} ${side === 'LONG' ? '多仓' : '空仓'} 吗？`
+      false
+        ? `confirm toclose position ${symbol} ${side === 'LONG' ? 'multiposition' : 'emptyposition'} ?？`
         : `Are you sure you want to close ${symbol} ${side === 'LONG' ? 'LONG' : 'SHORT'} position?`
 
     const confirmed = await confirmToast(confirmMsg, {
-      title: language === 'zh' ? '确认平仓' : 'Confirm Close',
-      okText: language === 'zh' ? '确认' : 'Confirm',
-      cancelText: language === 'zh' ? '取消' : 'Cancel',
+      title: false ? 'confirmclose position' : 'Confirm Close',
+      okText: false ? 'confirm' : 'Confirm',
+      cancelText: false ? 'cancel' : 'Cancel',
     })
 
     if (!confirmed) return
@@ -736,9 +701,9 @@ function TraderDetailsPage({
     try {
       await api.closePosition(selectedTraderId, symbol, side)
       notify.success(
-        language === 'zh' ? '平仓成功' : 'Position closed successfully'
+        false ? 'close positionsuccess' : 'Position closed successfully'
       )
-      // 使用 SWR mutate 刷新数据而非重新加载页面
+      // Use SWR mutate refreshdatainstead ofre-LoadPage
       await Promise.all([
         mutate(`positions-${selectedTraderId}`),
         mutate(`account-${selectedTraderId}`),
@@ -747,8 +712,8 @@ function TraderDetailsPage({
       const errorMsg =
         err instanceof Error
           ? err.message
-          : language === 'zh'
-            ? '平仓失败'
+          : false
+            ? 'close positionfailed'
             : 'Failed to close position'
       notify.error(errorMsg)
     } finally {
@@ -764,13 +729,13 @@ function TraderDetailsPage({
           <div
             className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
             style={{
-              background: 'rgba(240, 185, 11, 0.1)',
-              border: '2px solid rgba(240, 185, 11, 0.3)',
+              background: 'var(--primary-bg, 0.1)',
+              border: '2px solid var(--primary-bg, 0.3)',
             }}
           >
             <svg
               className="w-12 h-12"
-              style={{ color: '#F0B90B' }}
+              style={{ color: 'var(--primary)' }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -785,12 +750,12 @@ function TraderDetailsPage({
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-bold mb-3" style={{ color: '#EAECEF' }}>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: '#F9FAFB' }}>
             {t('dashboardEmptyTitle', language)}
           </h2>
 
           {/* Description */}
-          <p className="text-base mb-6" style={{ color: '#848E9C' }}>
+          <p className="text-base mb-6" style={{ color: '#9CA3AF' }}>
             {t('dashboardEmptyDescription', language)}
           </p>
 
@@ -799,9 +764,9 @@ function TraderDetailsPage({
             onClick={onNavigateToTraders}
             className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95"
             style={{
-              background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-              color: '#0B0E11',
-              boxShadow: '0 4px 12px rgba(240, 185, 11, 0.3)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 12px var(--primary-bg, 0.3)',
             }}
           >
             {t('goToTradersPage', language)}
@@ -820,13 +785,13 @@ function TraderDetailsPage({
           <div
             className="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center"
             style={{
-              background: 'rgba(240, 185, 11, 0.1)',
-              border: '2px solid rgba(240, 185, 11, 0.3)',
+              background: 'var(--primary-bg, 0.1)',
+              border: '2px solid var(--primary-bg, 0.3)',
             }}
           >
             <svg
               className="w-12 h-12"
-              style={{ color: '#F0B90B' }}
+              style={{ color: 'var(--primary)' }}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -841,12 +806,12 @@ function TraderDetailsPage({
           </div>
 
           {/* Title */}
-          <h2 className="text-2xl font-bold mb-3" style={{ color: '#EAECEF' }}>
+          <h2 className="text-2xl font-bold mb-3" style={{ color: '#F9FAFB' }}>
             {t('dashboardEmptyTitle', language)}
           </h2>
 
           {/* Description */}
-          <p className="text-base mb-6" style={{ color: '#848E9C' }}>
+          <p className="text-base mb-6" style={{ color: '#9CA3AF' }}>
             {t('dashboardEmptyDescription', language)}
           </p>
 
@@ -855,9 +820,9 @@ function TraderDetailsPage({
             onClick={onNavigateToTraders}
             className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95"
             style={{
-              background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-              color: '#0B0E11',
-              boxShadow: '0 4px 12px rgba(240, 185, 11, 0.3)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 12px var(--primary-bg, 0.3)',
             }}
           >
             {t('goToTradersPage', language)}
@@ -903,15 +868,15 @@ function TraderDetailsPage({
         className="mb-6 rounded p-6 animate-scale-in"
         style={{
           background:
-            'linear-gradient(135deg, rgba(240, 185, 11, 0.15) 0%, rgba(252, 213, 53, 0.05) 100%)',
-          border: '1px solid rgba(240, 185, 11, 0.2)',
-          boxShadow: '0 0 30px rgba(240, 185, 11, 0.15)',
+            'linear-gradient(135deg, var(--primary-bg, 0.15) 0%, rgba(252, 213, 53, 0.05) 100%)',
+          border: '1px solid var(--primary-bg, 0.2)',
+          boxShadow: '0 0 30px var(--primary-bg, 0.15)',
         }}
       >
         <div className="flex items-start justify-between mb-3">
           <h2
             className="text-2xl font-bold flex items-center gap-3"
-            style={{ color: '#EAECEF' }}
+            style={{ color: '#F9FAFB' }}
           >
             <PunkAvatar
               seed={getTraderAvatar(
@@ -927,7 +892,7 @@ function TraderDetailsPage({
           {/* Trader Selector */}
           {traders && traders.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm" style={{ color: '#848E9C' }}>
+              <span className="text-sm" style={{ color: '#9CA3AF' }}>
                 {t('switchTrader', language)}:
               </span>
               <select
@@ -935,9 +900,9 @@ function TraderDetailsPage({
                 onChange={(e) => onTraderSelect(e.target.value)}
                 className="rounded px-3 py-2 text-sm font-medium cursor-pointer transition-colors"
                 style={{
-                  background: '#1E2329',
-                  border: '1px solid #2B3139',
-                  color: '#EAECEF',
+                  background: 'rgba(22, 27, 34, 0.88)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: '#F9FAFB',
                 }}
               >
                 {traders.map((trader) => (
@@ -951,38 +916,38 @@ function TraderDetailsPage({
         </div>
         <div
           className="flex items-center gap-4 text-sm flex-wrap"
-          style={{ color: '#848E9C' }}
+          style={{ color: '#9CA3AF' }}
         >
           <span>
             AI Model:{' '}
             <span
               className="font-semibold"
               style={{
-                color: selectedTrader.ai_model.includes('qwen')
+                color: (selectedTrader.ai_model || '').includes('qwen')
                   ? '#c084fc'
                   : '#60a5fa',
               }}
             >
               {getModelDisplayName(
-                selectedTrader.ai_model.split('_').pop() ||
-                  selectedTrader.ai_model
+                (selectedTrader.ai_model || '').split('_').pop() ||
+                selectedTrader.ai_model || 'Unknown'
               )}
             </span>
           </span>
           <span>•</span>
           <span>
-            Exchange:{' '}
-            <span className="font-semibold" style={{ color: '#EAECEF' }}>
-              {getExchangeDisplayNameFromList(
-                selectedTrader.exchange_id,
-                exchanges
+            Brokerage:{' '}
+            <span className="font-semibold" style={{ color: '#F9FAFB' }}>
+              {getBrokerageDisplayNameFromList(
+                selectedTrader.brokerage_id,
+                brokerages
               )}
             </span>
           </span>
           <span>•</span>
           <span>
             Strategy:{' '}
-            <span className="font-semibold" style={{ color: '#F0B90B' }}>
+            <span className="font-semibold" style={{ color: 'var(--primary)' }}>
               {selectedTrader.strategy_name || 'No Strategy'}
             </span>
           </span>
@@ -1000,10 +965,14 @@ function TraderDetailsPage({
       {/* Debug Info */}
       {account && (
         <div
-          className="mb-4 p-3 rounded text-xs font-mono"
-          style={{ background: '#1E2329', border: '1px solid #2B3139' }}
+          className="mb-4 p-3 rounded text-xs"
+          style={{
+            background: 'rgba(22, 27, 34, 0.88)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            fontFamily: 'Capsule Sans Text, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+          }}
         >
-          <div style={{ color: '#848E9C' }}>
+          <div style={{ color: '#9CA3AF' }}>
             🔄 Last Update: {lastUpdate} | Total Equity:{' '}
             {account?.total_equity?.toFixed(2) || '0.00'} | Available:{' '}
             {account?.available_balance?.toFixed(2) || '0.00'} | P&L:{' '}
@@ -1017,18 +986,18 @@ function TraderDetailsPage({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <StatCard
           title={t('totalEquity', language)}
-          value={`${account?.total_equity?.toFixed(2) || '0.00'} USDT`}
+          value={`${account?.total_equity?.toFixed(2) || '0.00'} `}
           change={account?.total_pnl_pct || 0}
           positive={(account?.total_pnl ?? 0) > 0}
         />
         <StatCard
           title={t('availableBalance', language)}
-          value={`${account?.available_balance?.toFixed(2) || '0.00'} USDT`}
+          value={`${account?.available_balance?.toFixed(2) || '0.00'} `}
           subtitle={`${account?.available_balance && account?.total_equity ? ((account.available_balance / account.total_equity) * 100).toFixed(1) : '0.0'}% ${t('free', language)}`}
         />
         <StatCard
           title={t('totalPnL', language)}
-          value={`${account?.total_pnl !== undefined && account.total_pnl >= 0 ? '+' : ''}${account?.total_pnl?.toFixed(2) || '0.00'} USDT`}
+          value={`${account?.total_pnl !== undefined && account.total_pnl >= 0 ? '+' : ''}${account?.total_pnl?.toFixed(2) || '0.00'} `}
           change={account?.total_pnl_pct || 0}
           positive={(account?.total_pnl ?? 0) >= 0}
         />
@@ -1039,9 +1008,9 @@ function TraderDetailsPage({
         />
       </div>
 
-      {/* 主要内容区：左右分屏 */}
+      {/* main content area：left right split */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* 左侧：图表 + 持仓 */}
+        {/* left：chart + position */}
         <div className="space-y-6">
           {/* Chart Tabs (Equity / K-line) */}
           <div
@@ -1053,9 +1022,9 @@ function TraderDetailsPage({
               traderId={selectedTrader.trader_id}
               selectedSymbol={selectedChartSymbol}
               updateKey={chartUpdateKey}
-              exchangeId={getExchangeTypeFromList(
-                selectedTrader.exchange_id,
-                exchanges
+              brokerageId={getBrokerageTypeFromList(
+                selectedTrader.brokerage_id,
+                brokerages
               )}
             />
           </div>
@@ -1068,7 +1037,7 @@ function TraderDetailsPage({
             <div className="flex items-center justify-between mb-5">
               <h2
                 className="text-xl font-bold flex items-center gap-2"
-                style={{ color: '#EAECEF' }}
+                style={{ color: '#F9FAFB' }}
               >
                 📈 {t('currentPositions', language)}
               </h2>
@@ -1076,9 +1045,9 @@ function TraderDetailsPage({
                 <div
                   className="text-xs px-3 py-1 rounded"
                   style={{
-                    background: 'rgba(240, 185, 11, 0.1)',
-                    color: '#F0B90B',
-                    border: '1px solid rgba(240, 185, 11, 0.2)',
+                    background: 'var(--primary-bg, 0.1)',
+                    color: 'var(--primary)',
+                    border: '1px solid var(--primary-bg, 0.2)',
                   }}
                 >
                   {positions.length} {t('active', language)}
@@ -1097,49 +1066,49 @@ function TraderDetailsPage({
                         {t('side', language)}
                       </th>
                       <th className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-center">
-                        {language === 'zh' ? '操作' : 'Action'}
+                        {false ? 'action' : 'Action'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-right"
                         title={t('entryPrice', language)}
                       >
-                        {language === 'zh' ? '入场价' : 'Entry'}
+                        {false ? 'entry price' : 'Entry'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-right"
                         title={t('markPrice', language)}
                       >
-                        {language === 'zh' ? '标记价' : 'Mark'}
+                        {false ? 'mark price' : 'Mark'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-right"
                         title={t('quantity', language)}
                       >
-                        {language === 'zh' ? '数量' : 'Qty'}
+                        {false ? 'count' : 'Qty'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-right"
                         title={t('positionValue', language)}
                       >
-                        {language === 'zh' ? '价值' : 'Value'}
+                        {false ? 'value' : 'Value'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-center"
-                        title={t('leverage', language)}
+                        title={t('margin', language)}
                       >
-                        {language === 'zh' ? '杠杆' : 'Lev.'}
+                        {false ? 'leverage' : 'Lev.'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-right"
                         title={t('unrealizedPnL', language)}
                       >
-                        {language === 'zh' ? '未实现盈亏' : 'uPnL'}
+                        {false ? 'unrealized PnL' : 'uPnL'}
                       </th>
                       <th
                         className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-right"
                         title={t('liqPrice', language)}
                       >
-                        {language === 'zh' ? '强平价' : 'Liq.'}
+                        {false ? 'liquidation price' : 'Liq.'}
                       </th>
                     </tr>
                   </thead>
@@ -1169,13 +1138,13 @@ function TraderDetailsPage({
                             style={
                               pos.side === 'long'
                                 ? {
-                                    background: 'rgba(14, 203, 129, 0.1)',
-                                    color: '#0ECB81',
-                                  }
+                                  background: 'rgba(14, 203, 129, 0.1)',
+                                  color: 'var(--primary)',
+                                }
                                 : {
-                                    background: 'rgba(246, 70, 93, 0.1)',
-                                    color: '#F6465D',
-                                  }
+                                  background: 'rgba(246, 70, 93, 0.1)',
+                                  color: '#F6465D',
+                                }
                             }
                           >
                             {t(
@@ -1197,7 +1166,7 @@ function TraderDetailsPage({
                             disabled={closingPosition === pos.symbol}
                             className="btn-danger inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
                             title={
-                              language === 'zh' ? '平仓' : 'Close Position'
+                              false ? 'close position' : 'Close Position'
                             }
                           >
                             {closingPosition === pos.symbol ? (
@@ -1205,44 +1174,44 @@ function TraderDetailsPage({
                             ) : (
                               <LogOut className="w-3 h-3" />
                             )}
-                            {language === 'zh' ? '平仓' : 'Close'}
+                            {false ? 'close position' : 'Close'}
                           </button>
                         </td>
                         <td
                           className="px-1 py-3 font-mono whitespace-nowrap text-right"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {pos.entry_price.toFixed(4)}
                         </td>
                         <td
                           className="px-1 py-3 font-mono whitespace-nowrap text-right"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {pos.mark_price.toFixed(4)}
                         </td>
                         <td
                           className="px-1 py-3 font-mono whitespace-nowrap text-right"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {pos.quantity.toFixed(4)}
                         </td>
                         <td
                           className="px-1 py-3 font-mono font-bold whitespace-nowrap text-right"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {(pos.quantity * pos.mark_price).toFixed(2)}
                         </td>
                         <td
                           className="px-1 py-3 font-mono whitespace-nowrap text-center"
-                          style={{ color: '#F0B90B' }}
+                          style={{ color: 'var(--primary)' }}
                         >
-                          {pos.leverage}x
+                          {pos.margin}x
                         </td>
                         <td className="px-1 py-3 font-mono whitespace-nowrap text-right">
                           <span
                             style={{
                               color:
-                                pos.unrealized_pnl >= 0 ? '#0ECB81' : '#F6465D',
+                                pos.unrealized_pnl >= 0 ? 'var(--primary)' : '#F6465D',
                               fontWeight: 'bold',
                             }}
                           >
@@ -1252,7 +1221,7 @@ function TraderDetailsPage({
                         </td>
                         <td
                           className="px-1 py-3 font-mono whitespace-nowrap text-right"
-                          style={{ color: '#848E9C' }}
+                          style={{ color: '#9CA3AF' }}
                         >
                           {pos.liquidation_price.toFixed(4)}
                         </td>
@@ -1262,7 +1231,7 @@ function TraderDetailsPage({
                 </table>
               </div>
             ) : (
-              <div className="text-center py-16" style={{ color: '#848E9C' }}>
+              <div className="text-center py-16" style={{ color: '#9CA3AF' }}>
                 <div className="text-6xl mb-4 opacity-50">📊</div>
                 <div className="text-lg font-semibold mb-2">
                   {t('noPositions', language)}
@@ -1274,45 +1243,45 @@ function TraderDetailsPage({
             )}
           </div>
         </div>
-        {/* 左侧结束 */}
+        {/* leftend */}
 
-        {/* 右侧：Recent Decisions - 卡片容器 */}
+        {/* right：Recent Decisions - cardcontentmanager */}
         <div
           className="binance-card p-6 animate-slide-in h-fit lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)]"
           style={{ animationDelay: '0.2s' }}
         >
-          {/* 标题 */}
+          {/* title */}
           <div
             className="flex items-center gap-3 mb-5 pb-4 border-b"
-            style={{ borderColor: '#2B3139' }}
+            style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
               style={{
-                background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                background: 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)',
                 boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)',
               }}
             >
               🧠
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold" style={{ color: '#EAECEF' }}>
+              <h2 className="text-xl font-bold" style={{ color: '#F9FAFB' }}>
                 {t('recentDecisions', language)}
               </h2>
               {decisions && decisions.length > 0 && (
-                <div className="text-xs" style={{ color: '#848E9C' }}>
+                <div className="text-xs" style={{ color: '#9CA3AF' }}>
                   {t('lastCycles', language, { count: decisions.length })}
                 </div>
               )}
             </div>
-            {/* 数量选择器 */}
+            {/* countSelectmanager */}
             <select
               value={decisionsLimit}
               onChange={(e) => onDecisionsLimitChange(Number(e.target.value))}
               className="px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all"
               style={{
-                background: '#2B3139',
-                color: '#EAECEF',
+                background: 'rgba(255, 255, 255, 0.08)',
+                color: '#F9FAFB',
                 border: '1px solid #3C4043',
               }}
             >
@@ -1324,7 +1293,7 @@ function TraderDetailsPage({
             </select>
           </div>
 
-          {/* 决策列表 - 可滚动 */}
+          {/* decisionlist - scrollable */}
           <div
             className="space-y-4 overflow-y-auto pr-2"
             style={{ maxHeight: 'calc(100vh - 280px)' }}
@@ -1338,18 +1307,18 @@ function TraderDetailsPage({
                 <div className="text-6xl mb-4 opacity-30">🧠</div>
                 <div
                   className="text-lg font-semibold mb-2"
-                  style={{ color: '#EAECEF' }}
+                  style={{ color: '#F9FAFB' }}
                 >
                   {t('noDecisionsYet', language)}
                 </div>
-                <div className="text-sm" style={{ color: '#848E9C' }}>
+                <div className="text-sm" style={{ color: '#9CA3AF' }}>
                   {t('aiDecisionsWillAppear', language)}
                 </div>
               </div>
             )}
           </div>
         </div>
-        {/* 右侧结束 */}
+        {/* rightend */}
       </div>
     </div>
   )
@@ -1373,13 +1342,13 @@ function StatCard({
     <div className="stat-card animate-fade-in">
       <div
         className="text-xs mb-2 mono uppercase tracking-wider"
-        style={{ color: '#848E9C' }}
+        style={{ color: '#9CA3AF' }}
       >
         {title}
       </div>
       <div
         className="text-2xl font-bold mb-1 mono"
-        style={{ color: '#EAECEF' }}
+        style={{ color: '#F9FAFB' }}
       >
         {value}
       </div>
@@ -1387,7 +1356,7 @@ function StatCard({
         <div className="flex items-center gap-1">
           <div
             className="text-sm mono font-bold"
-            style={{ color: positive ? '#0ECB81' : '#F6465D' }}
+            style={{ color: positive ? 'var(--primary)' : '#F6465D' }}
           >
             {positive ? '▲' : '▼'} {positive ? '+' : ''}
             {change.toFixed(2)}%
@@ -1395,7 +1364,7 @@ function StatCard({
         </div>
       )}
       {subtitle && (
-        <div className="text-xs mt-2 mono" style={{ color: '#848E9C' }}>
+        <div className="text-xs mt-2 mono" style={{ color: '#9CA3AF' }}>
           {subtitle}
         </div>
       )}

@@ -3,8 +3,8 @@ package api
 import (
 	"log"
 	"net/http"
-	"nofx/config"
-	"nofx/crypto"
+	"SynapseStrike/config"
+	"SynapseStrike/crypto"
 
 	"github.com/gin-gonic/gin"
 )

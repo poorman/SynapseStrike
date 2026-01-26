@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strconv"
 	"strings"
 	"sync"
@@ -1094,5 +1094,5 @@ func (t *BitgetTrader) clearCache() {
 func genBitgetClientOid() string {
 	timestamp := time.Now().UnixNano() % 10000000000000
 	rand := time.Now().Nanosecond() % 100000
-	return fmt.Sprintf("nofx%d%05d", timestamp, rand)
+	return fmt.Sprintf("synapsestrike%d%05d", timestamp, rand)
 }

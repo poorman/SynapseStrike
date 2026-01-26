@@ -8,22 +8,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 interface ChartTabsProps {
   traderId: string
-  selectedSymbol?: string // 从外部选择的币种
-  updateKey?: number // 强制更新的 key
-  exchangeId?: string // 交易所ID
+  selectedSymbol?: string // fromexternalSelect'ssymbol
+  updateKey?: number // forceUpdate's key
+  brokerageId?: string // brokerageID
 }
 
 type ChartTab = 'equity' | 'kline'
 
-export function ChartTabs({ traderId, selectedSymbol, updateKey, exchangeId }: ChartTabsProps) {
+export function ChartTabs({ traderId, selectedSymbol, updateKey, brokerageId }: ChartTabsProps) {
   const { language } = useLanguage()
   const [activeTab, setActiveTab] = useState<ChartTab>('equity')
-  const [chartSymbol, setChartSymbol] = useState<string>('BTCUSDT')
+  const [chartSymbol, setChartSymbol] = useState<string>('AAPL')
 
-  // 当从外部选择币种时，自动切换到K线图
+  // whenfromexternalSelectsymbolwhen，auto switch toKline chart
   useEffect(() => {
     if (selectedSymbol) {
-      console.log('[ChartTabs] 收到币种选择:', selectedSymbol, 'updateKey:', updateKey)
+      console.log('[ChartTabs] receivedsymbolSelect:', selectedSymbol, 'updateKey:', updateKey)
       setChartSymbol(selectedSymbol)
       setActiveTab('kline')
     }
@@ -33,12 +33,12 @@ export function ChartTabs({ traderId, selectedSymbol, updateKey, exchangeId }: C
 
   return (
     <div className="binance-card">
-      {/* Tab Headers - 这是Tab切换按钮区域 */}
+      {/* Tab Headers - this isTabtoggle button area */}
       <div
         className="flex items-center gap-2 p-3"
         style={{
-          borderBottom: '1px solid #2B3139',
-          background: '#0B0E11',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'var(--bg-secondary)',
         }}
       >
         <button
@@ -48,7 +48,7 @@ export function ChartTabs({ traderId, selectedSymbol, updateKey, exchangeId }: C
           }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'equity'
             ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 shadow-[0_0_10px_rgba(252,213,53,0.15)]'
-            : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+            : 'text-gray-400 hover:text-white hover:bg-[var(--bg-secondary)]/5 border border-transparent'
             }`}
         >
           <BarChart3 className="w-4 h-4" />
@@ -62,7 +62,7 @@ export function ChartTabs({ traderId, selectedSymbol, updateKey, exchangeId }: C
           }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'kline'
             ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 shadow-[0_0_10px_rgba(252,213,53,0.15)]'
-            : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+            : 'text-gray-400 hover:text-white hover:bg-[var(--bg-secondary)]/5 border border-transparent'
             }`}
         >
           <CandlestickChart className="w-4 h-4" />
@@ -86,7 +86,7 @@ export function ChartTabs({ traderId, selectedSymbol, updateKey, exchangeId }: C
             </motion.div>
           ) : (
             <motion.div
-              key={`kline-${chartSymbol}-${exchangeId}`}
+              key={`kline-${chartSymbol}-${brokerageId}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -97,8 +97,8 @@ export function ChartTabs({ traderId, selectedSymbol, updateKey, exchangeId }: C
                 height={400}
                 embedded
                 defaultSymbol={chartSymbol}
-                defaultExchange={exchangeId}
-                key={`${chartSymbol}-${exchangeId}-${updateKey || ''}`}
+                defaultBrokerage={brokerageId}
+                key={`${chartSymbol}-${brokerageId}-${updateKey || ''}`}
               />
             </motion.div>
           )}

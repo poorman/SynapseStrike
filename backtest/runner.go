@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"nofx/decision"
-	"nofx/market"
-	"nofx/mcp"
-	"nofx/store"
+	"SynapseStrike/decision"
+	"SynapseStrike/market"
+	"SynapseStrike/mcp"
+	"SynapseStrike/store"
 )
 
 var (
@@ -491,9 +491,9 @@ func (r *Runner) buildDecisionContext(ts int64, marketData map[string]*market.Da
 
 	positions := r.convertPositions(priceMap)
 
-	candidateCoins := make([]decision.CandidateCoin, 0, len(r.cfg.Symbols))
+	candidateStocks := make([]decision.CandidateStock, 0, len(r.cfg.Symbols))
 	for _, sym := range r.cfg.Symbols {
-		candidateCoins = append(candidateCoins, decision.CandidateCoin{Symbol: sym})
+		candidateStocks = append(candidateStocks, decision.CandidateStock{Symbol: sym})
 	}
 
 	runtime := int((ts - int64(r.cfg.StartTS*1000)) / 60000)
@@ -503,12 +503,12 @@ func (r *Runner) buildDecisionContext(ts int64, marketData map[string]*market.Da
 		CallCount:       callCount,
 		Account:         accountInfo,
 		Positions:       positions,
-		CandidateCoins:  candidateCoins,
+		CandidateStocks:  candidateStocks,
 		PromptVariant:   r.cfg.PromptVariant,
 		MarketDataMap:   marketData,
 		MultiTFMarket:   multiTF,
-		BTCETHLeverage:  r.cfg.Leverage.BTCETHLeverage,
-		AltcoinLeverage: r.cfg.Leverage.AltcoinLeverage,
+		LargeCapLeverage:  r.cfg.Leverage.LargeCapLeverage,
+		SmallCapLeverage: r.cfg.Leverage.SmallCapLeverage,
 		Timeframes:      r.cfg.Timeframes,
 	}
 
@@ -520,11 +520,11 @@ func (r *Runner) buildDecisionContext(ts int64, marketData map[string]*market.Da
 			PositionCount:         accountInfo.PositionCount,
 			MarginUsedPct:         accountInfo.MarginUsedPct,
 		},
-		CandidateCoins: make([]string, 0, len(candidateCoins)),
+		CandidateCoins: make([]string, 0, len(candidateStocks)),
 		Positions:      r.snapshotPositions(priceMap),
 	}
-	for _, coin := range candidateCoins {
-		record.CandidateCoins = append(record.CandidateCoins, coin.Symbol)
+	for _, stock := range candidateStocks {
+		record.CandidateCoins = append(record.CandidateCoins, stock.Symbol)
 	}
 	record.Timestamp = time.UnixMilli(ts).UTC()
 
@@ -736,12 +736,12 @@ func (r *Runner) resolveLeverage(requested int, symbol string) int {
 	}
 	sym := strings.ToUpper(symbol)
 	if sym == "BTCUSDT" || sym == "ETHUSDT" {
-		if r.cfg.Leverage.BTCETHLeverage > 0 {
-			return r.cfg.Leverage.BTCETHLeverage
+		if r.cfg.Leverage.LargeCapLeverage > 0 {
+			return r.cfg.Leverage.LargeCapLeverage
 		}
 	} else {
-		if r.cfg.Leverage.AltcoinLeverage > 0 {
-			return r.cfg.Leverage.AltcoinLeverage
+		if r.cfg.Leverage.SmallCapLeverage > 0 {
+			return r.cfg.Leverage.SmallCapLeverage
 		}
 	}
 	return 5

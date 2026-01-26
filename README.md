@@ -1,4 +1,4 @@
-# NOFX - Agentic Trading OS
+# SynapseStrike - Agentic Trading OS
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org/)
@@ -17,7 +17,7 @@
 
 ## AI-Powered Crypto Trading Platform
 
-**NOFX** is an open-source AI trading system that lets you run multiple AI models to trade crypto futures automatically. Configure strategies through a web interface, monitor performance in real-time, and let AI agents compete to find the best trading approach.
+**SynapseStrike** is an open-source AI trading system that lets you run multiple AI models to trade crypto futures automatically. Configure strategies through a web interface, monitor performance in real-time, and let AI agents compete to find the best trading approach.
 
 ### Core Features
 
@@ -34,13 +34,13 @@
 ### Core Team
 
 - **Tinkle** - [@Web3Tinkle](https://x.com/Web3Tinkle)
-- **Official Twitter** - [@nofx_official](https://x.com/nofx_official)
+- **Official Twitter** - [@SynapseStrike_official](https://x.com/SynapseStrike_official)
 
 > **Risk Warning**: This system is experimental. AI auto-trading carries significant risks. Strongly recommended for learning/research purposes or testing with small amounts only!
 
 ## Developer Community
 
-Join our Telegram developer community: **[NOFX Developer Community](https://t.me/nofx_dev_community)**
+Join our Telegram developer community: **[SynapseStrike Developer Community](https://t.me/SynapseStrike_dev_community)**
 
 ---
 
@@ -83,7 +83,7 @@ Join our Telegram developer community: **[NOFX Developer Community](https://t.me
 
 | Exchange | Status | Register (Fee Discount) |
 |----------|--------|-------------------------|
-| **Binance** | ✅ Supported | [Register](https://www.binance.com/join?ref=NOFXENG) |
+| **Binance** | ✅ Supported | [Register](https://www.binance.com/join?ref=SynapseStrikeENG) |
 | **Bybit** | ✅ Supported | [Register](https://partner.bybit.com/b/83856) |
 | **OKX** | ✅ Supported | [Register](https://www.okx.com/join/1865360) |
 | **Bitget** | ✅ Supported | [Register](https://www.bitget.com/referral/register?from=referral&clacCode=c8a43172) |
@@ -118,7 +118,7 @@ Join our Telegram developer community: **[NOFX Developer Community](https://t.me
 
 **Linux / macOS:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/install.sh | bash
 ```
 
 That's it! Open **http://127.0.0.1:3000** in your browser.
@@ -127,7 +127,7 @@ That's it! Open **http://127.0.0.1:3000** in your browser.
 
 ```bash
 # Download and start
-curl -O https://raw.githubusercontent.com/NoFxAiOS/nofx/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/docker-compose.prod.yml
 docker compose -f docker-compose.prod.yml up -d
 ```
 
@@ -162,8 +162,8 @@ sudo apt-get install libta-lib0-dev
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/SynapseStrike/SynapseStrike.git
+cd SynapseStrike
 
 # 2. Install backend dependencies
 go mod download
@@ -174,8 +174,8 @@ npm install
 cd ..
 
 # 4. Build and start backend
-go build -o nofx
-./nofx
+go build -o SynapseStrike
+./SynapseStrike
 
 # 5. Start frontend (new terminal)
 cd web
@@ -195,10 +195,10 @@ Access Web Interface: **http://127.0.0.1:3000**
    - Run the installer and restart your computer
    - Start Docker Desktop and wait for it to be ready
 
-2. **Run NOFX**
+2. **Run SynapseStrike**
    ```powershell
    # Open PowerShell and run:
-   curl -o docker-compose.prod.yml https://raw.githubusercontent.com/NoFxAiOS/nofx/main/docker-compose.prod.yml
+   curl -o docker-compose.prod.yml https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/docker-compose.prod.yml
    docker compose -f docker-compose.prod.yml up -d
    ```
 
@@ -240,13 +240,13 @@ Access Web Interface: **http://127.0.0.1:3000**
    sudo apt-get install -y git
    ```
 
-4. **Clone and Run NOFX**
+4. **Clone and Run SynapseStrike**
    ```bash
-   git clone https://github.com/NoFxAiOS/nofx.git
-   cd nofx
+   git clone https://github.com/SynapseStrike/SynapseStrike.git
+   cd SynapseStrike
 
    # Build and run backend
-   go build -o nofx && ./nofx
+   go build -o SynapseStrike && ./SynapseStrike
 
    # In another terminal, run frontend
    cd web && npm install && npm run dev
@@ -262,7 +262,7 @@ Access Web Interface: **http://127.0.0.1:3000**
 
 2. **Run from WSL2 terminal**
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/install.sh | bash
    ```
 
 ---
@@ -271,11 +271,11 @@ Access Web Interface: **http://127.0.0.1:3000**
 
 ### Quick Deploy (HTTP via IP)
 
-By default, transport encryption is **disabled**, allowing you to access NOFX via IP address without HTTPS:
+By default, transport encryption is **disabled**, allowing you to access SynapseStrike via IP address without HTTPS:
 
 ```bash
 # Deploy to your server
-curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/install.sh | bash
 ```
 
 Access via `http://YOUR_SERVER_IP:3000` - works immediately.
@@ -300,7 +300,7 @@ When enabled, browser uses Web Crypto API to encrypt API keys before transmissio
 
 2. **Create DNS record**
    - Type: `A`
-   - Name: `nofx` (or your subdomain)
+   - Name: `SynapseStrike` (or your subdomain)
    - Content: Your server IP
    - Proxy status: **Proxied** (orange cloud)
 
@@ -318,7 +318,7 @@ When enabled, browser uses Web Crypto API to encrypt API keys before transmissio
    TRANSPORT_ENCRYPTION=true
    ```
 
-5. **Done!** Access via `https://nofx.yourdomain.com`
+5. **Done!** Access via `https://SynapseStrike.yourdomain.com`
 
 ---
 
@@ -423,9 +423,9 @@ We welcome contributions! See:
 
 ## Contributor Airdrop Program
 
-All contributions are tracked on GitHub. When NOFX generates revenue, contributors will receive airdrops based on their contributions.
+All contributions are tracked on GitHub. When SynapseStrike generates revenue, contributors will receive airdrops based on their contributions.
 
-**PRs that resolve [Pinned Issues](https://github.com/NoFxAiOS/nofx/issues) receive the HIGHEST rewards!**
+**PRs that resolve [Pinned Issues](https://github.com/SynapseStrike/SynapseStrike/issues) receive the HIGHEST rewards!**
 
 | Contribution Type | Weight |
 |------------------|:------:|
@@ -440,11 +440,11 @@ All contributions are tracked on GitHub. When NOFX generates revenue, contributo
 
 ## Contact
 
-- **GitHub Issues**: [Submit an Issue](https://github.com/NoFxAiOS/nofx/issues)
-- **Developer Community**: [Telegram Group](https://t.me/nofx_dev_community)
+- **GitHub Issues**: [Submit an Issue](https://github.com/SynapseStrike/SynapseStrike/issues)
+- **Developer Community**: [Telegram Group](https://t.me/SynapseStrike_dev_community)
 
 ---
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NoFxAiOS/nofx&type=Date)](https://star-history.com/#NoFxAiOS/nofx&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=SynapseStrike/SynapseStrike&type=Date)](https://star-history.com/#SynapseStrike/SynapseStrike&Date)

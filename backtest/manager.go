@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"os"
 	"sort"
 	"strings"
 	"sync"
 
-	"nofx/mcp"
-	"nofx/store"
+	"SynapseStrike/mcp"
+	"SynapseStrike/store"
 )
 
 type Manager struct {

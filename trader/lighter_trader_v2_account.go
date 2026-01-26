@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strconv"
 	"strings"
 )

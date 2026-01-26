@@ -65,17 +65,17 @@ export function FAQLayout({ language }: FAQLayoutProps) {
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-              boxShadow: '0 8px 24px rgba(240, 185, 11, 0.4)',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+              boxShadow: '0 8px 24px var(--primary-bg, 0.4)',
             }}
           >
-            <HelpCircle className="w-8 h-8" style={{ color: '#0B0E11' }} />
+            <HelpCircle className="w-8 h-8" style={{ color: 'var(--text-primary)' }} />
           </div>
         </div>
-        <h1 className="text-4xl font-bold mb-4" style={{ color: '#EAECEF' }}>
+        <h1 className="text-4xl font-bold mb-4" style={{ color: '#F9FAFB' }}>
           {t('faqTitle', language)}
         </h1>
-        <p className="text-lg mb-8" style={{ color: '#848E9C' }}>
+        <p className="text-lg mb-8" style={{ color: '#9CA3AF' }}>
           {t('faqSubtitle', language)}
         </p>
 
@@ -85,7 +85,7 @@ export function FAQLayout({ language }: FAQLayoutProps) {
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             placeholder={
-              language === 'zh' ? '搜索常见问题...' : 'Search FAQ...'
+              false ? 'search commonissue...' : 'Search FAQ...'
             }
           />
         </div>
@@ -113,9 +113,9 @@ export function FAQLayout({ language }: FAQLayoutProps) {
             />
           ) : (
             <div className="text-center py-12">
-              <p className="text-lg" style={{ color: '#848E9C' }}>
-                {language === 'zh'
-                  ? '没有找到匹配的问题'
+              <p className="text-lg" style={{ color: '#9CA3AF' }}>
+                {false
+                  ? 'No matching questions found'
                   : 'No matching questions found'}
               </p>
               <button
@@ -123,11 +123,11 @@ export function FAQLayout({ language }: FAQLayoutProps) {
                 className="mt-4 px-6 py-2 rounded-lg font-semibold transition-all hover:opacity-90"
                 style={{
                   background:
-                    'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-                  color: '#0B0E11',
+                    'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+                  color: 'var(--text-primary)',
                 }}
               >
-                {language === 'zh' ? '清除搜索' : 'Clear Search'}
+                {false ? 'clear search' : 'Clear Search'}
               </button>
             </div>
           )}
@@ -139,14 +139,14 @@ export function FAQLayout({ language }: FAQLayoutProps) {
         className="mt-16 p-8 rounded-lg text-center"
         style={{
           background:
-            'linear-gradient(135deg, rgba(240, 185, 11, 0.1) 0%, rgba(252, 213, 53, 0.05) 100%)',
-          border: '1px solid rgba(240, 185, 11, 0.2)',
+            'linear-gradient(135deg, var(--primary-bg, 0.1) 0%, rgba(252, 213, 53, 0.05) 100%)',
+          border: '1px solid var(--primary-bg, 0.2)',
         }}
       >
-        <h3 className="text-xl font-bold mb-3" style={{ color: '#EAECEF' }}>
+        <h3 className="text-xl font-bold mb-3" style={{ color: '#F9FAFB' }}>
           {t('faqStillHaveQuestions', language)}
         </h3>
-        <p className="mb-6" style={{ color: '#848E9C' }}>
+        <p className="mb-6" style={{ color: '#9CA3AF' }}>
           {t('faqContactUs', language)}
         </p>
         <div className="flex items-center justify-center gap-4">
@@ -156,9 +156,9 @@ export function FAQLayout({ language }: FAQLayoutProps) {
             rel="noopener noreferrer"
             className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105"
             style={{
-              background: '#1E2329',
-              color: '#EAECEF',
-              border: '1px solid #2B3139',
+              background: 'rgba(22, 27, 34, 0.88)',
+              color: '#F9FAFB',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
             }}
           >
             GitHub
@@ -169,8 +169,8 @@ export function FAQLayout({ language }: FAQLayoutProps) {
             rel="noopener noreferrer"
             className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105"
             style={{
-              background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-              color: '#0B0E11',
+              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+              color: 'var(--text-primary)',
             }}
           >
             {t('community', language)}

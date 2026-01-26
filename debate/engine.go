@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"nofx/decision"
-	"nofx/logger"
-	"nofx/market"
-	"nofx/mcp"
-	"nofx/store"
+	"SynapseStrike/decision"
+	"SynapseStrike/logger"
+	"SynapseStrike/market"
+	"SynapseStrike/mcp"
+	"SynapseStrike/store"
 )
 
 // TraderExecutor interface for executing trades
@@ -97,6 +97,8 @@ func (e *DebateEngine) InitializeClients(participants []*store.DebateParticipant
 			client = mcp.NewGrokClient()
 		case "kimi":
 			client = mcp.NewKimiClient()
+		case "localai":
+			client = mcp.NewLocalAIClient()
 		default:
 			client = mcp.New()
 		}
@@ -292,14 +294,14 @@ func (e *DebateEngine) runDebate(session *store.DebateSessionWithDetails, strate
 func (e *DebateEngine) buildMarketContext(session *store.DebateSessionWithDetails, strategyEngine *decision.StrategyEngine) (*decision.Context, error) {
 	config := strategyEngine.GetConfig()
 
-	// Get candidate coins
-	candidates, err := strategyEngine.GetCandidateCoins()
+	// Get candidate stocks
+	candidates, err := strategyEngine.GetCandidateStocks()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get candidates: %w", err)
 	}
 
 	if len(candidates) == 0 {
-		return nil, fmt.Errorf("no candidate coins found")
+		return nil, fmt.Errorf("no candidate stocks found")
 	}
 
 	// Get timeframe settings
@@ -312,13 +314,13 @@ func (e *DebateEngine) buildMarketContext(session *store.DebateSessionWithDetail
 
 	// Fetch market data for each candidate
 	marketDataMap := make(map[string]*market.Data)
-	for _, coin := range candidates {
-		data, err := market.GetWithTimeframes(coin.Symbol, timeframes, primaryTimeframe, klineCount)
+	for _, stock := range candidates {
+		data, err := market.GetWithTimeframes(stock.Symbol, timeframes, primaryTimeframe, klineCount)
 		if err != nil {
-			logger.Warnf("Failed to get market data for %s: %v", coin.Symbol, err)
+			logger.Warnf("Failed to get market data for %s: %v", stock.Symbol, err)
 			continue
 		}
-		marketDataMap[coin.Symbol] = data
+		marketDataMap[stock.Symbol] = data
 	}
 
 	if len(marketDataMap) == 0 {
@@ -350,12 +352,12 @@ func (e *DebateEngine) buildMarketContext(session *store.DebateSessionWithDetail
 			MarginUsedPct:    0,
 			PositionCount:    0,
 		},
-		Positions:      []decision.PositionInfo{},
-		CandidateCoins: candidates,
-		PromptVariant:  session.PromptVariant,
-		MarketDataMap:  marketDataMap,
-		QuantDataMap:   quantDataMap,
-		OIRankingData:  oiRankingData,
+		Positions:       []decision.PositionInfo{},
+		CandidateStocks: candidates,
+		PromptVariant:   session.PromptVariant,
+		MarketDataMap:   marketDataMap,
+		QuantDataMap:    quantDataMap,
+		OIRankingData:   oiRankingData,
 	}
 
 	return ctx, nil
@@ -375,48 +377,49 @@ You are participating in a multi-AI market debate as %s %s.
 %s
 
 ### Debate Rules:
-1. Analyze ALL candidate coins provided in the market data
+1. Analyze ALL candidate stocks provided in the market data
 2. Support your arguments with specific data points and indicators
 3. If this is round 2 or later, respond to other participants' arguments
 4. Be persuasive but data-driven
 5. Your personality should influence your analysis bias but not override data
-6. You can recommend multiple coins with different actions
+6. You can recommend multiple stocks with different actions
 
 ### CRITICAL: Output Format (MUST follow exactly)
 
 First write your analysis:
 <reasoning>
-- Your market analysis for each coin with specific data references
+- Your market analysis for each stock with specific data references
 - Your main trading thesis and arguments
 - Response to other participants (if round > 1)
 </reasoning>
 
-Then output your decisions in STRICT JSON ARRAY format (can include multiple coins):
+Then output your decisions in STRICT JSON ARRAY format (can include multiple stocks):
 <decision>
 [
-  {"symbol": "BTCUSDT", "action": "open_long", "confidence": 75, "leverage": 5, "position_pct": 0.3, "stop_loss": 0.02, "take_profit": 0.04, "reasoning": "BTC showing strength"},
-  {"symbol": "ETHUSDT", "action": "open_short", "confidence": 80, "leverage": 3, "position_pct": 0.2, "stop_loss": 0.03, "take_profit": 0.06, "reasoning": "ETH bearish divergence"},
-  {"symbol": "SOLUSDT", "action": "wait", "confidence": 60, "reasoning": "SOL needs more confirmation"}
+  {"symbol": "AAPL", "action": "open_long", "confidence": 75, "leverage": 2, "position_pct": 0.3, "stop_loss": 0.02, "take_profit": 0.04, "reasoning": "Apple showing strength"},
+  {"symbol": "TSLA", "action": "open_short", "confidence": 80, "leverage": 2, "position_pct": 0.2, "stop_loss": 0.03, "take_profit": 0.06, "reasoning": "Tesla bearish divergence"},
+  {"symbol": "NVDA", "action": "wait", "confidence": 60, "reasoning": "NVDA needs more confirmation"}
 ]
 </decision>
 
 ### IMPORTANT: action field MUST be exactly one of:
-- "open_long" (做多/买入)
-- "open_short" (做空/卖出)
-- "close_long" (平多仓)
-- "close_short" (平空仓)
-- "hold" (持仓观望)
-- "wait" (空仓等待)
+- "open_long" (buy long position)
+- "open_short" (sell short position)
+- "close_long" (close long position)
+- "close_short" (close short position)
+- "hold" (hold current position)
+- "wait" (no position, wait for better entry)
 
-### Field Requirements for each coin:
-- symbol: REQUIRED, the trading pair
+### Field Requirements for each stock:
+- symbol: REQUIRED, the stock ticker (e.g., AAPL, TSLA, NVDA)
 - action: REQUIRED, exactly one of the above values
 - confidence: REQUIRED, integer 0-100
-- leverage: REQUIRED for open_long/open_short, integer 1-20
+- leverage: REQUIRED for open_long/open_short, integer 1-5 (for stocks typically 1-2)
 - position_pct: REQUIRED for open_long/open_short, float 0.1-1.0
 - stop_loss: REQUIRED for open_long/open_short, float 0.01-0.10 (percentage as decimal)
 - take_profit: REQUIRED for open_long/open_short, float 0.02-0.20 (percentage as decimal)
 - reasoning: REQUIRED, one sentence summary
+
 
 ---
 
@@ -499,13 +502,19 @@ func (e *DebateEngine) getParticipantResponse(
 	// Parse multiple decisions from response
 	decisions, confidence := parseDecisions(response)
 
-	// Validate and fix symbols - if session has a specific symbol, force all decisions to use it
+	// Validate and fix symbols - only force symbol if session has a specific one set
+	// If session.Symbol is empty, we're in multi-stock mode so preserve all AI decisions
 	if session.Symbol != "" {
 		for _, d := range decisions {
 			if d.Symbol == "" || d.Symbol != session.Symbol {
 				logger.Warnf("[Debate] Fixing invalid symbol in message '%s' -> '%s'", d.Symbol, session.Symbol)
 				d.Symbol = session.Symbol
 			}
+		}
+	} else {
+		// Multi-stock mode - log all stock decisions
+		for _, d := range decisions {
+			logger.Infof("[Debate] Multi-stock decision: %s %s (confidence: %d%%)", d.Symbol, d.Action, d.Confidence)
 		}
 	}
 
@@ -592,15 +601,18 @@ func (e *DebateEngine) getParticipantVote(
 	// Parse multi-coin votes
 	decisions, avgConfidence := parseDecisions(response)
 
-	// Validate and fix symbols - if session has a specific symbol, force all decisions to use it
-	// This prevents AI from hallucinating random symbols not in the candidate list
+	// Validate symbols - only force symbol if session has a specific one set
+	// In multi-stock mode (empty symbol), preserve AI's decisions for all stocks
 	if session.Symbol != "" {
 		for _, d := range decisions {
 			if d.Symbol == "" || d.Symbol != session.Symbol {
-				logger.Warnf("[Debate] Fixing invalid symbol '%s' -> '%s'", d.Symbol, session.Symbol)
+				logger.Warnf("[Debate] Vote: Fixing invalid symbol '%s' -> '%s'", d.Symbol, session.Symbol)
 				d.Symbol = session.Symbol
 			}
 		}
+	} else {
+		// Multi-stock mode - preserve all stock votes
+		logger.Infof("[Debate] Multi-stock vote with %d decisions", len(decisions))
 	}
 
 	// Find primary decision (for backward compatibility)
@@ -612,10 +624,10 @@ func (e *DebateEngine) getParticipantVote(
 	// If no valid decisions, create a default one with session symbol
 	if primaryDecision == nil && session.Symbol != "" {
 		primaryDecision = &store.DebateDecision{
-			Action:     "hold",
-			Symbol:     session.Symbol,
-			Confidence: 50,
-			Leverage:   5,
+			Action:      "hold",
+			Symbol:      session.Symbol,
+			Confidence:  50,
+			Leverage:    5,
 			PositionPct: 0.2,
 		}
 		decisions = []*store.DebateDecision{primaryDecision}
@@ -660,7 +672,7 @@ You are %s %s. The debate has concluded.
 
 Your personality: %s
 
-Review all the arguments presented and cast your final vote for ALL coins discussed.
+Review all the arguments presented and cast your final vote for ALL stocks discussed.
 
 Consider:
 - The strength of technical arguments
@@ -670,22 +682,22 @@ Consider:
 
 You may vote differently from your earlier position if convinced by others' arguments.
 
-### CRITICAL: Output your votes in STRICT JSON ARRAY format (one vote per coin):
+### CRITICAL: Output your votes in STRICT JSON ARRAY format (one vote per stock):
 <final_vote>
 [
-  {"symbol": "BTCUSDT", "action": "open_long", "confidence": 75, "leverage": 5, "position_pct": 0.3, "stop_loss": 0.02, "take_profit": 0.04, "reasoning": "BTC final vote reason"},
-  {"symbol": "ETHUSDT", "action": "open_short", "confidence": 80, "leverage": 3, "position_pct": 0.2, "stop_loss": 0.03, "take_profit": 0.06, "reasoning": "ETH final vote reason"},
-  {"symbol": "SOLUSDT", "action": "wait", "confidence": 60, "reasoning": "SOL not ready"}
+  {"symbol": "AAPL", "action": "open_long", "confidence": 75, "leverage": 2, "position_pct": 0.3, "stop_loss": 0.02, "take_profit": 0.04, "reasoning": "AAPL final vote reason"},
+  {"symbol": "TSLA", "action": "open_short", "confidence": 80, "leverage": 2, "position_pct": 0.2, "stop_loss": 0.03, "take_profit": 0.06, "reasoning": "TSLA final vote reason"},
+  {"symbol": "NVDA", "action": "wait", "confidence": 60, "reasoning": "NVDA not ready"}
 ]
 </final_vote>
 
 ### IMPORTANT: action field MUST be exactly one of:
-- "open_long" (做多/买入)
-- "open_short" (做空/卖出)
-- "close_long" (平多仓)
-- "close_short" (平空仓)
-- "hold" (持仓观望)
-- "wait" (空仓等待)
+- "open_long" (buy long position)
+- "open_short" (sell short position)
+- "close_long" (close long position)
+- "close_short" (close short position)
+- "hold" (hold current position)
+- "wait" (no position, wait for better entry)
 
 ---
 
@@ -1097,16 +1109,16 @@ func parseDecisions(response string) ([]*store.DebateDecision, int) {
 	if jsonContent != "" {
 		// Intermediate struct to handle both field naming conventions
 		type rawDecision struct {
-			Action       string  `json:"action"`
-			Symbol       string  `json:"symbol"`
-			Confidence   int     `json:"confidence"`
-			Leverage     int     `json:"leverage"`
-			PositionPct  float64 `json:"position_pct"`
-			StopLoss     float64 `json:"stop_loss"`
-			TakeProfit   float64 `json:"take_profit"`
-			StopLossPct  float64 `json:"stop_loss_pct"`  // Alternative field name
+			Action        string  `json:"action"`
+			Symbol        string  `json:"symbol"`
+			Confidence    int     `json:"confidence"`
+			Leverage      int     `json:"leverage"`
+			PositionPct   float64 `json:"position_pct"`
+			StopLoss      float64 `json:"stop_loss"`
+			TakeProfit    float64 `json:"take_profit"`
+			StopLossPct   float64 `json:"stop_loss_pct"`   // Alternative field name
 			TakeProfitPct float64 `json:"take_profit_pct"` // Alternative field name
-			Reasoning    string  `json:"reasoning"`
+			Reasoning     string  `json:"reasoning"`
 		}
 
 		convertRawDecision := func(r *rawDecision) *store.DebateDecision {

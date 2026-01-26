@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynapseStrike - Profit-Focused Enhancement Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(18, 18, 30, 0.95);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            color: #00d4ff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .phase {
+            margin-bottom: 50px;
+            background: rgba(30, 30, 50, 0.6);
+            border-radius: 12px;
+            padding: 30px;
+            border-left: 4px solid;
+            transition: transform 0.3s ease;
+        }
+        
+        .phase:hover {
+            transform: translateX(5px);
+        }
+        
+        .phase-tier1 { border-left-color: #f59e0b; }
+        .phase-tier2 { border-left-color: #3b82f6; }
+        .phase-tier3 { border-left-color: #10b981; }
+        .phase-tier4 { border-left-color: #8b5cf6; }
+        
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .phase-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .phase-title {
+            font-size: 1.8em;
+            color: #00d4ff;
+            flex: 1;
+        }
+        
+        .phase-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .badge-tier1 { background: #f59e0b20; color: #fbbf24; }
+        .badge-tier2 { background: #3b82f620; color: #60a5fa; }
+        .badge-tier3 { background: #10b98120; color: #34d399; }
+        .badge-tier4 { background: #8b5cf620; color: #a78bfa; }
+        
+        .feature {
+            background: rgba(20, 20, 35, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .feature-name {
+            font-size: 1.3em;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        
+        .feature-impact {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .impact-high { background: #ef444420; color: #f87171; }
+        .impact-medium { background: #f59e0b20; color: #fbbf24; }
+        .impact-low { background: #6b728020; color: #9ca3af; }
+        
+        .feature-desc {
+            color: #b0b0b0;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        
+        .config-section {
+            background: rgba(15, 15, 25, 0.6);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .config-title {
+            color: #00d4ff;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .config-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .config-option:last-child {
+            border-bottom: none;
+        }
+        
+        .config-label {
+            color: #d0d0d0;
+            font-size: 0.9em;
+        }
+        
+        .config-value {
+            color: #9ca3af;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .expected-result {
+            background: rgba(14, 203, 129, 0.1);
+            border-left: 3px solid #0ecb81;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .expected-result-title {
+            color: #0ecb81;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .expected-result-text {
+            color: #9ca3af;
+            font-size: 0.85em;
+        }
+        
+        .category-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .category-title {
+            font-size: 1.5em;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .removed-indicator {
+            opacity: 0.5;
+            text-decoration: line-through;
+            color: #ef4444;
+        }
+        
+        .new-indicator {
+            color: #0ecb81;
+            font-weight: 600;
+        }
+        
+        .implementation-note {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #9ca3af;
+        }
+        
+        .toc {
+            background: rgba(30, 30, 50, 0.6);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .toc-title {
+            color: #00d4ff;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+        
+        .toc-list {
+            list-style: none;
+        }
+        
+        .toc-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .toc-item:last-child {
+            border-bottom: none;
+        }
+        
+        .toc-link {
+            color: #9ca3af;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .toc-link:hover {
+            color: #00d4ff;
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 10px;
+        }
+        
+        .priority-p0 { background: #ef444420; color: #f87171; }
+        .priority-p1 { background: #f59e0b20; color: #fbbf24; }
+        .priority-p2 { background: #3b82f620; color: #60a5fa; }
+        .priority-p3 { background: #6b728020; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 SynapseStrike Enhancement Plan</h1>
+        <p class="subtitle">Profit-Focused, Phased Implementation Strategy</p>
+        
+        <div class="toc">
+            <div class="toc-title">📋 Table of Contents</div>
+            <ul class="toc-list">
+                <li class="toc-item"><a href="#overview" class="toc-link">Overview & Philosophy</a></li>
+                <li class="toc-item"><a href="#phase1" class="toc-link">Phase 1: Core Profit Engine (Tier 1)</a></li>
+                <li class="toc-item"><a href="#phase2" class="toc-link">Phase 2: Risk Management (Tier 1)</a></li>
+                <li class="toc-item"><a href="#phase3" class="toc-link">Phase 3: Execution Optimization (Tier 2)</a></li>
+                <li class="toc-item"><a href="#phase4" class="toc-link">Phase 4: Intelligence Layer (Tier 2)</a></li>
+                <li class="toc-item"><a href="#categories" class="toc-link">Reorganized Indicator Categories</a></li>
+                <li class="toc-item"><a href="#testing" class="toc-link">Testing & Validation Strategy</a></li>
+            </ul>
+        </div>
+        
+        <div id="overview" class="phase">
+            <div class="phase-header">
+                <div class="phase-number">📊</div>
+                <div class="phase-title">Overview & Philosophy</div>
+            </div>
+            <div class="feature-desc">
+                <p><strong>Problem Statement:</strong> Current indicators are losing money. We need a complete restructuring focused on proven profitable strategies.</p>
+                <p><strong>Solution Approach:</strong> Implement features in phases, test each independently, measure profitability before moving to the next phase.</p>
+                <p><strong>Key Principles:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Remove ineffective indicators (EMA, MACD, RSI as standalone signals)</li>
+                    <li>Focus on price action, volume, and institutional flow</li>
+                    <li>Each feature must be independently toggleable and measurable</li>
+                    <li>Prioritize features that directly impact profit margins</li>
+                    <li>Build a local AI manager that orchestrates multiple trading AIs</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- PHASE 1: Core Profit Engine -->
+        <div id="phase1" class="phase phase-tier1">
+            <div class="phase-header">
+                <div class="phase-number">1</div>
+                <div class="phase-title">Phase 1: Core Profit Engine</div>
+                <span class="phase-badge badge-tier1">TIER 1 - CRITICAL</span>
+            </div>
+            
+            <!-- Feature 1.1: Multi-Timeframe Confluence -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">1.1 Multi-Timeframe Confluence Engine</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    <strong>Status:</strong> ✅ Already Implemented<br>
+                    Only enter trades when multiple timeframes (15m, 1h, 4h) show aligned signals. This dramatically reduces false signals.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Confluence Mode</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Confluence Timeframes</span>
+                        <span class="config-value">['15m', '1h', '4h'] (multi-select)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Strict Mode (Require All)</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Minimum Match Count</span>
+                        <span class="config-value">2-4 (dropdown, if not strict)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">30-40% reduction in false signals, improved win rate by 15-25%</div>
+                </div>
+            </div>
+            
+            <!-- Feature 1.2: VWAP Deviation Entry -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">1.2 VWAP Deviation Entry System</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Enter trades when price deviates significantly from VWAP (using ATR multiples). This captures mean reversion and breakout opportunities with high probability.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable VWAP Deviation</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Min Deviation (ATR multiples)</span>
+                        <span class="config-value">1.0-2.0 (slider, default: 1.5)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Max Deviation (ATR multiples)</span>
+                        <span class="config-value">2.0-4.0 (slider, default: 2.5)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Entry Mode</span>
+                        <span class="config-value">mean_reversion / breakout (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">VWAP Timeframe</span>
+                        <span class="config-value">15m / 1h / 4h / 1d (dropdown)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">20-30% improvement in entry quality, better risk/reward ratios</div>
+                </div>
+                <div class="implementation-note">
+                    <strong>Implementation Priority:</strong> P0 - Implement immediately after confluence engine
+                </div>
+            </div>
+            
+            <!-- Feature 1.3: Volume Confirmation -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">1.3 Volume Confirmation Filter</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Only enter trades when volume exceeds average by a configurable ratio. This ensures we're trading with institutional interest, not random noise.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Volume Confirmation</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Minimum Volume Ratio</span>
+                        <span class="config-value">1.2-3.0 (slider, default: 1.5)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Volume Lookback Period</span>
+                        <span class="config-value">10-50 bars (slider, default: 20)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Volume Comparison Method</span>
+                        <span class="config-value">SMA / EMA / Median (dropdown)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">15-25% reduction in low-quality trades, improved signal reliability</div>
+                </div>
+            </div>
+            
+            <!-- Feature 1.4: Order Flow Analysis -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">1.4 Order Flow Analysis</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Detect large block trades, institutional activity, and dark pool prints. This is one of the most reliable indicators of future price movement.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Order Flow Analysis</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Large Block Threshold</span>
+                        <span class="config-value">$100K-$10M (slider, default: $500K)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Track Dark Pool Activity</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Supply/Demand Zone Detection</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Institutional Flow Weight</span>
+                        <span class="config-value">0.0-1.0 (slider, default: 0.7)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">25-35% improvement in trade timing, better entry/exit points</div>
+                </div>
+                <div class="implementation-note">
+                    <strong>Data Source Required:</strong> Level 2 data or order flow provider (e.g., Polygon, Alpaca Premium)
+                </div>
+            </div>
+        </div>
+        
+        <!-- PHASE 2: Risk Management -->
+        <div id="phase2" class="phase phase-tier1">
+            <div class="phase-header">
+                <div class="phase-number">2</div>
+                <div class="phase-title">Phase 2: Risk Management Suite</div>
+                <span class="phase-badge badge-tier1">TIER 1 - CRITICAL</span>
+            </div>
+            
+            <!-- Feature 2.1: Adaptive Position Sizing -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">2.1 Adaptive Position Sizing (Kelly Criterion)</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Dynamically adjust position size based on recent performance. Risk less when losing, risk more when winning. Uses Kelly Criterion formula for optimal sizing.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Adaptive Sizing</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Sizing Method</span>
+                        <span class="config-value">Kelly / Fractional Kelly / Fixed (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Kelly Fraction</span>
+                        <span class="config-value">0.1-1.0 (slider, default: 0.25)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Performance Lookback</span>
+                        <span class="config-value">10-100 trades (slider, default: 30)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Min Position Size (%)</span>
+                        <span class="config-value">0.5-5% (slider, default: 1%)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Max Position Size (%)</span>
+                        <span class="config-value">5-20% (slider, default: 10%)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">20-40% improvement in risk-adjusted returns, better capital preservation during drawdowns</div>
+                </div>
+                <div class="implementation-note">
+                    <strong>Formula:</strong> Position Size = (Win Rate × Avg Win - Loss Rate × Avg Loss) / Avg Loss × Kelly Fraction
+                </div>
+            </div>
+            
+            <!-- Feature 2.2: Trailing Stop Evolution -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">2.2 ATR-Based Trailing Stop System</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Intelligent trailing stops that adapt to volatility. Moves to breakeven after 2R profit, implements partial profit-taking.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Trailing Stop</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Trailing Method</span>
+                        <span class="config-value">ATR / Percentage / High-Low (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">ATR Multiplier</span>
+                        <span class="config-value">1.0-3.0 (slider, default: 2.0)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Breakeven Trigger (R multiple)</span>
+                        <span class="config-value">1.5-3.0 (slider, default: 2.0)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Breakeven Offset (ATR)</span>
+                        <span class="config-value">0.5-2.0 (slider, default: 1.0)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Partial Profit Take (%)</span>
+                        <span class="config-value">25-75% (slider, default: 50%)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Partial Take Trigger (R multiple)</span>
+                        <span class="config-value">1.5-3.0 (slider, default: 2.0)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">15-30% improvement in profit capture, reduced drawdowns from giving back gains</div>
+                </div>
+            </div>
+            
+            <!-- Feature 2.3: Daily Loss Limits -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">2.3 Daily Loss Limit & Auto-Pause</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Automatically pause trading when daily loss threshold is reached. Prevents emotional revenge trading and catastrophic losses.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Daily Loss Limit</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Daily Loss Limit (%)</span>
+                        <span class="config-value">1-10% (slider, default: 3%)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Daily Loss Limit ($)</span>
+                        <span class="config-value">$100-$10,000 (input, optional override)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Action on Limit</span>
+                        <span class="config-value">Pause Trading / Close All Positions / Alert Only (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Reset Time</span>
+                        <span class="config-value">Market Open / Midnight / Custom (dropdown)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Prevents catastrophic losses, protects capital during bad streaks</div>
+                </div>
+            </div>
+            
+            <!-- Feature 2.4: Correlation-Based Exposure -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">2.4 Correlation-Based Position Limits</div>
+                    <span class="feature-impact impact-medium">MEDIUM IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Limit total exposure to correlated assets (e.g., tech stocks, sector ETFs). Prevents over-concentration risk.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Correlation Limits</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Correlation Threshold</span>
+                        <span class="config-value">0.5-0.9 (slider, default: 0.7)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Max Correlated Exposure (%)</span>
+                        <span class="config-value">10-50% (slider, default: 25%)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Lookback Period (days)</span>
+                        <span class="config-value">30-365 (slider, default: 90)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Reduces portfolio risk, prevents sector-wide drawdowns</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PHASE 3: Execution Optimization -->
+        <div id="phase3" class="phase phase-tier2">
+            <div class="phase-header">
+                <div class="phase-number">3</div>
+                <div class="phase-title">Phase 3: Execution Optimization</div>
+                <span class="phase-badge badge-tier2">TIER 2 - HIGH VALUE</span>
+            </div>
+            
+            <!-- Feature 3.1: Smart Limit Orders -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">3.1 Smart Limit Order Entry</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Place limit orders at optimal prices (VWAP ± ATR deviation) instead of market orders. Reduces slippage significantly.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Limit Orders</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Entry Price Method</span>
+                        <span class="config-value">VWAP ± ATR / Bid-Ask Mid / Support-Resistance (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">ATR Deviation for Longs</span>
+                        <span class="config-value">-0.5 to -2.0 ATR (slider, default: -1.0)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">ATR Deviation for Shorts</span>
+                        <span class="config-value">+0.5 to +2.0 ATR (slider, default: +1.0)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Order Timeout (seconds)</span>
+                        <span class="config-value">30-300 (slider, default: 60)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Fallback to Market Order</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Max Slippage Tolerance (bps)</span>
+                        <span class="config-value">5-50 bps (slider, default: 10)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">0.1-0.3% saved per trade in slippage, better fill prices</div>
+                </div>
+            </div>
+            
+            <!-- Feature 3.2: Event Filters -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">3.2 Event-Based Trade Filters</div>
+                    <span class="feature-impact impact-medium">MEDIUM IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Automatically avoid trading during high-impact events: earnings releases, Fed announcements, major economic data.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Earnings Filter</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Earnings Blackout (days)</span>
+                        <span class="config-value">0-3 days before/after (slider, default: 1)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Enable FOMC Filter</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">FOMC Blackout (hours)</span>
+                        <span class="config-value">2-24 hours (slider, default: 4)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Economic Data Filter</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">High-Impact Events Only</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Low Volume Period Filter</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Volume Threshold Ratio</span>
+                        <span class="config-value">0.3-0.8 (slider, default: 0.5)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Reduces unexpected volatility exposure, avoids trading during unpredictable events</div>
+                </div>
+            </div>
+            
+            <!-- Feature 3.3: Time-of-Day Filters -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">3.3 Time-of-Day Trading Windows</div>
+                    <span class="feature-impact impact-medium">MEDIUM IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Only trade during optimal market hours. Avoid low-liquidity periods (pre-market, after-hours, lunch hour).
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Time Windows</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Trading Start Time</span>
+                        <span class="config-value">09:30-10:00 ET (time picker, default: 09:30)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Trading End Time</span>
+                        <span class="config-value">15:30-16:00 ET (time picker, default: 15:45)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Avoid Lunch Hour</span>
+                        <span class="config-value">true/false (checkbox, default: true)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Lunch Window</span>
+                        <span class="config-value">11:30-13:00 ET (time range)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Allow Pre-Market</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Allow After-Hours</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Better fills, reduced slippage during low-liquidity periods</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PHASE 4: Intelligence Layer -->
+        <div id="phase4" class="phase phase-tier2">
+            <div class="phase-header">
+                <div class="phase-number">4</div>
+                <div class="phase-title">Phase 4: Intelligence & Analytics</div>
+                <span class="phase-badge badge-tier2">TIER 2 - HIGH VALUE</span>
+            </div>
+            
+            <!-- Feature 4.1: Options Flow Analysis -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">4.1 Options Flow & Unusual Activity</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Track unusual options activity, large sweeps, and smart money flow. Options flow often precedes stock movement.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Options Flow</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Unusual Volume Threshold</span>
+                        <span class="config-value">2x-10x average (slider, default: 3x)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Large Sweep Threshold ($)</span>
+                        <span class="config-value">$50K-$1M (slider, default: $250K)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Put/Call Ratio Weight</span>
+                        <span class="config-value">0.0-1.0 (slider, default: 0.6)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Zero DTE Options Focus</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Smart Money Tracking</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Early detection of institutional moves, 20-30% improvement in entry timing</div>
+                </div>
+            </div>
+            
+            <!-- Feature 4.2: Sentiment Analysis -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">4.2 Multi-Source Sentiment Analysis</div>
+                    <span class="feature-impact impact-medium">MEDIUM IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Aggregate sentiment from Twitter/X, Reddit, news headlines, and StockTwits. Use AI to analyze sentiment and detect shifts.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Sentiment Analysis</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Data Sources</span>
+                        <span class="config-value">Twitter / Reddit / News / StockTwits (multi-checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Sentiment Weight</span>
+                        <span class="config-value">0.0-1.0 (slider, default: 0.4)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Sentiment Lookback (hours)</span>
+                        <span class="config-value">1-24 (slider, default: 6)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Minimum Sentiment Score</span>
+                        <span class="config-value">-1.0 to +1.0 (slider, default: 0.3)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">AI Sentiment Model</span>
+                        <span class="config-value">Claude / GPT-4 / Gemini (dropdown)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Early detection of sentiment shifts, better timing on momentum trades</div>
+                </div>
+            </div>
+            
+            <!-- Feature 4.3: Performance Analytics -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">4.3 Real-Time Performance Dashboard</div>
+                    <span class="feature-impact impact-medium">MEDIUM IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Comprehensive analytics: Sharpe/Sortino ratios, max drawdown, win rate by time of day, P&L attribution by feature.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Performance Tracking</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Metrics to Track</span>
+                        <span class="config-value">Sharpe / Sortino / Max DD / Win Rate / P&L Attribution (multi-checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Performance Window</span>
+                        <span class="config-value">Daily / Weekly / Monthly / All-Time (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Feature Attribution</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">Data-driven optimization, identify which features actually contribute to profits</div>
+                </div>
+            </div>
+            
+            <!-- Feature 4.4: AI Model Ensemble -->
+            <div class="feature">
+                <div class="feature-header">
+                    <div class="feature-name">4.4 Multi-AI Model Ensemble</div>
+                    <span class="feature-impact impact-high">HIGH IMPACT</span>
+                </div>
+                <div class="feature-desc">
+                    Run multiple AI models (Claude, GPT-4, Gemini) in parallel. Only trade when 2/3+ models agree. Weighted by recent accuracy.
+                </div>
+                <div class="config-section">
+                    <div class="config-title">⚙️ Configuration Options:</div>
+                    <div class="config-option">
+                        <span class="config-label">Enable Model Ensemble</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Active Models</span>
+                        <span class="config-value">Claude / GPT-4 / Gemini / Local AI (multi-checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Consensus Threshold</span>
+                        <span class="config-value">2/3 / 3/4 / Unanimous (dropdown)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Weight by Recent Accuracy</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Accuracy Lookback (trades)</span>
+                        <span class="config-value">10-100 (slider, default: 30)</span>
+                    </div>
+                    <div class="config-option">
+                        <span class="config-label">Local AI Manager</span>
+                        <span class="config-value">true/false (checkbox)</span>
+                    </div>
+                </div>
+                <div class="expected-result">
+                    <div class="expected-result-title">Expected Impact:</div>
+                    <div class="expected-result-text">30-50% reduction in bad trades, improved decision quality through consensus</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- REORGANIZED CATEGORIES -->
+        <div id="categories" class="phase phase-tier3">
+            <div class="phase-header">
+                <div class="phase-number">📊</div>
+                <div class="phase-title">Reorganized Indicator Categories</div>
+                <span class="phase-badge badge-tier3">NEW STRUCTURE</span>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-title">Category 1: Price Action & Volume (Core Signals)</div>
+                <div class="feature-desc">
+                    <p><strong>Philosophy:</strong> Price and volume are the only true indicators. Everything else is derivative.</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong class="new-indicator">✅ Raw OHLCV K-lines</strong> - Always enabled (required)</li>
+                        <li><strong class="new-indicator">✅ VWAP (Multiple Timeframes)</strong> - Core reference point</li>
+                        <li><strong class="new-indicator">✅ Anchored VWAP</strong> - Session-based VWAP</li>
+                        <li><strong class="new-indicator">✅ Volume Profile (POC, VAH, VAL)</strong> - Key support/resistance levels</li>
+                        <li><strong class="new-indicator">✅ Volume Analysis</strong> - Volume trends and confirmation</li>
+                        <li><strong class="new-indicator">✅ Volume Surge Detection</strong> - Unusual volume alerts</li>
+                        <li><span class="removed-indicator">❌ EMA</span> - Removed (ineffective standalone)</li>
+                        <li><span class="removed-indicator">❌ MACD</span> - Removed (lagging indicator)</li>
+                        <li><span class="removed-indicator">❌ RSI</span> - Removed (can be calculated by AI if needed)</li>
+                        <li><strong class="new-indicator">✅ ATR</strong> - Keep (essential for volatility-based stops)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-title">Category 2: Institutional Flow & Order Flow</div>
+                <div class="feature-desc">
+                    <p><strong>Philosophy:</strong> Follow the smart money. Institutional flow predicts price movement.</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong class="new-indicator">✅ Order Flow Analysis</strong> - Large blocks, dark pools</li>
+                        <li><strong class="new-indicator">✅ Trade Flow</strong> - Institutional activity detection</li>
+                        <li><strong class="new-indicator">✅ Options Flow</strong> - Unusual options activity</li>
+                        <li><strong class="new-indicator">✅ Zero DTE Options</strong> - Same-day options sentiment</li>
+                        <li><strong class="new-indicator">✅ Open Interest (OI)</strong> - Futures positioning</li>
+                        <li><strong class="new-indicator">✅ Funding Rate</strong> - Perpetual swap rates</li>
+                        <li><strong class="new-indicator">✅ Market-wide OI Changes</strong> - Capital flow tracking</li>
+                        <li><strong class="new-indicator">✅ Short Interest</strong> - Short squeeze candidates</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-title">Category 3: Market Context & Events</div>
+                <div class="feature-desc">
+                    <p><strong>Philosophy:</strong> Context matters. Avoid trading during unpredictable events.</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong class="new-indicator">✅ News & Sentiment</strong> - Real-time news with AI sentiment</li>
+                        <li><strong class="new-indicator">✅ Earnings Calendar</strong> - Upcoming earnings</li>
+                        <li><strong class="new-indicator">✅ Corporate Actions</strong> - Dividends, splits, spinoffs</li>
+                        <li><strong class="new-indicator">✅ Analyst Ratings</strong> - Upgrades/downgrades & targets</li>
+                        <li><strong class="new-indicator">✅ FOMC/Event Calendar</strong> - Fed announcements</li>
+                        <li><strong class="new-indicator">✅ Economic Data Calendar</strong> - Major releases</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <div class="category-title">Category 4: Multi-Timeframe & Confluence</div>
+                <div class="feature-desc">
+                    <p><strong>Philosophy:</strong> Higher timeframes provide context. Trade only when aligned.</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong class="new-indicator">✅ Multi-Timeframe Confluence</strong> - 15m + 1h + 4h alignment</li>
+                        <li><strong class="new-indicator">✅ Confluence Timeframes</strong> - Configurable timeframe selection</li>
+                        <li><strong class="new-indicator">✅ Strict Mode</strong> - Require all timeframes aligned</li>
+                        <li><strong class="new-indicator">✅ Minimum Match Count</strong> - Flexible consensus mode</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TESTING STRATEGY -->
+        <div id="testing" class="phase phase-tier4">
+            <div class="phase-header">
+                <div class="phase-number">🧪</div>
+                <div class="phase-title">Testing & Validation Strategy</div>
+                <span class="phase-badge badge-tier4">VALIDATION</span>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-name">Phase-by-Phase Testing Protocol</div>
+                <div class="feature-desc">
+                    <p><strong>Step 1: Baseline Measurement</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Run current system for 1 week, record: win rate, avg win/loss, Sharpe ratio, max drawdown</li>
+                        <li>Document which indicators are currently enabled</li>
+                        <li>Establish baseline metrics</li>
+                    </ul>
+                    
+                    <p style="margin-top: 20px;"><strong>Step 2: Phase 1 Testing (One Feature at a Time)</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Enable ONLY Phase 1.1 (Confluence Engine)</li>
+                        <li>Run for 3-5 days, compare to baseline</li>
+                        <li>If profitable improvement → keep enabled, move to next feature</li>
+                        <li>If not profitable → disable, document why, move to next feature</li>
+                    </ul>
+                    
+                    <p style="margin-top: 20px;"><strong>Step 3: Cumulative Testing</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>After testing each feature individually, test combinations</li>
+                        <li>Example: Confluence + VWAP Deviation + Volume Confirmation</li>
+                        <li>Measure if combination improves or degrades performance</li>
+                    </ul>
+                    
+                    <p style="margin-top: 20px;"><strong>Step 4: Feature Attribution</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Track which features are enabled for each trade</li>
+                        <li>Calculate P&L attribution by feature</li>
+                        <li>Remove features that don't contribute to profits</li>
+                    </ul>
+                    
+                    <p style="margin-top: 20px;"><strong>Step 5: Paper Trading Before Live</strong></p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Test all Phase 1 features in paper trading mode for 2 weeks</li>
+                        <li>Only enable live trading after paper trading shows consistent profitability</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-name">Success Metrics</div>
+                <div class="feature-desc">
+                    <p>Each feature must demonstrate:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Win Rate Improvement:</strong> +5% minimum</li>
+                        <li><strong>Risk-Adjusted Returns:</strong> Sharpe ratio improvement of +0.3 minimum</li>
+                        <li><strong>Drawdown Reduction:</strong> Max drawdown reduction of 10% minimum</li>
+                        <li><strong>Profit Factor:</strong> > 1.5 (wins/losses ratio)</li>
+                        <li><strong>Consistency:</strong> Profitable for at least 3 consecutive days</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- IMPLEMENTATION ROADMAP -->
+        <div class="phase phase-tier1">
+            <div class="phase-header">
+                <div class="phase-number">🗺️</div>
+                <div class="phase-title">Implementation Roadmap</div>
+                <span class="phase-badge badge-tier1">PRIORITY ORDER</span>
+            </div>
+            
+            <div class="feature-desc">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background: rgba(0, 212, 255, 0.1);">
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #00d4ff;">Week</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #00d4ff;">Feature</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #00d4ff;">Priority</th>
+                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #00d4ff;">Estimated Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 1</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.2 VWAP Deviation Entry</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p0">P0</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 1</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.3 Volume Confirmation</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p0">P0</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 2</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">2.1 Adaptive Position Sizing</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p0">P0</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 2</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">2.2 Trailing Stop System</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p0">P0</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 2</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">2.3 Daily Loss Limit</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p0">P0</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Critical</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 3</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">3.1 Smart Limit Orders</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p1">P1</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 3</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">3.2 Event Filters</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p1">P1</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Medium</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 4</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.4 Order Flow Analysis</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p1">P1</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 5</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">4.1 Options Flow</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p2">P2</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Week 6</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">4.4 AI Model Ensemble</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);"><span class="priority-badge priority-p2">P2</span></td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">High</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div style="margin-top: 50px; padding: 20px; background: rgba(0, 212, 255, 0.05); border-radius: 8px; text-align: center; color: #9ca3af;">
+            <p><strong>Last Updated:</strong> January 2025</p>
+            <p><strong>Status:</strong> Ready for Implementation</p>
+            <p style="margin-top: 10px; color: #00d4ff;">🚀 Start with Phase 1, test each feature independently, measure profitability, iterate.</p>
+        </div>
+    </div>
+</body>
+</html>

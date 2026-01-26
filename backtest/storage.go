@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"nofx/store"
+	"SynapseStrike/store"
 )
 
 const (

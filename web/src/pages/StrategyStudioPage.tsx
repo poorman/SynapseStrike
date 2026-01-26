@@ -6,6 +6,7 @@ import {
   Copy,
   Trash2,
   Check,
+  X,
   ChevronDown,
   ChevronRight,
   Settings,
@@ -31,7 +32,7 @@ import {
 } from 'lucide-react'
 import type { Strategy, StrategyConfig, AIModel } from '../types'
 import { confirmToast, notify } from '../lib/notify'
-import { CoinSourceEditor } from '../components/strategy/CoinSourceEditor'
+import { StockSourceEditor } from '../components/strategy/StockSourceEditor'
 import { IndicatorEditor } from '../components/strategy/IndicatorEditor'
 import { RiskControlEditor } from '../components/strategy/RiskControlEditor'
 import { PromptSectionsEditor } from '../components/strategy/PromptSectionsEditor'
@@ -56,7 +57,7 @@ export function StrategyStudioPage() {
 
   // Accordion states for left panel
   const [expandedSections, setExpandedSections] = useState({
-    coinSource: true,
+    stockSource: true,
     indicators: false,
     riskControl: false,
     promptSections: false,
@@ -102,7 +103,7 @@ export function StrategyStudioPage() {
       })
       if (response.ok) {
         const data = await response.json()
-        // 后端返回的是数组，不是 { models: [] }
+        // backendreturn'sis array，is not { models: [] }
         const allModels = Array.isArray(data) ? data : (data.models || [])
         const enabledModels = allModels.filter((m: AIModel) => m.enabled)
         setAiModels(enabledModels)
@@ -124,16 +125,36 @@ export function StrategyStudioPage() {
       })
       if (!response.ok) throw new Error('Failed to fetch strategies')
       const data = await response.json()
-      setStrategies(data.strategies || [])
+      // Filter strategies to only show "default" type strategies (General Strategy Studio)
+      // Exclude strategies that belong to other pages (sonnet, opus, current, cursor)
+      const defaultStrategies = (data.strategies || []).filter((s: Strategy) => {
+        const strategyType = (s as any).strategy_type || ''
+        const name = s.name.toLowerCase()
+        const desc = (s.description || '').toLowerCase()
 
-      // Select active or first strategy
-      const active = data.strategies?.find((s: Strategy) => s.is_active)
+        // If strategy has a type, only include 'default' type
+        if (strategyType) {
+          return strategyType === 'default'
+        }
+
+        // For legacy strategies without strategy_type, exclude those that match other pages
+        if (name.includes('sonnet') || desc.includes('sonnet')) return false
+        if (name.includes('opus') || desc.includes('opus')) return false
+        if (name.includes('current') || desc.includes('current')) return false
+        if (name.includes('cursor') || desc.includes('cursor')) return false
+
+        return true
+      })
+      setStrategies(defaultStrategies)
+
+      // Select active or first strategy from filtered list
+      const active = defaultStrategies.find((s: Strategy) => s.is_active)
       if (active) {
         setSelectedStrategy(active)
         setEditingConfig(active.config)
-      } else if (data.strategies?.length > 0) {
-        setSelectedStrategy(data.strategies[0])
-        setEditingConfig(data.strategies[0].config)
+      } else if (defaultStrategies.length > 0) {
+        setSelectedStrategy(defaultStrategies[0])
+        setEditingConfig(defaultStrategies[0].config)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
@@ -164,9 +185,10 @@ export function StrategyStudioPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: language === 'zh' ? '新策略' : 'New Strategy',
+          name: 'New Strategy',
           description: '',
           config: defaultConfig,
+          strategy_type: 'default',  // Set type so it only appears on Default page
         }),
       })
       if (!response.ok) throw new Error('Failed to create strategy')
@@ -177,7 +199,7 @@ export function StrategyStudioPage() {
         const now = new Date().toISOString()
         const newStrategy = {
           id: result.id,
-          name: language === 'zh' ? '新策略' : 'New Strategy',
+          name: 'New Strategy',
           description: '',
           is_active: false,
           is_default: false,
@@ -199,11 +221,11 @@ export function StrategyStudioPage() {
     if (!token) return
 
     const confirmed = await confirmToast(
-      language === 'zh' ? '确定删除此策略？' : 'Delete this strategy?',
+      'Delete this strategy?',
       {
-        title: language === 'zh' ? '确认删除' : 'Confirm Delete',
-        okText: language === 'zh' ? '删除' : 'Delete',
-        cancelText: language === 'zh' ? '取消' : 'Cancel',
+        title: 'Confirm Delete',
+        okText: 'Delete',
+        cancelText: 'Cancel',
       }
     )
     if (!confirmed) return
@@ -214,7 +236,7 @@ export function StrategyStudioPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!response.ok) throw new Error('Failed to delete strategy')
-      notify.success(language === 'zh' ? '策略已删除' : 'Strategy deleted')
+      notify.success('Strategy deleted')
       // Clear selection if deleted strategy was selected
       if (selectedStrategy?.id === id) {
         setSelectedStrategy(null)
@@ -240,7 +262,7 @@ export function StrategyStudioPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: language === 'zh' ? '策略副本' : 'Strategy Copy',
+          name: 'Strategy Copy',
         }),
       })
       if (!response.ok) throw new Error('Failed to duplicate strategy')
@@ -265,6 +287,21 @@ export function StrategyStudioPage() {
     }
   }
 
+  // Deactivate strategy
+  const handleDeactivateStrategy = async (id: string) => {
+    if (!token) return
+    try {
+      const response = await fetch(`${API_BASE}/api/strategies/${id}/deactivate`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) throw new Error('Failed to deactivate strategy')
+      await fetchStrategies()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    }
+  }
+
   // Export strategy as JSON file
   const handleExportStrategy = (strategy: Strategy) => {
     const exportData = {
@@ -283,7 +320,7 @@ export function StrategyStudioPage() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    notify.success(language === 'zh' ? '策略已导出' : 'Strategy exported')
+    notify.success('Strategy exported')
   }
 
   // Import strategy from JSON file
@@ -297,7 +334,7 @@ export function StrategyStudioPage() {
 
       // Validate imported data
       if (!importData.config || !importData.name) {
-        throw new Error(language === 'zh' ? '无效的策略文件' : 'Invalid strategy file')
+        throw new Error('Invalid strategy file')
       }
 
       // Create new strategy with imported config
@@ -308,14 +345,14 @@ export function StrategyStudioPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: `${importData.name} (${language === 'zh' ? '导入' : 'Imported'})`,
+          name: `${importData.name} (${'Imported'})`,
           description: importData.description || '',
           config: importData.config,
         }),
       })
       if (!response.ok) throw new Error('Failed to import strategy')
 
-      notify.success(language === 'zh' ? '策略已导入' : 'Strategy imported')
+      notify.success('Strategy imported')
       await fetchStrategies()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
@@ -428,42 +465,43 @@ export function StrategyStudioPage() {
   }
 
   const t = (key: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      strategyStudio: { zh: '策略工作室', en: 'Strategy Studio' },
-      subtitle: { zh: '可视化配置和测试交易策略', en: 'Configure and test trading strategies' },
-      strategies: { zh: '策略', en: 'Strategies' },
-      newStrategy: { zh: '新建', en: 'New' },
-      coinSource: { zh: '币种来源', en: 'Coin Source' },
-      indicators: { zh: '技术指标', en: 'Indicators' },
-      riskControl: { zh: '风控参数', en: 'Risk Control' },
-      promptSections: { zh: 'Prompt 编辑', en: 'Prompt Editor' },
-      customPrompt: { zh: '附加提示', en: 'Extra Prompt' },
-      save: { zh: '保存', en: 'Save' },
-      saving: { zh: '保存中...', en: 'Saving...' },
-      activate: { zh: '激活', en: 'Activate' },
-      active: { zh: '激活中', en: 'Active' },
-      default: { zh: '默认', en: 'Default' },
-      promptPreview: { zh: 'Prompt 预览', en: 'Prompt Preview' },
-      aiTestRun: { zh: 'AI 测试', en: 'AI Test' },
-      systemPrompt: { zh: 'System Prompt', en: 'System Prompt' },
-      userPrompt: { zh: 'User Prompt', en: 'User Prompt' },
-      loadPrompt: { zh: '生成 Prompt', en: 'Generate Prompt' },
-      refreshPrompt: { zh: '刷新', en: 'Refresh' },
-      promptVariant: { zh: '风格', en: 'Style' },
-      balanced: { zh: '平衡', en: 'Balanced' },
-      aggressive: { zh: '激进', en: 'Aggressive' },
-      conservative: { zh: '保守', en: 'Conservative' },
-      selectModel: { zh: '选择 AI 模型', en: 'Select AI Model' },
-      runTest: { zh: '运行 AI 测试', en: 'Run AI Test' },
-      running: { zh: '运行中...', en: 'Running...' },
-      aiOutput: { zh: 'AI 输出', en: 'AI Output' },
-      reasoning: { zh: '思维链', en: 'Reasoning' },
-      decisions: { zh: '决策', en: 'Decisions' },
-      duration: { zh: '耗时', en: 'Duration' },
-      noModel: { zh: '请先配置 AI 模型', en: 'Please configure AI model first' },
-      testNote: { zh: '使用真实 AI 模型测试，不执行交易', en: 'Test with real AI, no trading' },
+    const translations: Record<string, string> = {
+      strategyStudio: 'Strategy Studio',
+      subtitle: 'Configure and test trading strategies',
+      strategies: 'Strategies',
+      newStrategy: 'New',
+      stockSource: 'Stock Source',
+      indicators: 'Indicators',
+      riskControl: 'Risk Control',
+      promptSections: 'Prompt Editor',
+      customPrompt: 'Extra Prompt',
+      save: 'Save',
+      saving: 'Saving...',
+      activate: 'Activate',
+      deactivate: 'Deactivate',
+      active: 'Active',
+      default: 'Default',
+      promptPreview: 'Prompt Preview',
+      aiTestRun: 'AI Test',
+      systemPrompt: 'System Prompt',
+      userPrompt: 'User Prompt',
+      loadPrompt: 'Generate Prompt',
+      refreshPrompt: 'Refresh',
+      promptVariant: 'Style',
+      balanced: 'Balanced',
+      aggressive: 'Aggressive',
+      conservative: 'Conservative',
+      selectModel: 'Select AI Model',
+      runTest: 'Run AI Test',
+      running: 'Running...',
+      aiOutput: 'AI Output',
+      reasoning: 'Reasoning',
+      decisions: 'Decisions',
+      duration: 'Duration',
+      noModel: 'Please configure AI model first',
+      testNote: 'Test with real AI, no trading',
     }
-    return translations[key]?.[language] || key
+    return translations[key] || key
   }
 
   if (isLoading) {
@@ -481,30 +519,28 @@ export function StrategyStudioPage() {
 
   const configSections = [
     {
-      key: 'coinSource' as const,
+      key: 'stockSource' as const,
       icon: Target,
-      color: '#F0B90B',
-      title: t('coinSource'),
+      color: 'var(--primary)',
+      title: t('stockSource'),
       content: editingConfig && (
-        <CoinSourceEditor
-          config={editingConfig.coin_source}
-          onChange={(coinSource) => updateConfig('coin_source', coinSource)}
+        <StockSourceEditor
+          config={editingConfig.stock_source}
+          onChange={(stockSource) => updateConfig('stock_source', stockSource)}
           disabled={selectedStrategy?.is_default}
-          language={language}
         />
       ),
     },
     {
       key: 'indicators' as const,
       icon: BarChart3,
-      color: '#0ECB81',
+      color: 'var(--primary)',
       title: t('indicators'),
       content: editingConfig && (
         <IndicatorEditor
           config={editingConfig.indicators}
           onChange={(indicators) => updateConfig('indicators', indicators)}
           disabled={selectedStrategy?.is_default}
-          language={language}
         />
       ),
     },
@@ -518,14 +554,13 @@ export function StrategyStudioPage() {
           config={editingConfig.risk_control}
           onChange={(riskControl) => updateConfig('risk_control', riskControl)}
           disabled={selectedStrategy?.is_default}
-          language={language}
         />
       ),
     },
     {
       key: 'promptSections' as const,
       icon: FileText,
-      color: '#a855f7',
+      color: 'var(--primary)',
       title: t('promptSections'),
       content: editingConfig && (
         <PromptSectionsEditor
@@ -543,16 +578,16 @@ export function StrategyStudioPage() {
       title: t('customPrompt'),
       content: editingConfig && (
         <div>
-          <p className="text-xs mb-2" style={{ color: '#848E9C' }}>
-            {language === 'zh' ? '附加在 System Prompt 末尾的额外提示，用于补充个性化交易风格' : 'Extra prompt appended to System Prompt for personalized trading style'}
+          <p className="text-xs mb-2" style={{ color: '#9CA3AF' }}>
+            {'Extra prompt appended to System Prompt for personalized trading style'}
           </p>
           <textarea
             value={editingConfig.custom_prompt || ''}
             onChange={(e) => updateConfig('custom_prompt', e.target.value)}
             disabled={selectedStrategy?.is_default}
-            placeholder={language === 'zh' ? '输入自定义提示词...' : 'Enter custom prompt...'}
+            placeholder={'Enter custom prompt...'}
             className="w-full h-32 px-3 py-2 rounded-lg resize-none font-mono text-xs"
-            style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF' }}
+            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
           />
         </div>
       ),
@@ -560,17 +595,17 @@ export function StrategyStudioPage() {
   ]
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col" style={{ background: '#0B0E11' }}>
+    <div className="h-[calc(100vh-64px)] flex flex-col" style={{ background: 'var(--bg-secondary)' }}>
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-3 border-b" style={{ borderColor: '#2B3139' }}>
+      <div className="flex-shrink-0 px-4 py-3 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg" style={{ background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)' }}>
+            <div className="p-2 rounded-lg" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)' }}>
               <Sparkles className="w-5 h-5 text-black" />
             </div>
             <div>
-              <h1 className="text-lg font-bold" style={{ color: '#EAECEF' }}>{t('strategyStudio')}</h1>
-              <p className="text-xs" style={{ color: '#848E9C' }}>{t('subtitle')}</p>
+              <h1 className="text-lg font-bold" style={{ color: '#F9FAFB' }}>{t('strategyStudio')}</h1>
+              <p className="text-xs" style={{ color: '#9CA3AF' }}>{t('subtitle')}</p>
             </div>
           </div>
           {error && (
@@ -585,13 +620,13 @@ export function StrategyStudioPage() {
       {/* Main Content - Three Columns */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Column - Strategy List */}
-        <div className="w-48 flex-shrink-0 border-r overflow-y-auto" style={{ borderColor: '#2B3139' }}>
+        <div className="w-48 flex-shrink-0 border-r overflow-y-auto" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
           <div className="p-2">
             <div className="flex items-center justify-between mb-2 px-2">
-              <span className="text-xs font-medium" style={{ color: '#848E9C' }}>{t('strategies')}</span>
+              <span className="text-xs font-medium" style={{ color: '#9CA3AF' }}>{t('strategies')}</span>
               <div className="flex items-center gap-1">
                 {/* Import button with hidden file input */}
-                <label className="p-1 rounded hover:bg-white/10 transition-colors cursor-pointer" style={{ color: '#848E9C' }} title={language === 'zh' ? '导入策略' : 'Import Strategy'}>
+                <label className="p-1 rounded hover:bg-[var(--bg-secondary)]/10 transition-colors cursor-pointer" style={{ color: '#9CA3AF' }} title={'Import Strategy'}>
                   <Upload className="w-4 h-4" />
                   <input
                     type="file"
@@ -602,9 +637,9 @@ export function StrategyStudioPage() {
                 </label>
                 <button
                   onClick={handleCreateStrategy}
-                  className="p-1 rounded hover:bg-white/10 transition-colors"
-                  style={{ color: '#F0B90B' }}
-                  title={language === 'zh' ? '新建策略' : 'New Strategy'}
+                  className="p-1 rounded hover:bg-[var(--bg-secondary)]/10 transition-colors"
+                  style={{ color: 'var(--primary)' }}
+                  title={'New Strategy'}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -621,36 +656,35 @@ export function StrategyStudioPage() {
                     setPromptPreview(null)
                     setAiTestResult(null)
                   }}
-                  className={`group px-2 py-2 rounded-lg cursor-pointer transition-all ${
-                    selectedStrategy?.id === strategy.id ? 'ring-1 ring-yellow-500/50' : 'hover:bg-white/5'
-                  }`}
+                  className={`group px-2 py-2 rounded-lg cursor-pointer transition-all ${selectedStrategy?.id === strategy.id ? 'ring-1 ring-yellow-500/50' : 'hover:bg-[var(--bg-secondary)]/5'
+                    }`}
                   style={{
-                    background: selectedStrategy?.id === strategy.id ? 'rgba(240, 185, 11, 0.1)' : 'transparent',
+                    background: selectedStrategy?.id === strategy.id ? 'var(--primary-bg, 0.1)' : 'transparent',
                   }}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm truncate" style={{ color: '#EAECEF' }}>{strategy.name}</span>
+                    <span className="text-sm truncate" style={{ color: '#F9FAFB' }}>{strategy.name}</span>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleExportStrategy(strategy) }}
-                        className="p-1 rounded hover:bg-white/10"
-                        title={language === 'zh' ? '导出' : 'Export'}
+                        className="p-1 rounded hover:bg-[var(--bg-secondary)]/10"
+                        title={'Export'}
                       >
-                        <Download className="w-3 h-3" style={{ color: '#848E9C' }} />
+                        <Download className="w-3 h-3" style={{ color: '#9CA3AF' }} />
                       </button>
                       {!strategy.is_default && (
                         <>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDuplicateStrategy(strategy.id) }}
-                            className="p-1 rounded hover:bg-white/10"
-                            title={language === 'zh' ? '复制' : 'Duplicate'}
+                            className="p-1 rounded hover:bg-[var(--bg-secondary)]/10"
+                            title={'Duplicate'}
                           >
-                            <Copy className="w-3 h-3" style={{ color: '#848E9C' }} />
+                            <Copy className="w-3 h-3" style={{ color: '#9CA3AF' }} />
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDeleteStrategy(strategy.id) }}
                             className="p-1 rounded hover:bg-red-500/20"
-                            title={language === 'zh' ? '删除' : 'Delete'}
+                            title={'Delete'}
                           >
                             <Trash2 className="w-3 h-3" style={{ color: '#F6465D' }} />
                           </button>
@@ -660,12 +694,12 @@ export function StrategyStudioPage() {
                   </div>
                   <div className="flex items-center gap-1 mt-1">
                     {strategy.is_active && (
-                      <span className="px-1.5 py-0.5 text-[10px] rounded" style={{ background: 'rgba(14, 203, 129, 0.15)', color: '#0ECB81' }}>
+                      <span className="px-1.5 py-0.5 text-[10px] rounded" style={{ background: 'rgba(14, 203, 129, 0.15)', color: 'var(--primary)' }}>
                         {t('active')}
                       </span>
                     )}
                     {strategy.is_default && (
-                      <span className="px-1.5 py-0.5 text-[10px] rounded" style={{ background: 'rgba(240, 185, 11, 0.15)', color: '#F0B90B' }}>
+                      <span className="px-1.5 py-0.5 text-[10px] rounded" style={{ background: 'var(--primary-bg, 0.15)', color: 'var(--primary)' }}>
                         {t('default')}
                       </span>
                     )}
@@ -677,7 +711,7 @@ export function StrategyStudioPage() {
         </div>
 
         {/* Middle Column - Config Editor */}
-        <div className="flex-1 min-w-0 overflow-y-auto border-r" style={{ borderColor: '#2B3139' }}>
+        <div className="flex-1 min-w-0 overflow-y-auto border-r" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
           {selectedStrategy && editingConfig ? (
             <div className="p-4">
               {/* Strategy Name & Actions */}
@@ -692,18 +726,27 @@ export function StrategyStudioPage() {
                     }}
                     disabled={selectedStrategy.is_default}
                     className="text-lg font-bold bg-transparent border-none outline-none w-full"
-                    style={{ color: '#EAECEF' }}
+                    style={{ color: '#F9FAFB' }}
                   />
                   {hasChanges && (
-                    <span className="text-xs" style={{ color: '#F0B90B' }}>● 未保存</span>
+                    <span className="text-xs" style={{ color: 'var(--primary)' }}>● Unsaved</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {!selectedStrategy.is_active && (
+                  {selectedStrategy.is_active ? (
+                    <button
+                      onClick={() => handleDeactivateStrategy(selectedStrategy.id)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors"
+                      style={{ background: 'rgba(246, 70, 93, 0.1)', border: '1px solid rgba(246, 70, 93, 0.3)', color: '#F6465D' }}
+                    >
+                      <X className="w-3 h-3" />
+                      {t('deactivate')}
+                    </button>
+                  ) : (
                     <button
                       onClick={() => handleActivateStrategy(selectedStrategy.id)}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors"
-                      style={{ background: 'rgba(14, 203, 129, 0.1)', border: '1px solid rgba(14, 203, 129, 0.3)', color: '#0ECB81' }}
+                      style={{ background: 'rgba(14, 203, 129, 0.1)', border: '1px solid rgba(14, 203, 129, 0.3)', color: 'var(--primary)' }}
                     >
                       <Check className="w-3 h-3" />
                       {t('activate')}
@@ -715,8 +758,8 @@ export function StrategyStudioPage() {
                       disabled={isSaving || !hasChanges}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
                       style={{
-                        background: hasChanges ? '#F0B90B' : '#2B3139',
-                        color: hasChanges ? '#0B0E11' : '#848E9C',
+                        background: hasChanges ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
+                        color: hasChanges ? '#000000' : '#9CA3AF',
                       }}
                     >
                       <Save className="w-3 h-3" />
@@ -732,20 +775,20 @@ export function StrategyStudioPage() {
                   <div
                     key={key}
                     className="rounded-lg overflow-hidden"
-                    style={{ background: '#1E2329', border: '1px solid #2B3139' }}
+                    style={{ background: 'rgba(22, 27, 34, 0.88)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
                   >
                     <button
                       onClick={() => toggleSection(key)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[var(--bg-secondary)]/5 transition-colors"
                     >
                       <div className="flex items-center gap-2">
                         <Icon className="w-4 h-4" style={{ color }} />
-                        <span className="text-sm font-medium" style={{ color: '#EAECEF' }}>{title}</span>
+                        <span className="text-sm font-medium" style={{ color: '#F9FAFB' }}>{title}</span>
                       </div>
                       {expandedSections[key] ? (
-                        <ChevronDown className="w-4 h-4" style={{ color: '#848E9C' }} />
+                        <ChevronDown className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                       ) : (
-                        <ChevronRight className="w-4 h-4" style={{ color: '#848E9C' }} />
+                        <ChevronRight className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                       )}
                     </button>
                     {expandedSections[key] && (
@@ -760,9 +803,9 @@ export function StrategyStudioPage() {
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <Activity className="w-12 h-12 mx-auto mb-2 opacity-30" style={{ color: '#848E9C' }} />
-                <p className="text-sm" style={{ color: '#848E9C' }}>
-                  {language === 'zh' ? '选择或创建策略' : 'Select or create a strategy'}
+                <Activity className="w-12 h-12 mx-auto mb-2 opacity-30" style={{ color: '#9CA3AF' }} />
+                <p className="text-sm" style={{ color: '#9CA3AF' }}>
+                  {'Select or create a strategy'}
                 </p>
               </div>
             </div>
@@ -772,15 +815,14 @@ export function StrategyStudioPage() {
         {/* Right Column - Prompt Preview & AI Test */}
         <div className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden">
           {/* Tabs */}
-          <div className="flex-shrink-0 flex border-b" style={{ borderColor: '#2B3139' }}>
+          <div className="flex-shrink-0 flex border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
             <button
               onClick={() => setActiveRightTab('prompt')}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-                activeRightTab === 'prompt' ? 'border-b-2' : 'opacity-60 hover:opacity-100'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${activeRightTab === 'prompt' ? 'border-b-2' : 'opacity-60 hover:opacity-100'
+                }`}
               style={{
-                borderColor: activeRightTab === 'prompt' ? '#a855f7' : 'transparent',
-                color: activeRightTab === 'prompt' ? '#a855f7' : '#848E9C',
+                borderColor: activeRightTab === 'prompt' ? 'var(--primary)' : 'transparent',
+                color: activeRightTab === 'prompt' ? 'var(--primary)' : '#9CA3AF',
               }}
             >
               <Eye className="w-4 h-4" />
@@ -788,12 +830,11 @@ export function StrategyStudioPage() {
             </button>
             <button
               onClick={() => setActiveRightTab('test')}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
-                activeRightTab === 'test' ? 'border-b-2' : 'opacity-60 hover:opacity-100'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${activeRightTab === 'test' ? 'border-b-2' : 'opacity-60 hover:opacity-100'
+                }`}
               style={{
                 borderColor: activeRightTab === 'test' ? '#22c55e' : 'transparent',
-                color: activeRightTab === 'test' ? '#22c55e' : '#848E9C',
+                color: activeRightTab === 'test' ? '#22c55e' : '#9CA3AF',
               }}
             >
               <Play className="w-4 h-4" />
@@ -812,7 +853,7 @@ export function StrategyStudioPage() {
                     value={selectedVariant}
                     onChange={(e) => setSelectedVariant(e.target.value)}
                     className="px-2 py-1.5 rounded text-xs"
-                    style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF' }}
+                    style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
                   >
                     <option value="balanced">{t('balanced')}</option>
                     <option value="aggressive">{t('aggressive')}</option>
@@ -822,7 +863,7 @@ export function StrategyStudioPage() {
                     onClick={fetchPromptPreview}
                     disabled={isLoadingPrompt || !editingConfig}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors disabled:opacity-50"
-                    style={{ background: '#a855f7', color: '#fff' }}
+                    style={{ background: 'var(--primary)', color: '#000' }}
                   >
                     {isLoadingPrompt ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                     {promptPreview ? t('refreshPrompt') : t('loadPrompt')}
@@ -832,16 +873,16 @@ export function StrategyStudioPage() {
                 {promptPreview ? (
                   <>
                     {/* Config Summary */}
-                    <div className="p-2 rounded-lg" style={{ background: '#0B0E11', border: '1px solid #2B3139' }}>
+                    <div className="p-2 rounded-lg" style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                       <div className="flex items-center gap-1.5 mb-2">
-                        <Code className="w-3 h-3" style={{ color: '#a855f7' }} />
-                        <span className="text-xs font-medium" style={{ color: '#a855f7' }}>Config</span>
+                        <Code className="w-3 h-3" style={{ color: 'var(--primary)' }} />
+                        <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>Config</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         {Object.entries(promptPreview.config_summary || {}).map(([key, value]) => (
                           <div key={key}>
-                            <div style={{ color: '#848E9C' }}>{key.replace(/_/g, ' ')}</div>
-                            <div style={{ color: '#EAECEF' }}>{String(value)}</div>
+                            <div style={{ color: '#9CA3AF' }}>{key.replace(/_/g, ' ')}</div>
+                            <div style={{ color: '#F9FAFB' }}>{String(value)}</div>
                           </div>
                         ))}
                       </div>
@@ -851,25 +892,25 @@ export function StrategyStudioPage() {
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
-                          <FileText className="w-3 h-3" style={{ color: '#a855f7' }} />
-                          <span className="text-xs font-medium" style={{ color: '#EAECEF' }}>{t('systemPrompt')}</span>
+                          <FileText className="w-3 h-3" style={{ color: 'var(--primary)' }} />
+                          <span className="text-xs font-medium" style={{ color: '#F9FAFB' }}>{t('systemPrompt')}</span>
                         </div>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#2B3139', color: '#848E9C' }}>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(255, 255, 255, 0.08)', color: '#9CA3AF' }}>
                           {promptPreview.system_prompt.length.toLocaleString()} chars
                         </span>
                       </div>
                       <pre
                         className="p-2 rounded-lg text-[11px] font-mono overflow-auto"
-                        style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF', maxHeight: '400px' }}
+                        style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB', maxHeight: '400px' }}
                       >
                         {promptPreview.system_prompt}
                       </pre>
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12" style={{ color: '#848E9C' }}>
+                  <div className="flex flex-col items-center justify-center py-12" style={{ color: '#9CA3AF' }}>
                     <Eye className="w-10 h-10 mb-2 opacity-30" />
-                    <p className="text-sm">{language === 'zh' ? '点击生成 Prompt 预览' : 'Click to generate prompt preview'}</p>
+                    <p className="text-sm">{'Click to generate prompt preview'}</p>
                   </div>
                 )}
               </div>
@@ -880,14 +921,14 @@ export function StrategyStudioPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Bot className="w-4 h-4" style={{ color: '#22c55e' }} />
-                    <span className="text-xs font-medium" style={{ color: '#EAECEF' }}>{t('selectModel')}</span>
+                    <span className="text-xs font-medium" style={{ color: '#F9FAFB' }}>{t('selectModel')}</span>
                   </div>
                   {aiModels.length > 0 ? (
                     <select
                       value={selectedModelId}
                       onChange={(e) => setSelectedModelId(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg text-sm"
-                      style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF' }}
+                      style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
                     >
                       {aiModels.map((model) => (
                         <option key={model.id} value={model.id}>
@@ -906,7 +947,7 @@ export function StrategyStudioPage() {
                       value={selectedVariant}
                       onChange={(e) => setSelectedVariant(e.target.value)}
                       className="px-2 py-1.5 rounded text-xs"
-                      style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF' }}
+                      style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
                     >
                       <option value="balanced">{t('balanced')}</option>
                       <option value="aggressive">{t('aggressive')}</option>
@@ -935,7 +976,7 @@ export function StrategyStudioPage() {
                       )}
                     </button>
                   </div>
-                  <p className="text-[10px]" style={{ color: '#848E9C' }}>{t('testNote')}</p>
+                  <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{t('testNote')}</p>
                 </div>
 
                 {/* Test Results */}
@@ -949,8 +990,8 @@ export function StrategyStudioPage() {
                       <>
                         {aiTestResult.duration_ms && (
                           <div className="flex items-center gap-2">
-                            <Clock className="w-3 h-3" style={{ color: '#848E9C' }} />
-                            <span className="text-xs" style={{ color: '#848E9C' }}>
+                            <Clock className="w-3 h-3" style={{ color: '#9CA3AF' }} />
+                            <span className="text-xs" style={{ color: '#9CA3AF' }}>
                               {t('duration')}: {(aiTestResult.duration_ms / 1000).toFixed(2)}s
                             </span>
                           </div>
@@ -961,11 +1002,11 @@ export function StrategyStudioPage() {
                           <div>
                             <div className="flex items-center gap-1.5 mb-1.5">
                               <Terminal className="w-3 h-3" style={{ color: '#60a5fa' }} />
-                              <span className="text-xs font-medium" style={{ color: '#EAECEF' }}>{t('userPrompt')} (Input)</span>
+                              <span className="text-xs font-medium" style={{ color: '#F9FAFB' }}>{t('userPrompt')} (Input)</span>
                             </div>
                             <pre
                               className="p-2 rounded-lg text-[10px] font-mono overflow-auto"
-                              style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF', maxHeight: '200px' }}
+                              style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB', maxHeight: '200px' }}
                             >
                               {aiTestResult.user_prompt}
                             </pre>
@@ -976,12 +1017,12 @@ export function StrategyStudioPage() {
                         {aiTestResult.reasoning && (
                           <div>
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <Sparkles className="w-3 h-3" style={{ color: '#F0B90B' }} />
-                              <span className="text-xs font-medium" style={{ color: '#EAECEF' }}>{t('reasoning')}</span>
+                              <Sparkles className="w-3 h-3" style={{ color: 'var(--primary)' }} />
+                              <span className="text-xs font-medium" style={{ color: '#F9FAFB' }}>{t('reasoning')}</span>
                             </div>
                             <pre
                               className="p-2 rounded-lg text-[10px] font-mono overflow-auto whitespace-pre-wrap"
-                              style={{ background: '#0B0E11', border: '1px solid rgba(240, 185, 11, 0.3)', color: '#EAECEF', maxHeight: '200px' }}
+                              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--primary-bg, 0.3)', color: '#F9FAFB', maxHeight: '200px' }}
                             >
                               {aiTestResult.reasoning}
                             </pre>
@@ -993,11 +1034,11 @@ export function StrategyStudioPage() {
                           <div>
                             <div className="flex items-center gap-1.5 mb-1.5">
                               <Activity className="w-3 h-3" style={{ color: '#22c55e' }} />
-                              <span className="text-xs font-medium" style={{ color: '#EAECEF' }}>{t('decisions')}</span>
+                              <span className="text-xs font-medium" style={{ color: '#F9FAFB' }}>{t('decisions')}</span>
                             </div>
                             <pre
                               className="p-2 rounded-lg text-[10px] font-mono overflow-auto"
-                              style={{ background: '#0B0E11', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#EAECEF', maxHeight: '200px' }}
+                              style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#F9FAFB', maxHeight: '200px' }}
                             >
                               {JSON.stringify(aiTestResult.decisions, null, 2)}
                             </pre>
@@ -1008,12 +1049,12 @@ export function StrategyStudioPage() {
                         {aiTestResult.ai_response && (
                           <div>
                             <div className="flex items-center gap-1.5 mb-1.5">
-                              <FileText className="w-3 h-3" style={{ color: '#848E9C' }} />
-                              <span className="text-xs font-medium" style={{ color: '#EAECEF' }}>{t('aiOutput')} (Raw)</span>
+                              <FileText className="w-3 h-3" style={{ color: '#9CA3AF' }} />
+                              <span className="text-xs font-medium" style={{ color: '#F9FAFB' }}>{t('aiOutput')} (Raw)</span>
                             </div>
                             <pre
                               className="p-2 rounded-lg text-[10px] font-mono overflow-auto whitespace-pre-wrap"
-                              style={{ background: '#0B0E11', border: '1px solid #2B3139', color: '#EAECEF', maxHeight: '300px' }}
+                              style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB', maxHeight: '300px' }}
                             >
                               {aiTestResult.ai_response}
                             </pre>
@@ -1023,9 +1064,9 @@ export function StrategyStudioPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12" style={{ color: '#848E9C' }}>
+                  <div className="flex flex-col items-center justify-center py-12" style={{ color: '#9CA3AF' }}>
                     <Play className="w-10 h-10 mb-2 opacity-30" />
-                    <p className="text-sm">{language === 'zh' ? '点击运行 AI 测试' : 'Click to run AI test'}</p>
+                    <p className="text-sm">{'Click to run AI test'}</p>
                   </div>
                 )}
               </div>

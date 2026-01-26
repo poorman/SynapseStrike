@@ -1,14 +1,13 @@
 package trader
 
 import (
+	"SynapseStrike/decision"
+	"SynapseStrike/logger"
+	"SynapseStrike/market"
+	"SynapseStrike/mcp"
+	"SynapseStrike/store"
 	"encoding/json"
 	"fmt"
-	"math"
-	"nofx/decision"
-	"nofx/logger"
-	"nofx/market"
-	"nofx/mcp"
-	"nofx/store"
 	"strings"
 	"sync"
 	"time"
@@ -34,13 +33,13 @@ type AutoTraderConfig struct {
 	BybitSecretKey string
 
 	// OKX API configuration
-	OKXAPIKey    string
-	OKXSecretKey string
+	OKXAPIKey     string
+	OKXSecretKey  string
 	OKXPassphrase string
 
 	// Bitget API configuration
-	BitgetAPIKey    string
-	BitgetSecretKey string
+	BitgetAPIKey     string
+	BitgetSecretKey  string
 	BitgetPassphrase string
 
 	// Hyperliquid configuration
@@ -87,6 +86,9 @@ type AutoTraderConfig struct {
 	// Competition visibility
 	ShowInCompetition bool // Whether to show in competition page
 
+	// Market hours trading restriction
+	TradeOnlyMarketHours bool // If true, only trade during stock market hours (9:30 AM - 4:00 PM ET)
+
 	// Strategy configuration (use complete strategy config)
 	StrategyConfig *store.StrategyConfig // Strategy configuration (includes coin sources, indicators, risk control, prompts, etc.)
 }
@@ -121,6 +123,11 @@ type AutoTrader struct {
 	peakPnLCacheMutex     sync.RWMutex       // Cache read-write lock
 	lastBalanceSyncTime   time.Time          // Last balance sync time
 	userID                string             // User ID
+
+	// VWAP Pre-Entry Phase fields
+	vwapCollectors   map[string]*VWAPCollector // Per-symbol VWAP collectors
+	vwapPreEntryMode bool                      // True if in pre-entry collection phase
+	vwapCollectorsMu sync.RWMutex              // Mutex for vwapCollectors map
 }
 
 // NewAutoTrader creates an automatic trader
@@ -182,6 +189,11 @@ func NewAutoTrader(config AutoTraderConfig, st *store.Store, userID string) (*Au
 		}
 		mcpClient.SetAPIKey(apiKey, config.CustomAPIURL, config.CustomModelName)
 		logger.Infof("🤖 [%s] Using Alibaba Cloud Qwen AI", config.Name)
+
+	case "localai":
+		mcpClient = mcp.NewLocalAIClient()
+		mcpClient.SetAPIKey(config.CustomAPIKey, config.CustomAPIURL, config.CustomModelName)
+		logger.Infof("🤖 [%s] Using LocalAI", config.Name)
 
 	case "custom":
 		mcpClient = mcp.New()
@@ -261,6 +273,12 @@ func NewAutoTrader(config AutoTraderConfig, st *store.Store, userID string) (*Au
 			return nil, fmt.Errorf("failed to initialize LIGHTER trader: %w", err)
 		}
 		logger.Infof("✓ LIGHTER trader initialized successfully")
+	case "alpaca", "alpaca-live":
+		logger.Infof("🏦 [%s] Using Alpaca (Live) stock trading", config.Name)
+		trader = NewAlpacaTrader(config.BinanceAPIKey, config.BinanceSecretKey, false)
+	case "alpaca-paper":
+		logger.Infof("🏦 [%s] Using Alpaca (Paper) stock trading", config.Name)
+		trader = NewAlpacaTrader(config.BinanceAPIKey, config.BinanceSecretKey, true)
 	default:
 		return nil, fmt.Errorf("unsupported trading platform: %s", config.Exchange)
 	}
@@ -348,6 +366,20 @@ func (at *AutoTrader) Run() error {
 	logger.Info("🚀 AI-driven automatic trading system started")
 	logger.Infof("💰 Initial balance: %.2f USDT", at.initialBalance)
 	logger.Infof("⚙️  Scan interval: %v", at.config.ScanInterval)
+	if at.config.TradeOnlyMarketHours {
+		logger.Info("⏰ Market hours only mode: Trading restricted to 9:30 AM - 4:00 PM ET (Mon-Fri)")
+	}
+
+	// Check if VWAP algorithm is enabled
+	vwapEnabled := false
+	if at.strategyEngine != nil {
+		config := at.strategyEngine.GetConfig()
+		if config != nil && config.Indicators.EnableVWAPSlopeStretch {
+			vwapEnabled = true
+			logger.Info("📊 VWAP + Slope & Stretch Algorithm enabled - will use 1-min intervals during pre-entry phase")
+		}
+	}
+
 	logger.Info("🤖 AI will make full decisions on leverage, position size, stop loss/take profit, etc.")
 	at.monitorWg.Add(1)
 	defer at.monitorWg.Done()
@@ -355,17 +387,88 @@ func (at *AutoTrader) Run() error {
 	// Start drawdown monitoring
 	at.startDrawdownMonitor()
 
-	ticker := time.NewTicker(at.config.ScanInterval)
+	// Determine initial scan interval (VWAP pre-entry uses 1-min)
+	currentInterval := at.getVWAPAwareInterval()
+	ticker := time.NewTicker(currentInterval)
 	defer ticker.Stop()
 
-	// Execute immediately on first run
-	if err := at.runCycle(); err != nil {
-		logger.Infof("❌ Execution failed: %v", err)
+	if vwapEnabled && at.isVWAPPreEntryTime() {
+		logger.Infof("📊 [VWAP] Pre-entry phase active - using 1-minute intervals until entry time")
+		logger.Infof("📊 [VWAP] Collecting initial VWAP data, no trading until entry time")
+		// Get candidate symbols from strategy engine
+		if at.strategyEngine != nil {
+			candidates, _ := at.strategyEngine.GetCandidateStocks()
+			var symbols []string
+			for _, c := range candidates {
+				symbols = append(symbols, c.Symbol)
+			}
+			if len(symbols) > 0 {
+				at.collectVWAPBars(symbols)
+			}
+		}
+	} else {
+		// Execute immediately on first run (if market is open or market hours check is disabled)
+		if !at.config.TradeOnlyMarketHours || isMarketOpen() {
+			// If started after entry time, only manage positions
+			if vwapEnabled && at.isVWAPPostEntryTime() {
+				logger.Infof("📊 [VWAP] Pre-entry/Post-entry check: Started after entry time - only managing existing positions")
+				at.runVWAPPositionManagement()
+			} else if err := at.runCycle(); err != nil {
+				logger.Infof("❌ Execution failed: %v", err)
+			}
+		} else {
+			logger.Info("⏸️  Market is closed, skipping trading cycle")
+		}
 	}
 
 	for at.isRunning {
 		select {
 		case <-ticker.C:
+			// Check market hours if enabled
+			if at.config.TradeOnlyMarketHours && !isMarketOpen() {
+				logger.Info("⏸️  Market is closed, skipping trading cycle")
+				continue
+			}
+
+			// Dynamic interval adjustment for VWAP mode
+			if vwapEnabled {
+				newInterval := at.getVWAPAwareInterval()
+				if newInterval != currentInterval {
+					ticker.Reset(newInterval)
+					currentInterval = newInterval
+					if newInterval == 1*time.Minute {
+						logger.Infof("📊 [VWAP] Switched to 1-minute intervals for pre-entry data collection")
+					} else {
+						logger.Infof("📊 [VWAP] Switched back to normal interval: %v", newInterval)
+					}
+				}
+
+				// During VWAP pre-entry phase (9:30-10:00), only collect data, don't trade
+				if at.isVWAPPreEntryTime() {
+					logger.Infof("📊 [VWAP] Pre-entry phase - collecting data, skipping trading until entry time")
+					// Get candidate symbols from strategy engine
+					if at.strategyEngine != nil {
+						candidates, _ := at.strategyEngine.GetCandidateStocks()
+						var symbols []string
+						for _, c := range candidates {
+							symbols = append(symbols, c.Symbol)
+						}
+						if len(symbols) > 0 {
+							at.collectVWAPBars(symbols)
+						}
+					}
+					continue
+				}
+
+				// After entry time (e.g., after 10:00 AM), only manage existing positions
+				// No new buys allowed - only holds and sells (TP or near market close)
+				if at.isVWAPPostEntryTime() {
+					logger.Infof("📊 [VWAP] Post-entry phase - only managing existing positions, no new buys")
+					at.runVWAPPositionManagement()
+					continue
+				}
+			}
+
 			if err := at.runCycle(); err != nil {
 				logger.Infof("❌ Execution failed: %v", err)
 			}
@@ -413,6 +516,17 @@ func (at *AutoTrader) runCycle() error {
 		return nil
 	}
 
+	// 1.5. Check market hours (only for stock trading with TradeOnlyMarketHours enabled)
+	if at.config.TradeOnlyMarketHours {
+		if !isMarketOpen() {
+			logger.Infof("🕒 Market is closed (outside 9:30 AM - 4:00 PM ET). Skipping trading cycle.")
+			record.Success = false
+			record.ErrorMessage = "Market is closed (outside 9:30 AM - 4:00 PM ET)"
+			at.saveDecision(record)
+			return nil
+		}
+	}
+
 	// 2. Reset daily P&L (reset every day)
 	if time.Since(at.lastResetTime) > 24*time.Hour {
 		at.dailyPnL = 0
@@ -433,8 +547,8 @@ func (at *AutoTrader) runCycle() error {
 	at.saveEquitySnapshot(ctx)
 
 	logger.Info(strings.Repeat("=", 70))
-	for _, coin := range ctx.CandidateCoins {
-		record.CandidateCoins = append(record.CandidateCoins, coin.Symbol)
+	for _, stock := range ctx.CandidateStocks {
+		record.CandidateCoins = append(record.CandidateCoins, stock.Symbol)
 	}
 
 	logger.Infof("📊 Account equity: %.2f USDT | Available: %.2f USDT | Positions: %d",
@@ -443,6 +557,31 @@ func (at *AutoTrader) runCycle() error {
 	// 5. Use strategy engine to call AI for decision
 	logger.Infof("🤖 Requesting AI analysis and decision... [Strategy Engine]")
 	aiDecision, err := decision.GetFullDecisionWithStrategy(ctx, at.mcpClient, at.strategyEngine, "balanced")
+
+	// [Bulletproof] Trigger Algorithmic Fallback if AI API fails (Quota limit, etc.)
+	if err != nil {
+		errStr := err.Error()
+		// Catch 429: Resource Exhausted (Quota), or generic AI call failure
+		if strings.Contains(errStr, "429") || strings.Contains(errStr, "RESOURCE_EXHAUSTED") ||
+			strings.Contains(errStr, "AI API call failed") {
+			logger.Warnf("⚠️ AI API Failure detected: %v", err)
+			logger.Infof("🛡️ [Bulletproof] Triggering Algorithmic Fallback...")
+
+			fallbackDecision, fallbackErr := decision.GetAlgorithmicDecision(ctx, at.strategyEngine)
+			if fallbackErr != nil {
+				logger.Errorf("❌ Fallback failed with error: %v", fallbackErr)
+			} else if fallbackDecision == nil {
+				logger.Errorf("❌ Fallback returned nil decision")
+			}
+
+			if fallbackErr == nil && fallbackDecision != nil {
+				logger.Infof("✅ Fallback SUCCESS: Proceeding with technical algorithm")
+				aiDecision = fallbackDecision
+				err = nil // Clear error as we have a fallback decision
+				record.ExecutionLog = append(record.ExecutionLog, "Fallback: Triggered technical algorithm due to AI failure")
+			}
+		}
+	}
 
 	if aiDecision != nil && aiDecision.AIRequestDurationMs > 0 {
 		record.AIRequestDurationMs = aiDecision.AIRequestDurationMs
@@ -565,47 +704,47 @@ func (at *AutoTrader) runCycle() error {
 
 // buildTradingContext builds trading context
 func (at *AutoTrader) buildTradingContext() (*decision.Context, error) {
-	// 1. Get account information
+	// 1. Get account information (account-wide)
 	balance, err := at.trader.GetBalance()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get account balance: %w", err)
 	}
 
 	// Get account fields
-	totalWalletBalance := 0.0
-	totalUnrealizedProfit := 0.0
 	availableBalance := 0.0
 
-	if wallet, ok := balance["totalWalletBalance"].(float64); ok {
-		totalWalletBalance = wallet
-	}
-	if unrealized, ok := balance["totalUnrealizedProfit"].(float64); ok {
-		totalUnrealizedProfit = unrealized
-	}
 	if avail, ok := balance["availableBalance"].(float64); ok {
 		availableBalance = avail
 	}
 
-	// Total Equity = Wallet balance + Unrealized profit
-	totalEquity := totalWalletBalance + totalUnrealizedProfit
-
-	// 2. Get position information
-	positions, err := at.trader.GetPositions()
+	// 2. Get all exchange positions
+	exchangePositions, err := at.trader.GetPositions()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get positions: %w", err)
 	}
 
+	// Filter positions by trader_id using internal database
 	var positionInfos []decision.PositionInfo
+	totalUnrealizedPnL := 0.0
 	totalMarginUsed := 0.0
 
 	// Current position key set (for cleaning up closed position records)
 	currentPositionKeys := make(map[string]bool)
 
-	for _, pos := range positions {
+	for _, pos := range exchangePositions {
 		symbol := pos["symbol"].(string)
 		side := pos["side"].(string)
-		entryPrice := pos["entryPrice"].(float64)
+
+		// Check if this position belongs to the current trader in our database
+		if at.store != nil {
+			dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, symbol, side)
+			if err != nil || dbPos == nil {
+				continue // Skip positions that don't belong to this trader
+			}
+		}
+
 		markPrice := pos["markPrice"].(float64)
+		entryPrice := pos["entryPrice"].(float64)
 		quantity := pos["positionAmt"].(float64)
 		if quantity < 0 {
 			quantity = -quantity // Short position quantity is negative, convert to positive
@@ -617,6 +756,7 @@ func (at *AutoTrader) buildTradingContext() (*decision.Context, error) {
 		}
 
 		unrealizedPnl := pos["unRealizedProfit"].(float64)
+		totalUnrealizedPnL += unrealizedPnl
 		liquidationPrice := pos["liquidationPrice"].(float64)
 
 		// Calculate margin used (estimated)
@@ -689,13 +829,24 @@ func (at *AutoTrader) buildTradingContext() (*decision.Context, error) {
 	if at.strategyEngine == nil {
 		return nil, fmt.Errorf("trader has no strategy engine configured")
 	}
-	candidateCoins, err := at.strategyEngine.GetCandidateCoins()
+	candidateStocks, err := at.strategyEngine.GetCandidateStocks()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get candidate coins: %w", err)
+		return nil, fmt.Errorf("failed to get candidate stocks: %w", err)
 	}
-	logger.Infof("📋 [%s] Strategy engine fetched candidate coins: %d", at.name, len(candidateCoins))
+	logger.Infof("📋 [%s] Strategy engine fetched candidate stocks: %d", at.name, len(candidateStocks))
 
-	// 4. Calculate total P&L
+	// 4. Get Realized PnL from historical closed positions in DB
+	realizedPnL := 0.0
+	if at.store != nil {
+		if stats, err := at.store.Position().GetFullStats(at.id); err == nil && stats != nil {
+			realizedPnL = stats.TotalPnL
+		}
+	}
+
+	// Calculate Virtual Equity for this trader:
+	// Virtual Equity = Initial Balance + Realized PnL + Unrealized PnL
+	totalEquity := at.initialBalance + realizedPnL + totalUnrealizedPnL
+
 	totalPnL := totalEquity - at.initialBalance
 	totalPnLPct := 0.0
 	if at.initialBalance > 0 {
@@ -709,29 +860,29 @@ func (at *AutoTrader) buildTradingContext() (*decision.Context, error) {
 
 	// 5. Get leverage from strategy config
 	strategyConfig := at.strategyEngine.GetConfig()
-	btcEthLeverage := strategyConfig.RiskControl.BTCETHMaxLeverage
-	altcoinLeverage := strategyConfig.RiskControl.AltcoinMaxLeverage
+	btcEthLeverage := strategyConfig.RiskControl.LargeCapMaxMargin
+	altcoinLeverage := strategyConfig.RiskControl.SmallCapMaxMargin
 	logger.Infof("📋 [%s] Strategy leverage config: BTC/ETH=%dx, Altcoin=%dx", at.name, btcEthLeverage, altcoinLeverage)
 
 	// 6. Build context
 	ctx := &decision.Context{
-		CurrentTime:     time.Now().UTC().Format("2006-01-02 15:04:05 UTC"),
-		RuntimeMinutes:  int(time.Since(at.startTime).Minutes()),
-		CallCount:       at.callCount,
-		BTCETHLeverage:  btcEthLeverage,
-		AltcoinLeverage: altcoinLeverage,
+		CurrentTime:      time.Now().UTC().Format("2006-01-02 15:04:05 UTC"),
+		RuntimeMinutes:   int(time.Since(at.startTime).Minutes()),
+		CallCount:        at.callCount,
+		LargeCapLeverage: btcEthLeverage,
+		SmallCapLeverage: altcoinLeverage,
 		Account: decision.AccountInfo{
 			TotalEquity:      totalEquity,
 			AvailableBalance: availableBalance,
-			UnrealizedPnL:    totalUnrealizedProfit,
+			UnrealizedPnL:    totalUnrealizedPnL,
 			TotalPnL:         totalPnL,
 			TotalPnLPct:      totalPnLPct,
 			MarginUsed:       totalMarginUsed,
 			MarginUsedPct:    marginUsedPct,
 			PositionCount:    len(positionInfos),
 		},
-		Positions:      positionInfos,
-		CandidateCoins: candidateCoins,
+		Positions:       positionInfos,
+		CandidateStocks: candidateStocks,
 	}
 
 	// 7. Add recent closed trades (if store is available)
@@ -764,8 +915,8 @@ func (at *AutoTrader) buildTradingContext() (*decision.Context, error) {
 	if strategyConfig.Indicators.EnableQuantData && strategyConfig.Indicators.QuantDataAPIURL != "" {
 		// Collect symbols to query (candidate coins + position coins)
 		symbolsToQuery := make(map[string]bool)
-		for _, coin := range candidateCoins {
-			symbolsToQuery[coin.Symbol] = true
+		for _, stock := range candidateStocks {
+			symbolsToQuery[stock.Symbol] = true
 		}
 		for _, pos := range positionInfos {
 			symbolsToQuery[pos.Symbol] = true
@@ -838,6 +989,151 @@ func (at *AutoTrader) ExecuteDecision(d *decision.Decision) error {
 
 	logger.Infof("[%s] External decision executed successfully: %s %s", at.name, d.Action, d.Symbol)
 	return nil
+}
+
+// calculateSmartLimitPrice calculates optimal limit price using VWAP ± ATR (Phase 2: Smart Order Execution)
+func (at *AutoTrader) calculateSmartLimitPrice(symbol string, side string, atrMultiplier float64) (float64, error) {
+	// Get market data with VWAP and ATR
+	marketData, err := market.Get(symbol)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get market data: %w", err)
+	}
+
+	// Get primary timeframe data (default: 15m or first available)
+	var vwap, atr float64
+	if marketData.TimeframeData != nil {
+		// Try to get 15m timeframe first
+		if tf15m, ok := marketData.TimeframeData["15m"]; ok && tf15m != nil {
+			vwap = tf15m.CurrentVWAP
+			atr = tf15m.ATR14
+		} else {
+			// Fall back to first available timeframe
+			for _, tfData := range marketData.TimeframeData {
+				if tfData != nil {
+					vwap = tfData.CurrentVWAP
+					atr = tfData.ATR14
+					break
+				}
+			}
+		}
+	}
+
+	// Fallback to current price if VWAP not available
+	if vwap == 0 {
+		vwap = marketData.CurrentPrice
+		logger.Infof("⚠️ VWAP not available for %s, using current price: $%.2f", symbol, vwap)
+	}
+
+	// Fallback to price-based ATR estimate if ATR not available (2% of price)
+	if atr == 0 {
+		atr = marketData.CurrentPrice * 0.02
+		logger.Infof("⚠️ ATR not available for %s, using 2%% estimate: $%.2f", symbol, atr)
+	}
+
+	// Calculate limit price: VWAP ± (ATR × multiplier)
+	var limitPrice float64
+	if side == "buy" {
+		// Buy limit: below market to reduce slippage
+		limitPrice = vwap - (atr * atrMultiplier)
+		logger.Infof("📊 Smart BUY limit: VWAP $%.2f - (ATR $%.2f × %.2f) = $%.2f",
+			vwap, atr, atrMultiplier, limitPrice)
+	} else {
+		// Sell limit: above market to reduce slippage
+		limitPrice = vwap + (atr * atrMultiplier)
+		logger.Infof("📊 Smart SELL limit: VWAP $%.2f + (ATR $%.2f × %.2f) = $%.2f",
+			vwap, atr, atrMultiplier, limitPrice)
+	}
+
+	return limitPrice, nil
+}
+
+// executeWithSmartOrders wraps order execution with smart limit order logic (Phase 2)
+func (at *AutoTrader) executeWithSmartOrders(symbol, side string, quantity float64, leverage int) (map[string]interface{}, error) {
+	// Check if smart limit orders are enabled
+	execConfig := at.config.StrategyConfig.Execution
+
+	if !execConfig.EnableLimitOrders {
+		// Default: use market orders
+		logger.Infof("  💨 Using market order (smart orders disabled)")
+		if side == "buy" {
+			return at.trader.OpenLong(symbol, quantity, leverage)
+		} else {
+			return at.trader.OpenShort(symbol, quantity, leverage)
+		}
+	}
+
+	// Smart limit order execution
+	logger.Infof("  🎯 Using smart limit order (VWAP ± ATR)")
+
+	// Calculate optimal limit price
+	limitPrice, err := at.calculateSmartLimitPrice(symbol, side, execConfig.LimitOffsetATRMult)
+	if err != nil {
+		logger.Infof("  ⚠️ Failed to calculate limit price, falling back to market: %v", err)
+		if side == "buy" {
+			return at.trader.OpenLong(symbol, quantity, leverage)
+		} else {
+			return at.trader.OpenShort(symbol, quantity, leverage)
+		}
+	}
+
+	// Place limit order
+	alpacaTrader, ok := at.trader.(*AlpacaTrader)
+	if !ok {
+		logger.Infof("  ⚠️ Smart orders only supported for Alpaca, using market order")
+		if side == "buy" {
+			return at.trader.OpenLong(symbol, quantity, leverage)
+		} else {
+			return at.trader.OpenShort(symbol, quantity, leverage)
+		}
+	}
+
+	order, err := alpacaTrader.PlaceLimitOrder(symbol, side, quantity, limitPrice)
+	if err != nil {
+		logger.Infof("  ⚠️ Failed to place limit order, falling back to market: %v", err)
+		if side == "buy" {
+			return at.trader.OpenLong(symbol, quantity, leverage)
+		} else {
+			return at.trader.OpenShort(symbol, quantity, leverage)
+		}
+	}
+
+	// Extract order ID
+	orderID := ""
+	if id, ok := order["id"].(string); ok {
+		orderID = id
+	}
+
+	if orderID == "" {
+		logger.Infof("  ⚠️ No order ID returned, assuming market order")
+		return order, nil
+	}
+
+	// Wait for fill with timeout
+	timeout := execConfig.LimitTimeoutSeconds
+	if timeout <= 0 {
+		timeout = 5 // Default 5 seconds
+	}
+
+	filled, err := alpacaTrader.WaitForFill(orderID, timeout)
+	if err != nil {
+		logger.Infof("  ⚠️ Error waiting for fill: %v", err)
+	}
+
+	if !filled {
+		// Timeout: cancel limit order and use market order
+		logger.Infof("  ⏱️ Limit order not filled within %ds, canceling and using market order", timeout)
+		alpacaTrader.CancelOrder(orderID)
+
+		if side == "buy" {
+			return at.trader.OpenLong(symbol, quantity, leverage)
+		} else {
+			return at.trader.OpenShort(symbol, quantity, leverage)
+		}
+	}
+
+	// Success: limit order filled
+	logger.Infof("  ✅ Limit order filled at $%.2f (saved slippage!)", limitPrice)
+	return order, nil
 }
 
 // executeOpenLongWithRecord executes open long position and records detailed information
@@ -926,8 +1222,8 @@ func (at *AutoTrader) executeOpenLongWithRecord(decision *decision.Decision, act
 		// Continue execution, doesn't affect trading
 	}
 
-	// Open position
-	order, err := at.trader.OpenLong(decision.Symbol, quantity, decision.Leverage)
+	// Open position (Phase 2: Smart Order Execution if enabled)
+	order, err := at.executeWithSmartOrders(decision.Symbol, "buy", quantity, decision.Leverage)
 	if err != nil {
 		return err
 	}
@@ -1043,8 +1339,8 @@ func (at *AutoTrader) executeOpenShortWithRecord(decision *decision.Decision, ac
 		// Continue execution, doesn't affect trading
 	}
 
-	// Open position
-	order, err := at.trader.OpenShort(decision.Symbol, quantity, decision.Leverage)
+	// Open short position (Phase 2: Smart Order Execution if enabled)
+	order, err := at.executeWithSmartOrders(decision.Symbol, "sell", quantity, decision.Leverage)
 	if err != nil {
 		return err
 	}
@@ -1299,40 +1595,50 @@ func (at *AutoTrader) GetAccountInfo() (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to get balance: %w", err)
 	}
 
-	// Get account fields
+	// Get account fields (account-wide)
 	totalWalletBalance := 0.0
-	totalUnrealizedProfit := 0.0
 	availableBalance := 0.0
 
 	if wallet, ok := balance["totalWalletBalance"].(float64); ok {
 		totalWalletBalance = wallet
 	}
-	if unrealized, ok := balance["totalUnrealizedProfit"].(float64); ok {
-		totalUnrealizedProfit = unrealized
-	}
 	if avail, ok := balance["availableBalance"].(float64); ok {
 		availableBalance = avail
 	}
 
-	// Total Equity = Wallet balance + Unrealized profit
-	totalEquity := totalWalletBalance + totalUnrealizedProfit
-
-	// Get positions to calculate total margin
-	positions, err := at.trader.GetPositions()
+	// Get all exchange positions
+	exchangePositions, err := at.trader.GetPositions()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get positions: %w", err)
 	}
 
+	// Filter positions by trader_id using internal database
+	// This ensures that when sharing an account, traders only see their own position P&L
+	totalUnrealizedPnL := 0.0
 	totalMarginUsed := 0.0
-	totalUnrealizedPnLCalculated := 0.0
-	for _, pos := range positions {
+	positionCount := 0
+
+	for _, pos := range exchangePositions {
+		symbol := pos["symbol"].(string)
+		side := pos["side"].(string)
+
+		// Check if this position belongs to the current trader in our database
+		if at.store != nil {
+			dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, symbol, side)
+			if err != nil || dbPos == nil {
+				continue // Skip positions that don't belong to this trader
+			}
+		}
+
+		// Calculate stats for this trader's position
 		markPrice := pos["markPrice"].(float64)
 		quantity := pos["positionAmt"].(float64)
 		if quantity < 0 {
 			quantity = -quantity
 		}
 		unrealizedPnl := pos["unRealizedProfit"].(float64)
-		totalUnrealizedPnLCalculated += unrealizedPnl
+		totalUnrealizedPnL += unrealizedPnl
+		positionCount++
 
 		leverage := 10
 		if lev, ok := pos["leverage"].(float64); ok {
@@ -1342,19 +1648,23 @@ func (at *AutoTrader) GetAccountInfo() (map[string]interface{}, error) {
 		totalMarginUsed += marginUsed
 	}
 
-	// Verify unrealized P&L consistency (API value vs calculated from positions)
-	diff := math.Abs(totalUnrealizedProfit - totalUnrealizedPnLCalculated)
-	if diff > 0.1 { // Allow 0.01 USDT error margin
-		logger.Infof("⚠️ Unrealized P&L inconsistency: API=%.4f, Calculated=%.4f, Diff=%.4f",
-			totalUnrealizedProfit, totalUnrealizedPnLCalculated, diff)
+	// Get Realized PnL from historical closed positions in DB
+	realizedPnL := 0.0
+	if at.store != nil {
+		if stats, err := at.store.Position().GetFullStats(at.id); err == nil && stats != nil {
+			realizedPnL = stats.TotalPnL
+		}
 	}
 
-	totalPnL := totalEquity - at.initialBalance
+	// Calculate Virtual Equity for this trader:
+	// Virtual Equity = Initial Balance + Realized PnL + Unrealized PnL
+	// This represents the performance of ONLY this trader, decoupled from other traders on the same account
+	totalEquity := at.initialBalance + realizedPnL + totalUnrealizedPnL
+
+	totalPnL := realizedPnL + totalUnrealizedPnL
 	totalPnLPct := 0.0
 	if at.initialBalance > 0 {
 		totalPnLPct = (totalPnL / at.initialBalance) * 100
-	} else {
-		logger.Infof("⚠️ Initial Balance abnormal: %.2f, cannot calculate P&L percentage", at.initialBalance)
 	}
 
 	marginUsedPct := 0.0
@@ -1363,22 +1673,22 @@ func (at *AutoTrader) GetAccountInfo() (map[string]interface{}, error) {
 	}
 
 	return map[string]interface{}{
-		// Core fields
-		"total_equity":      totalEquity,           // Account equity = wallet + unrealized
-		"wallet_balance":    totalWalletBalance,    // Wallet balance (excluding unrealized P&L)
-		"unrealized_profit": totalUnrealizedProfit, // Unrealized P&L (official value from exchange API)
-		"available_balance": availableBalance,      // Available balance
+		// Core fields (Virtual/Filtered)
+		"total_equity":      totalEquity,        // Virtual equity = initial + realized + unrealized
+		"wallet_balance":    totalWalletBalance, // Total account wallet balance (shared)
+		"unrealized_profit": totalUnrealizedPnL, // Filtered unrealized P&L
+		"available_balance": availableBalance,   // Total account available balance (shared)
 
-		// P&L statistics
-		"total_pnl":       totalPnL,          // Total P&L = equity - initial
-		"total_pnl_pct":   totalPnLPct,       // Total P&L percentage
-		"initial_balance": at.initialBalance, // Initial balance
-		"daily_pnl":       at.dailyPnL,       // Daily P&L
+		// P&L statistics (Trader-specific)
+		"total_pnl":       totalPnL,          // Filtered Total P&L
+		"total_pnl_pct":   totalPnLPct,       // Filtered P&L percentage
+		"initial_balance": at.initialBalance, // Assigned initial balance
+		"daily_pnl":       at.dailyPnL,       // Trader-specific daily P&L
 
-		// Position information
-		"position_count":  len(positions),  // Position count
-		"margin_used":     totalMarginUsed, // Margin used
-		"margin_used_pct": marginUsedPct,   // Margin usage rate
+		// Position information (Trader-specific)
+		"position_count":  positionCount,   // Filtered position count
+		"margin_used":     totalMarginUsed, // Filtered margin used
+		"margin_used_pct": marginUsedPct,   // Filtered margin usage rate
 	}, nil
 }
 
@@ -1577,14 +1887,15 @@ func (at *AutoTrader) checkPositionDrawdown() {
 
 // emergencyClosePosition emergency close position function
 func (at *AutoTrader) emergencyClosePosition(symbol, side string) error {
+	side = strings.ToLower(side)
 	switch side {
-	case "long":
+	case "long", "buy":
 		order, err := at.trader.CloseLong(symbol, 0) // 0 = close all
 		if err != nil {
 			return err
 		}
 		logger.Infof("✅ Emergency close long position succeeded, order ID: %v", order["orderId"])
-	case "short":
+	case "short", "sell":
 		order, err := at.trader.CloseShort(symbol, 0) // 0 = close all
 		if err != nil {
 			return err
@@ -1672,8 +1983,8 @@ func (at *AutoTrader) recordAndConfirmOrder(orderResult map[string]interface{}, 
 	}
 
 	// Poll order status to get actual fill price, quantity and fee
-	var actualPrice = price       // fallback to market price
-	var actualQty = quantity      // fallback to requested quantity
+	var actualPrice = price  // fallback to market price
+	var actualQty = quantity // fallback to requested quantity
 	var fee float64
 
 	// Wait for order to be filled and get actual fill data
@@ -1759,10 +2070,10 @@ func (at *AutoTrader) recordPositionChange(orderID, symbol, side, action string,
 		// Update position record
 		err = at.store.Position().ClosePosition(
 			openPos.ID,
-			price,       // exitPrice
-			orderID,     // exitOrderID
+			price,   // exitPrice
+			orderID, // exitOrderID
 			realizedPnL,
-			fee,         // fee from exchange API
+			fee, // fee from exchange API
 			"ai_decision",
 		)
 		if err != nil {
@@ -1795,16 +2106,26 @@ func (at *AutoTrader) enforcePositionValueRatio(positionSizeUSD float64, equity 
 	}
 
 	riskControl := at.config.StrategyConfig.RiskControl
+	wasCapped := false
 
-	// Get the appropriate position value ratio limit
+	// FIRST: Check absolute max position size (if set)
+	// This is the hard cap that applies regardless of equity ratio
+	if riskControl.MaxPositionSizeUSD > 0 && positionSizeUSD > riskControl.MaxPositionSizeUSD {
+		logger.Infof("  ⚠️ [RISK CONTROL] Position $%.2f exceeds max_position_size_usd ($%.2f), capping",
+			positionSizeUSD, riskControl.MaxPositionSizeUSD)
+		positionSizeUSD = riskControl.MaxPositionSizeUSD
+		wasCapped = true
+	}
+
+	// SECOND: Get the appropriate position value ratio limit
 	var maxPositionValueRatio float64
 	if isBTCETH(symbol) {
-		maxPositionValueRatio = riskControl.BTCETHMaxPositionValueRatio
+		maxPositionValueRatio = riskControl.LargeCapMaxPositionValueRatio
 		if maxPositionValueRatio <= 0 {
 			maxPositionValueRatio = 5.0 // Default: 5x for BTC/ETH
 		}
 	} else {
-		maxPositionValueRatio = riskControl.AltcoinMaxPositionValueRatio
+		maxPositionValueRatio = riskControl.SmallCapMaxPositionValueRatio
 		if maxPositionValueRatio <= 0 {
 			maxPositionValueRatio = 1.0 // Default: 1x for altcoins
 		}
@@ -1813,14 +2134,14 @@ func (at *AutoTrader) enforcePositionValueRatio(positionSizeUSD float64, equity 
 	// Calculate max allowed position value = equity × ratio
 	maxPositionValue := equity * maxPositionValueRatio
 
-	// Check if position size exceeds limit
+	// Check if position size exceeds equity ratio limit
 	if positionSizeUSD > maxPositionValue {
 		logger.Infof("  ⚠️ [RISK CONTROL] Position %.2f USDT exceeds limit (equity %.2f × %.1fx = %.2f USDT max for %s), capping",
 			positionSizeUSD, equity, maxPositionValueRatio, maxPositionValue, symbol)
 		return maxPositionValue, true
 	}
 
-	return positionSizeUSD, false
+	return positionSizeUSD, wasCapped
 }
 
 // enforceMinPositionSize checks minimum position size (CODE ENFORCED)
@@ -1857,3 +2178,302 @@ func (at *AutoTrader) enforceMaxPositions(currentPositionCount int) error {
 	return nil
 }
 
+// IsMarketOpen checks if US stock market is currently open (9:30 AM - 4:00 PM ET, Monday-Friday)
+// Exported for use by API endpoints
+func IsMarketOpen() bool {
+	return isMarketOpen()
+}
+
+// isMarketOpen checks if US stock market is currently open (9:30 AM - 4:00 PM ET, Monday-Friday)
+// Used to enforce TradeOnlyMarketHours setting for stock trading
+func isMarketOpen() bool {
+	// Load Eastern Time location
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		// Fallback: assume market is open if timezone fails
+		logger.Infof("⚠️ Failed to load America/New_York timezone: %v, assuming market is open", err)
+		return true
+	}
+
+	now := time.Now().In(loc)
+
+	// Check if weekend (Saturday = 6, Sunday = 0)
+	weekday := now.Weekday()
+	if weekday == time.Saturday || weekday == time.Sunday {
+		return false
+	}
+
+	// Market hours: 9:30 AM to 4:00 PM ET
+	hour := now.Hour()
+	minute := now.Minute()
+	currentMinutes := hour*60 + minute
+
+	marketOpenMinutes := 9*60 + 30 // 9:30 AM = 570 minutes
+	marketCloseMinutes := 16 * 60  // 4:00 PM = 960 minutes
+
+	return currentMinutes >= marketOpenMinutes && currentMinutes < marketCloseMinutes
+}
+
+// ============================================================================
+// VWAP Pre-Entry Mode Functions
+// ============================================================================
+
+// isVWAPPreEntryTime checks if current time is between 9:30 AM and entry time (e.g., 10:00 AM)
+func (at *AutoTrader) isVWAPPreEntryTime() bool {
+	if at.strategyEngine == nil {
+		return false
+	}
+
+	config := at.strategyEngine.GetConfig()
+	if config == nil || !config.Indicators.EnableVWAPSlopeStretch {
+		return false
+	}
+
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return false
+	}
+	now := time.Now().In(loc)
+
+	// Check if weekend
+	weekday := now.Weekday()
+	if weekday == time.Saturday || weekday == time.Sunday {
+		return false
+	}
+
+	currentMinutes := now.Hour()*60 + now.Minute()
+	marketOpenMinutes := 9*60 + 30 // 9:30 AM = 570 minutes
+
+	// Parse entry time (e.g., "10:00")
+	entryTime := config.Indicators.VWAPEntryTime
+	if entryTime == "" {
+		entryTime = "10:00"
+	}
+
+	var entryHour, entryMin int
+	fmt.Sscanf(entryTime, "%d:%d", &entryHour, &entryMin)
+	entryMinutes := entryHour*60 + entryMin
+
+	return currentMinutes >= marketOpenMinutes && currentMinutes < entryMinutes
+}
+
+// isVWAPEntryTime checks if it's exactly the entry time (e.g., 10:00 AM) - within a 1-minute window
+func (at *AutoTrader) isVWAPEntryTime() bool {
+	if at.strategyEngine == nil {
+		return false
+	}
+
+	config := at.strategyEngine.GetConfig()
+	if config == nil || !config.Indicators.EnableVWAPSlopeStretch {
+		return false
+	}
+
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return false
+	}
+	now := time.Now().In(loc)
+
+	// Parse entry time
+	entryTime := config.Indicators.VWAPEntryTime
+	if entryTime == "" {
+		entryTime = "10:00"
+	}
+
+	var entryHour, entryMin int
+	fmt.Sscanf(entryTime, "%d:%d", &entryHour, &entryMin)
+
+	return now.Hour() == entryHour && now.Minute() == entryMin
+}
+
+// isVWAPPostEntryTime checks if we're past the entry time (no new buys allowed, only manage positions)
+func (at *AutoTrader) isVWAPPostEntryTime() bool {
+	if at.strategyEngine == nil {
+		return false
+	}
+
+	config := at.strategyEngine.GetConfig()
+	if config == nil || !config.Indicators.EnableVWAPSlopeStretch {
+		return false
+	}
+
+	loc, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return false
+	}
+	now := time.Now().In(loc)
+
+	// Parse entry time
+	entryTime := config.Indicators.VWAPEntryTime
+	if entryTime == "" {
+		entryTime = "10:00"
+	}
+
+	var entryHour, entryMin int
+	fmt.Sscanf(entryTime, "%d:%d", &entryHour, &entryMin)
+	entryMinutes := entryHour*60 + entryMin
+	currentMinutes := now.Hour()*60 + now.Minute()
+
+	// If current time is after entry time, we're in post-entry mode
+	return currentMinutes > entryMinutes
+}
+
+// runVWAPPositionManagement manages existing positions during post-entry phase
+// Only sells on TP hit or 5 minutes before market close (3:55 PM ET)
+func (at *AutoTrader) runVWAPPositionManagement() {
+	// Get current positions
+	positions, err := at.trader.GetPositions()
+	if err != nil {
+		logger.Infof("📊 [VWAP] Error getting positions: %v", err)
+		return
+	}
+	if len(positions) == 0 {
+		logger.Infof("📊 [VWAP] No positions to manage")
+		return
+	}
+
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Now().In(loc)
+	currentMinutes := now.Hour()*60 + now.Minute()
+	marketCloseMinutes := 16*60 - 5 // 3:55 PM (5 min before 4 PM close)
+
+	// Check if we're near market close
+	isNearMarketClose := currentMinutes >= marketCloseMinutes
+
+	for _, pos := range positions {
+		symbol := pos["symbol"].(string)
+		side := pos["side"].(string)
+
+		// Get price data
+		entryPrice := pos["entryPrice"].(float64)
+		markPrice := pos["markPrice"].(float64)
+
+		// Calculate PnL percentage
+		pnlPct := 0.0
+		if entryPrice > 0 && markPrice > 0 {
+			if side == "long" || side == "buy" {
+				pnlPct = ((markPrice - entryPrice) / entryPrice) * 100
+			} else {
+				pnlPct = ((entryPrice - markPrice) / entryPrice) * 100
+			}
+		}
+
+		// Get TP from AI100 sell_trigger API (falls back to 5% if not found)
+		ai100Client := market.GetAI100Client()
+		tpPct := ai100Client.GetSellTrigger(symbol)
+		logger.Infof("📊 [VWAP] %s: PnL=%.2f%%, AI100 sell_trigger=%.2f%%", symbol, pnlPct, tpPct)
+
+		// Check if TP hit
+		if pnlPct >= tpPct {
+			logger.Infof("📊 [VWAP] Take Profit hit for %s: %.2f%% >= %.2f%% - closing position", symbol, pnlPct, tpPct)
+			at.emergencyClosePosition(symbol, side)
+			continue
+		}
+
+		// Check if near market close - sell all positions
+		if isNearMarketClose {
+			logger.Infof("📊 [VWAP] Market closing soon - closing position %s at %.2f%%", symbol, pnlPct)
+			at.emergencyClosePosition(symbol, side)
+			continue
+		}
+
+		// Otherwise, hold the position
+		logger.Infof("📊 [VWAP] Holding %s: PnL %.2f%% (TP: %.2f%%)", symbol, pnlPct, tpPct)
+	}
+}
+
+// getVWAPAwareInterval returns the appropriate scan interval based on VWAP mode
+// Returns 1 minute during pre-entry phase, otherwise user-configured interval
+func (at *AutoTrader) getVWAPAwareInterval() time.Duration {
+	if at.strategyEngine == nil {
+		return at.config.ScanInterval
+	}
+
+	config := at.strategyEngine.GetConfig()
+	if config == nil || !config.Indicators.EnableVWAPSlopeStretch {
+		return at.config.ScanInterval
+	}
+
+	// If in pre-entry phase (9:30 to entry time), use 1-minute intervals
+	if at.isVWAPPreEntryTime() {
+		return 1 * time.Minute
+	}
+
+	return at.config.ScanInterval
+}
+
+// initVWAPCollector initializes or resets VWAP collector for a symbol
+func (at *AutoTrader) initVWAPCollector(symbol string) *VWAPCollector {
+	at.vwapCollectorsMu.Lock()
+	defer at.vwapCollectorsMu.Unlock()
+
+	if at.vwapCollectors == nil {
+		at.vwapCollectors = make(map[string]*VWAPCollector)
+	}
+
+	entryTime := "10:00"
+	if at.strategyEngine != nil {
+		config := at.strategyEngine.GetConfig()
+		if config != nil && config.Indicators.VWAPEntryTime != "" {
+			entryTime = config.Indicators.VWAPEntryTime
+		}
+	}
+
+	// Check if collector exists and if it needs daily reset
+	if collector, exists := at.vwapCollectors[symbol]; exists {
+		loc, _ := time.LoadLocation("America/New_York")
+		now := time.Now().In(loc)
+		// Reset if it's a new trading day (after market open at 9:30)
+		if now.Hour() == 9 && now.Minute() == 30 && collector.GetBarCount() > 0 {
+			collector.Reset()
+			logger.Infof("📊 [VWAP] Reset collector for %s at market open", symbol)
+		}
+		return collector
+	}
+
+	collector := NewVWAPCollector(entryTime)
+	at.vwapCollectors[symbol] = collector
+	logger.Infof("📊 [VWAP] Initialized collector for %s (entry time: %s AM ET)", symbol, entryTime)
+	return collector
+}
+
+// getVWAPCollector gets or creates a VWAP collector for a symbol
+func (at *AutoTrader) getVWAPCollector(symbol string) *VWAPCollector {
+	at.vwapCollectorsMu.RLock()
+	if at.vwapCollectors != nil {
+		if collector, exists := at.vwapCollectors[symbol]; exists {
+			at.vwapCollectorsMu.RUnlock()
+			return collector
+		}
+	}
+	at.vwapCollectorsMu.RUnlock()
+	return at.initVWAPCollector(symbol)
+}
+
+// collectVWAPBars fetches latest 1-min bars for all candidate stocks
+func (at *AutoTrader) collectVWAPBars(symbols []string) {
+	for _, symbol := range symbols {
+		collector := at.getVWAPCollector(symbol)
+
+		// Fetch latest 1-minute bar from Alpaca
+		bar, err := market.GetLatest1MinBar(symbol)
+		if err != nil {
+			logger.Infof("⚠️ [VWAP] Failed to fetch 1-min bar for %s: %v", symbol, err)
+			continue
+		}
+
+		if bar != nil {
+			vwapBar := VWAPBar{
+				Time:   bar.Time,
+				Open:   bar.Open,
+				High:   bar.High,
+				Low:    bar.Low,
+				Close:  bar.Close,
+				Volume: bar.Volume,
+			}
+			collector.AddBar(vwapBar)
+			logger.Infof("📊 [VWAP] Collected bar for %s: Close=%.4f, Vol=%.0f, Bars=%d",
+				symbol, bar.Close, bar.Volume, collector.GetBarCount())
+		}
+	}
+}

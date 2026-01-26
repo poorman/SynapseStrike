@@ -7,7 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strconv"
 
 	"github.com/elliottech/lighter-go/types"

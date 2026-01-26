@@ -1,7 +1,7 @@
 package backtest
 
 import (
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"os"
 	"sort"
 	"time"

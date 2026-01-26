@@ -25,7 +25,7 @@ export default function LoginModal({ onClose, language }: LoginModalProps) {
         className="relative max-w-md w-full rounded-2xl p-8"
         style={{
           background: 'var(--brand-dark-gray)',
-          border: '1px solid rgba(240, 185, 11, 0.2)',
+          border: '1px solid var(--primary-bg, 0.2)',
         }}
         initial={{ scale: 0.9, y: 50 }}
         animate={{ scale: 1, y: 0 }}
@@ -64,7 +64,7 @@ export default function LoginModal({ onClose, language }: LoginModalProps) {
             }}
             whileHover={{
               scale: 1.05,
-              boxShadow: '0 10px 30px rgba(240, 185, 11, 0.4)',
+              boxShadow: '0 10px 30px var(--primary-bg, 0.4)',
             }}
             whileTap={{ scale: 0.95 }}
           >
@@ -81,7 +81,7 @@ export default function LoginModal({ onClose, language }: LoginModalProps) {
               style={{
                 background: 'var(--brand-dark-gray)',
                 color: 'var(--brand-light-gray)',
-                border: '1px solid rgba(240, 185, 11, 0.2)',
+                border: '1px solid var(--primary-bg, 0.2)',
               }}
               whileHover={{ scale: 1.05, borderColor: 'var(--brand-yellow)' }}
               whileTap={{ scale: 0.95 }}

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strings"
 	"time"
 )

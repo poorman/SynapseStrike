@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"nofx/logger"
+	"SynapseStrike/logger"
 )
 
 // Config client configuration (centralized management of all configurations)

@@ -1,9 +1,9 @@
 package trader
 
 import (
+	"SynapseStrike/logger"
+	"SynapseStrike/store"
 	"fmt"
-	"nofx/logger"
-	"nofx/store"
 	"strings"
 	"sync"
 	"time"
@@ -14,11 +14,11 @@ import (
 type PositionSyncManager struct {
 	store                *store.Store
 	interval             time.Duration
-	historySyncInterval  time.Duration        // Interval for full history sync
+	historySyncInterval  time.Duration // Interval for full history sync
 	stopCh               chan struct{}
 	wg                   sync.WaitGroup
-	traderCache          map[string]Trader                    // trader_id -> Trader instance cache
-	configCache          map[string]*store.TraderFullConfig   // trader_id -> config cache
+	traderCache          map[string]Trader                  // trader_id -> Trader instance cache
+	configCache          map[string]*store.TraderFullConfig // trader_id -> config cache
 	cacheMutex           sync.RWMutex
 	lastHistorySync      map[string]time.Time // trader_id -> last history sync time
 	lastHistorySyncMutex sync.RWMutex
@@ -123,7 +123,7 @@ func (m *PositionSyncManager) syncTraderPositions(traderID string, localPosition
 	exchangeID := ""
 	exchangeType := ""
 	if config != nil {
-		exchangeID = config.Exchange.ID           // UUID for database association
+		exchangeID = config.Exchange.ID             // UUID for database association
 		exchangeType = config.Exchange.ExchangeType // "binance", "bybit" etc for trader creation
 	}
 
@@ -521,6 +521,12 @@ func (m *PositionSyncManager) createTrader(config *store.TraderFullConfig) (Trad
 			false, // Always use mainnet for Lighter
 		)
 
+	case "alpaca", "alpaca-live":
+		return NewAlpacaTrader(exchange.APIKey, exchange.SecretKey, false), nil
+
+	case "alpaca-paper":
+		return NewAlpacaTrader(exchange.APIKey, exchange.SecretKey, true), nil
+
 	default:
 		return nil, fmt.Errorf("unsupported exchange type: %s", exchange.ExchangeType)
 	}
@@ -571,6 +577,9 @@ func (m *PositionSyncManager) startupSync() {
 		return
 	}
 
+	// Track which exchanges we've already synced external positions for
+	syncedExchanges := make(map[string]bool)
+
 	for _, traderInfo := range traders {
 		traderID := traderInfo.ID
 
@@ -587,11 +596,19 @@ func (m *PositionSyncManager) startupSync() {
 			logger.Infof("⚠️  Failed to get trader config for startup sync (ID: %s): %v", traderID, err)
 			continue
 		}
-		exchangeID := config.Exchange.ID               // UUID
-		exchangeType := config.Exchange.ExchangeType  // "binance", "bybit" etc
+		exchangeID := config.Exchange.ID             // UUID
+		exchangeType := config.Exchange.ExchangeType // "binance", "bybit" etc
 
 		// 1. Sync current open positions from exchange
-		m.syncExternalPositions(traderID, exchangeID, exchangeType, trader)
+		// IMPORTANT: Only sync external positions ONCE per exchange account
+		// This prevents duplicates when multiple traders share an account
+		if !syncedExchanges[exchangeID] {
+			logger.Infof("📊 Syncing external positions for exchange account %s (using trader %s)...", exchangeID[:8], traderID[:8])
+			m.syncExternalPositions(traderID, exchangeID, exchangeType, trader)
+			syncedExchanges[exchangeID] = true
+		} else {
+			logger.Infof("📊 Skipping external position sync for trader %s: already synced for exchange account %s", traderID[:8], exchangeID[:8])
+		}
 
 		// 2. Sync closed positions history from exchange
 		m.syncClosedPositionsHistory(traderID, exchangeID, exchangeType, trader)
@@ -610,11 +627,25 @@ func (m *PositionSyncManager) syncExternalPositions(traderID, exchangeID, exchan
 		return
 	}
 
-	// Get local open positions
+	// Get local open positions for this trader
 	localPositions, err := m.store.Position().GetOpenPositions(traderID)
 	if err != nil {
 		logger.Infof("⚠️  Failed to get local positions for external sync (ID: %s): %v", traderID, err)
 		return
+	}
+
+	// IMPORTANT: Also get ALL open positions to check if another trader on the same exchange
+	// already has this position tracked. This prevents duplicate syncing for shared accounts.
+	allOpenPositions, _ := m.store.Position().GetAllOpenPositions()
+
+	// Build map of ALL positions by exchangeID + symbol + side
+	existingByExchange := make(map[string]bool)
+	for _, pos := range allOpenPositions {
+		// Check if this position is on the same exchange account
+		if pos.ExchangeID == exchangeID {
+			key := fmt.Sprintf("%s_%s_%s", pos.ExchangeID, pos.Symbol, pos.Side)
+			existingByExchange[key] = true
+		}
 	}
 
 	// Build local position map: symbol_side -> position
@@ -645,6 +676,12 @@ func (m *PositionSyncManager) syncExternalPositions(traderID, exchangeID, exchan
 		// Check if we already have this position locally
 		if _, exists := localMap[key]; exists {
 			continue // Already tracking this position
+		}
+
+		// IMPORTANT: Check if ANY trader on this exchange already has this position
+		exchangeKey := fmt.Sprintf("%s_%s_%s", exchangeID, symbol, normalizedSide)
+		if existingByExchange[exchangeKey] {
+			continue // Another trader on same exchange already tracks this position
 		}
 
 		// This is an external position - create local record

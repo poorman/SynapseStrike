@@ -1,38 +1,38 @@
 import { create } from 'zustand'
-import type { AIModel, Exchange } from '../types'
+import type { AIModel, Brokerage } from '../types'
 import { api } from '../lib/api'
 
 interface TradersConfigState {
-  // 数据
+  // data
   allModels: AIModel[]
-  allExchanges: Exchange[]
+  allBrokerages: Brokerage[]
   supportedModels: AIModel[]
-  supportedExchanges: Exchange[]
+  supportedBrokerages: Brokerage[]
 
-  // 计算属性
+  // computed property
   configuredModels: AIModel[]
-  configuredExchanges: Exchange[]
+  configuredBrokerages: Brokerage[]
 
   // Actions
   setAllModels: (models: AIModel[]) => void
-  setAllExchanges: (exchanges: Exchange[]) => void
+  setAllBrokerages: (brokerages: Brokerage[]) => void
   setSupportedModels: (models: AIModel[]) => void
-  setSupportedExchanges: (exchanges: Exchange[]) => void
+  setSupportedBrokerages: (brokerages: Brokerage[]) => void
 
-  // 异步加载
+  // asyncLoad
   loadConfigs: (user: any, token: string | null) => Promise<void>
 
-  // 重置
+  // reset
   reset: () => void
 }
 
 const initialState = {
   allModels: [],
-  allExchanges: [],
+  allBrokerages: [],
   supportedModels: [],
-  supportedExchanges: [],
+  supportedBrokerages: [],
   configuredModels: [],
-  configuredExchanges: [],
+  configuredBrokerages: [],
 }
 
 export const useTradersConfigStore = create<TradersConfigState>((set, get) => ({
@@ -40,42 +40,33 @@ export const useTradersConfigStore = create<TradersConfigState>((set, get) => ({
 
   setAllModels: (models) => {
     set({ allModels: models })
-    // 更新 configuredModels
+    // Update configuredModels
     const configuredModels = models.filter((m) => {
       return m.enabled || (m.customApiUrl && m.customApiUrl.trim() !== '')
     })
     set({ configuredModels })
   },
 
-  setAllExchanges: (exchanges) => {
-    set({ allExchanges: exchanges })
-    // 更新 configuredExchanges
-    const configuredExchanges = exchanges.filter((e) => {
-      if (e.id === 'aster') {
-        return e.asterUser && e.asterUser.trim() !== ''
-      }
-      if (e.id === 'hyperliquid') {
-        return e.hyperliquidWalletAddr && e.hyperliquidWalletAddr.trim() !== ''
-      }
-      // 修复: 添加 enabled 判断,与原始逻辑保持一致
-      return e.enabled || (e.apiKey && e.apiKey.trim() !== '')
-    })
-    set({ configuredExchanges })
+  setAllBrokerages: (brokerages) => {
+    set({ allBrokerages: brokerages })
+    // Update configuredBrokerages - for stock brokerages, just check enabled
+    const configuredBrokerages = brokerages.filter((e) => e.enabled)
+    set({ configuredBrokerages })
   },
 
   setSupportedModels: (models) => set({ supportedModels: models }),
-  setSupportedExchanges: (exchanges) => set({ supportedExchanges: exchanges }),
+  setSupportedBrokerages: (brokerages) => set({ supportedBrokerages: brokerages }),
 
   loadConfigs: async (user, token) => {
     if (!user || !token) {
-      // 未登录时只加载公开的支持模型和交易所
+      // notLoginwhenonlyLoadpublic'ssupportmodelandbrokerage
       try {
-        const [supportedModels, supportedExchanges] = await Promise.all([
+        const [supportedModels, supportedBrokerages] = await Promise.all([
           api.getSupportedModels(),
-          api.getSupportedExchanges(),
+          api.getSupportedBrokerages(),
         ])
         get().setSupportedModels(supportedModels)
-        get().setSupportedExchanges(supportedExchanges)
+        get().setSupportedBrokerages(supportedBrokerages)
       } catch (err) {
         console.error('Failed to load supported configs:', err)
       }
@@ -85,20 +76,20 @@ export const useTradersConfigStore = create<TradersConfigState>((set, get) => ({
     try {
       const [
         modelConfigs,
-        exchangeConfigs,
+        brokerageConfigs,
         supportedModels,
-        supportedExchanges,
+        supportedBrokerages,
       ] = await Promise.all([
         api.getModelConfigs(),
-        api.getExchangeConfigs(),
+        api.getBrokerageConfigs(),
         api.getSupportedModels(),
-        api.getSupportedExchanges(),
+        api.getSupportedBrokerages(),
       ])
 
       get().setAllModels(modelConfigs)
-      get().setAllExchanges(exchangeConfigs)
+      get().setAllBrokerages(brokerageConfigs)
       get().setSupportedModels(supportedModels)
-      get().setSupportedExchanges(supportedExchanges)
+      get().setSupportedBrokerages(supportedBrokerages)
     } catch (error) {
       console.error('Failed to load configs:', error)
     }

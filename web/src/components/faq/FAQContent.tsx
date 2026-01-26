@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { t, type Language } from '../../i18n/translations'
 import type { FAQCategory } from '../../data/faqData'
-// RoadmapWidget 移除动态嵌入，按需仅展示外部链接
+// RoadmapWidget removed - dynamic embed, on demand only display external link
 
 interface FAQContentProps {
   categories: FAQCategory[]
@@ -60,10 +60,10 @@ export function FAQContent({
           {/* Category Header */}
           <div
             className="flex items-center gap-3 mb-6 pb-3"
-            style={{ borderBottom: '2px solid #2B3139' }}
+            style={{ borderBottom: '2px solid rgba(255, 255, 255, 0.08)' }}
           >
-            <category.icon className="w-7 h-7" style={{ color: '#F0B90B' }} />
-            <h2 className="text-2xl font-bold" style={{ color: '#EAECEF' }}>
+            <category.icon className="w-7 h-7" style={{ color: 'var(--primary)' }} />
+            <h2 className="text-2xl font-bold" style={{ color: '#F9FAFB' }}>
               {t(category.titleKey, language)}
             </h2>
           </div>
@@ -81,7 +81,7 @@ export function FAQContent({
                 {/* Question */}
                 <h3
                   className="text-xl font-semibold mb-3"
-                  style={{ color: '#EAECEF' }}
+                  style={{ color: '#F9FAFB' }}
                 >
                   {t(item.questionKey, language)}
                 </h3>
@@ -97,41 +97,41 @@ export function FAQContent({
                   {item.id === 'github-projects-tasks' ? (
                     <div className="space-y-3">
                       <div className="text-base">
-                        {language === 'zh' ? '链接：' : 'Links:'}{' '}
+                        {false ? 'link：' : 'Links:'}{' '}
                         <a
                           href="https://github.com/orgs/NoFxAiOS/projects/3"
                           target="_blank"
                           rel="noreferrer"
-                          style={{ color: '#F0B90B' }}
+                          style={{ color: 'var(--primary)' }}
                         >
-                          {language === 'zh' ? '路线图' : 'Roadmap'}
+                          {false ? 'pathline chart' : 'Roadmap'}
                         </a>
                         {'  |  '}
                         <a
                           href="https://github.com/orgs/NoFxAiOS/projects/5"
                           target="_blank"
                           rel="noreferrer"
-                          style={{ color: '#F0B90B' }}
+                          style={{ color: 'var(--primary)' }}
                         >
-                          {language === 'zh' ? '任务看板' : 'Task Dashboard'}
+                          {false ? 'taskdashboard' : 'Task Dashboard'}
                         </a>
                       </div>
                       <ol className="list-decimal pl-5 space-y-1 text-base">
-                        {language === 'zh' ? (
+                        {false ? (
                           <>
                             <li>
-                              打开以上链接，按标签筛选（good first issue / help
+                              openwithonlink，byLabelfilterselect（good first issue / help
                               wanted / frontend / backend）。
                             </li>
                             <li>
-                              打开任务，阅读描述与验收标准（Acceptance
+                              opentask，readdescriptionandacceptance criteria（Acceptance
                               Criteria）。
                             </li>
-                            <li>评论“assign me”或自助分配（若权限允许）。</li>
-                            <li>Fork 仓库到你的 GitHub 账户。</li>
+                            <li>comment“assign me”orself-assign（if permissionallow）。</li>
+                            <li>Fork repositorytoyou's GitHub account。</li>
                             <li>
-                              同步你的 fork 的 <code>dev</code>{' '}
-                              分支与上游保持一致：
+                              Syncyou's fork 's <code>dev</code>{' '}
+                              branchandupstreamkeepconsistent：
                               <code className="ml-2">
                                 git remote add upstream
                                 https://github.com/NoFxAiOS/nofx.git
@@ -146,28 +146,28 @@ export function FAQContent({
                               <code>git push origin dev</code>
                             </li>
                             <li>
-                              从你的 fork 的 <code>dev</code> 建立特性分支：
+                              from your fork's <code>dev</code> create a feature branch:
                               <code className="ml-2">
                                 git checkout -b feat/your-topic
                               </code>
                             </li>
                             <li>
-                              推送到你的 fork：
+                              pushtoyou's fork：
                               <code className="ml-2">
                                 git push origin feat/your-topic
                               </code>
                             </li>
                             <li>
-                              打开 PR：base 选择 <code>NoFxAiOS/nofx:dev</code>{' '}
-                              ← compare 选择{' '}
-                              <code>你的用户名/nofx:feat/your-topic</code>。
+                              open PR：base Select <code>NoFxAiOS/nofx:dev</code>{' '}
+                              ← compare Select{' '}
+                              <code>you'susername/nofx:feat/your-topic</code>。
                             </li>
                             <li>
-                              在 PR 中关联 Issue（示例：
+                              at PR Associate in Issue（Example：
                               <code className="ml-1">Closes #123</code>
-                              ），选择正确 PR 模板；必要时与{' '}
+                              ），Selectcorrect PR template；necessarywhenand{' '}
                               <code>upstream/dev</code>{' '}
-                              同步（rebase）后继续推送。
+                              Sync（rebase）aftercontinue push。
                             </li>
                           </>
                         ) : (
@@ -230,38 +230,38 @@ export function FAQContent({
                       <div
                         className="rounded p-3 mt-3"
                         style={{
-                          background: 'rgba(240, 185, 11, 0.08)',
-                          border: '1px solid rgba(240, 185, 11, 0.25)',
+                          background: 'var(--primary-bg, 0.08)',
+                          border: '1px solid var(--primary-bg, 0.25)',
                         }}
                       >
-                        {language === 'zh' ? (
+                        {false ? (
                           <div className="text-sm">
-                            <strong style={{ color: '#F0B90B' }}>提示：</strong>{' '}
-                            参与贡献将享有激励制度（如
-                            Bounty/奖金、荣誉徽章与鸣谢、优先
-                            Review/合并与内测资格 等）。 可在任务中优先选择带
+                            <strong style={{ color: 'var(--primary)' }}>Tip: </strong>{' '}
+                            paramandcontributewillsharehasincentive system（like
+                            Bounty/Bonus、Badges and Credits、Priority
+                            Review/Merge and Beta Access etc）。 canattaskinPrioritySelectwith
                             <a
                               href="https://github.com/NoFxAiOS/nofx/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
-                              bounty 标签
+                              bounty Label
                             </a>
-                            的事项，或完成后提交
+                            task items, or done after submit
                             <a
                               href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
                               Bounty Claim
                             </a>
-                            申请。
+                            apply。
                           </div>
                         ) : (
                           <div className="text-sm">
-                            <strong style={{ color: '#F0B90B' }}>Note:</strong>{' '}
+                            <strong style={{ color: 'var(--primary)' }}>Note:</strong>{' '}
                             Contribution incentives are available (e.g., cash
                             bounties, badges & shout-outs, priority
                             review/merge, beta access). Prefer tasks with
@@ -269,7 +269,7 @@ export function FAQContent({
                               href="https://github.com/NoFxAiOS/nofx/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
                               bounty label
                             </a>
@@ -278,7 +278,7 @@ export function FAQContent({
                               href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
                               Bounty Claim
                             </a>
@@ -290,12 +290,12 @@ export function FAQContent({
                   ) : item.id === 'contribute-pr-guidelines' ? (
                     <div className="space-y-3">
                       <div className="text-base">
-                        {language === 'zh' ? '参考文档：' : 'References:'}{' '}
+                        {false ? 'paramsee docs：' : 'References:'}{' '}
                         <a
                           href="https://github.com/NoFxAiOS/nofx/blob/dev/CONTRIBUTING.md"
                           target="_blank"
                           rel="noreferrer"
-                          style={{ color: '#F0B90B' }}
+                          style={{ color: 'var(--primary)' }}
                         >
                           CONTRIBUTING.md
                         </a>
@@ -304,44 +304,44 @@ export function FAQContent({
                           href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/PR_TITLE_GUIDE.md"
                           target="_blank"
                           rel="noreferrer"
-                          style={{ color: '#F0B90B' }}
+                          style={{ color: 'var(--primary)' }}
                         >
                           PR_TITLE_GUIDE.md
                         </a>
                       </div>
                       <ol className="list-decimal pl-5 space-y-1 text-base">
-                        {language === 'zh' ? (
+                        {false ? (
                           <>
                             <li>
-                              Fork 仓库后，从你的 fork 的 <code>dev</code>{' '}
-                              分支创建特性分支；避免直接向上游 <code>main</code>{' '}
-                              提交。
+                              After forking, from your fork's <code>dev</code>{' '}
+                              branch create a feature branch; avoid direct commits to upstream <code>main</code>{' '}
+                              submit.
                             </li>
                             <li>
-                              分支命名：feat/…、fix/…、docs/…；提交信息遵循
+                              branchnaming：feat/…、fix/…、docs/…；submitinfofollow
                               Conventional Commits。
                             </li>
                             <li>
-                              提交前运行检查：
+                              submitbeforerunlinecheck：
                               <code className="ml-2">
                                 npm --prefix web run lint && npm --prefix web
                                 run build
                               </code>
                             </li>
-                            <li>涉及 UI 变更请附截图或短视频。</li>
+                            <li>involve UI changes please attach screenshotorshort video。</li>
                             <li>
-                              选择正确的 PR
-                              模板（frontend/backend/docs/general）。
+                              Selectcorrect's PR
+                              template（frontend/backend/docs/general）。
                             </li>
                             <li>
-                              在 PR 中关联 Issue（示例：
+                              at PR Associate in Issue（Example：
                               <code className="ml-1">Closes #123</code>），PR
-                              目标选择 <code>NoFxAiOS/nofx:dev</code>。
+                              targetSelect <code>NoFxAiOS/nofx:dev</code>。
                             </li>
                             <li>
-                              保持与 <code>upstream/dev</code>{' '}
-                              同步（rebase），确保 CI 通过；尽量保持 PR
-                              小而聚焦。
+                              keepand <code>upstream/dev</code>{' '}
+                              Sync（rebase），ensure CI via；as much asvolumekeep PR
+                              smallbutfocus。
                             </li>
                           </>
                         ) : (
@@ -386,37 +386,37 @@ export function FAQContent({
                       <div
                         className="rounded p-3 mt-3"
                         style={{
-                          background: 'rgba(240, 185, 11, 0.08)',
-                          border: '1px solid rgba(240, 185, 11, 0.25)',
+                          background: 'var(--primary-bg, 0.08)',
+                          border: '1px solid var(--primary-bg, 0.25)',
                         }}
                       >
-                        {language === 'zh' ? (
+                        {false ? (
                           <div className="text-sm">
-                            <strong style={{ color: '#F0B90B' }}>提示：</strong>{' '}
-                            我们为高质量贡献提供激励（Bounty/奖金、荣誉徽章与鸣谢、优先
-                            Review/合并与内测资格 等）。 详情可关注带
+                            <strong style={{ color: 'var(--primary)' }}>Tip: </strong>{' '}
+                            weasincentives for quality contributions（Bounty/Bonus、Badges and Credits、Priority
+                            Review/Merge and Beta Access etc）。 details see with
                             <a
                               href="https://github.com/NoFxAiOS/nofx/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
-                              bounty 标签
+                              bounty Label
                             </a>
-                            的任务，或使用
+                            'stask，orUse
                             <a
                               href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
-                              Bounty Claim 模板
+                              Bounty Claim template
                             </a>
-                            提交申请。
+                            submitapply。
                           </div>
                         ) : (
                           <div className="text-sm">
-                            <strong style={{ color: '#F0B90B' }}>Note:</strong>{' '}
+                            <strong style={{ color: 'var(--primary)' }}>Note:</strong>{' '}
                             We offer contribution incentives (bounties, badges,
                             shout-outs, priority review/merge, beta access).
                             Look for tasks with
@@ -424,7 +424,7 @@ export function FAQContent({
                               href="https://github.com/NoFxAiOS/nofx/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
                               bounty label
                             </a>
@@ -433,7 +433,7 @@ export function FAQContent({
                               href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
-                              style={{ color: '#F0B90B' }}
+                              style={{ color: 'var(--primary)' }}
                             >
                               Bounty Claim
                             </a>
@@ -448,7 +448,7 @@ export function FAQContent({
                 </div>
 
                 {/* Divider */}
-                <div className="mt-6 h-px" style={{ background: '#2B3139' }} />
+                <div className="mt-6 h-px" style={{ background: 'rgba(255, 255, 255, 0.08)' }} />
               </section>
             ))}
           </div>

@@ -1,8 +1,8 @@
-// Trader颜色配置 - 统一的颜色分配逻辑
-// 用于 ComparisonChart 和 Leaderboard，确保颜色一致性
+// Tradercolorconfig - unified'scolor assignment logic
+// used for ComparisonChart and Leaderboard，ensurecolorconsistency
 
 export const TRADER_COLORS = [
-  '#60a5fa', // blue-400
+  'rgb(195, 245, 60)', // Lime green (primary)
   '#c084fc', // purple-400
   '#34d399', // emerald-400
   '#fb923c', // orange-400
@@ -15,17 +15,17 @@ export const TRADER_COLORS = [
 ]
 
 /**
- * 根据trader的索引位置获取颜色
- * @param traders - trader列表
- * @param traderId - 当前trader的ID
- * @returns 对应的颜色值
+ * based ontrader'sindex positiongetcolor
+ * @param traders - traderlist
+ * @param traderId - currenttrader'sID
+ * @returns corresponding'scolor value
  */
 export function getTraderColor(
   traders: Array<{ trader_id: string }>,
   traderId: string
 ): string {
   const traderIndex = traders.findIndex((t) => t.trader_id === traderId)
-  if (traderIndex === -1) return TRADER_COLORS[0] // 默认返回第一个颜色
-  // 如果超出颜色池大小，循环使用
+  if (traderIndex === -1) return TRADER_COLORS[0] // default returnLinea color
+  // if exceeds color pool size，loopUse
   return TRADER_COLORS[traderIndex % TRADER_COLORS.length]
 }

@@ -5,7 +5,7 @@ import (
 	"sort"
 	"time"
 
-	"nofx/market"
+	"SynapseStrike/market"
 )
 
 type timeframeSeries struct {

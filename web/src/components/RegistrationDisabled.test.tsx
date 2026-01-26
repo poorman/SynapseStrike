@@ -82,14 +82,14 @@ describe('RegistrationDisabled Component', () => {
       const { container } = renderComponent()
       const mainDiv = container.firstChild as HTMLElement
       // Browser converts hex to rgb
-      expect(mainDiv.style.background).toMatch(/rgb\(11,\s*14,\s*17\)|#0B0E11/i)
+      expect(mainDiv.style.background).toMatch(/rgb\(11,\s*14,\s*17\)|#FFFFFF/i)
     })
 
     it('should have correct text color', () => {
       const { container } = renderComponent()
       const mainDiv = container.firstChild as HTMLElement
       // Browser converts hex to rgb
-      expect(mainDiv.style.color).toMatch(/rgb\(234,\s*236,\s*239\)|#EAECEF/i)
+      expect(mainDiv.style.color).toMatch(/rgb\(234,\s*236,\s*239\)|#F9FAFB/i)
     })
 
     it('should have centered layout', () => {

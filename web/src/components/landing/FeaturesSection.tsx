@@ -10,61 +10,61 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
   const features = [
     {
       icon: Brain,
-      title: language === 'zh' ? 'AI 策略编排引擎' : 'AI Strategy Orchestration',
-      desc: language === 'zh'
-        ? '支持 DeepSeek、GPT、Claude、Qwen 等多种大模型，自定义 Prompt 策略，AI 自主分析市场并做出交易决策'
+      title: false ? 'AI Strategyorchestration engine' : 'AI Strategy Orchestration',
+      desc: false
+        ? 'Supports DeepSeek, GPT, Claude, Qwen and other AI models with custom prompt strategies, AI auto analyzes market and makes trading decisions'
         : 'Support DeepSeek, GPT, Claude, Qwen and more. Custom prompts, AI autonomously analyzes markets and makes trading decisions',
       highlight: true,
-      badge: language === 'zh' ? '核心能力' : 'Core',
+      badge: false ? 'corecapability' : 'Core',
     },
     {
       icon: Swords,
-      title: language === 'zh' ? '多 AI 竞技场' : 'Multi-AI Arena',
-      desc: language === 'zh'
-        ? '多个 AI 交易员同台竞技，实时 PnL 排行榜，自动优胜劣汰，让最强策略脱颖而出'
+      title: false ? 'multi AI arena' : 'Multi-AI Arena',
+      desc: false
+        ? 'multiple AI tradercompete together，realwhen PnL sortlineranking，auto evolution，letstrongestStrategystand outbutout'
         : 'Multiple AI traders compete in real-time, live PnL leaderboard, automatic survival of the fittest',
       highlight: true,
-      badge: language === 'zh' ? '独创' : 'Unique',
+      badge: false ? 'innovative' : 'Unique',
     },
     {
       icon: LineChart,
-      title: language === 'zh' ? '专业量化数据' : 'Pro Quant Data',
-      desc: language === 'zh'
-        ? '集成 K线、技术指标、市场深度、资金费率、持仓量等专业量化数据，为 AI 决策提供全面信息'
+      title: false ? 'Professional quant data' : 'Pro Quant Data',
+      desc: false
+        ? 'integrate Kline、technical indicators、market depth、funding rate、positionvolumeetcProfessional quant data，as AI decisionprovide comprehensiveinfo'
         : 'Integrated candlesticks, indicators, order book, funding rates, open interest - comprehensive data for AI decisions',
       highlight: true,
-      badge: language === 'zh' ? '专业' : 'Pro',
+      badge: false ? 'professional' : 'Pro',
     },
     {
       icon: Blocks,
-      title: language === 'zh' ? '多交易所支持' : 'Multi-Exchange Support',
-      desc: language === 'zh'
-        ? 'Binance、OKX、Bybit、Hyperliquid、Aster DEX，一套系统管理多个交易所'
-        : 'Binance, OKX, Bybit, Hyperliquid, Aster DEX - one system, multiple exchanges',
+      title: false ? 'multibrokeragesupport' : 'Multi-Brokerage Support',
+      desc: false
+        ? 'Binance、OKX、Bybit、Hyperliquid、Aster DEX，onesetsystemmanagemultiplebrokerage'
+        : 'Binance, OKX, Bybit, Hyperliquid, Aster DEX - one system, multiple brokerages',
     },
     {
       icon: BarChart3,
-      title: language === 'zh' ? '实时可视化看板' : 'Real-time Dashboard',
-      desc: language === 'zh'
-        ? '交易监控、收益曲线、持仓分析、AI 决策日志，一目了然'
+      title: false ? 'realwhenvisualizationdashboard' : 'Real-time Dashboard',
+      desc: false
+        ? 'Trade monitor, equity curve, position analysis, AI decision logs - everything in one dashboard'
         : 'Trade monitoring, PnL curves, position analysis, AI decision logs at a glance',
     },
     {
       icon: Shield,
-      title: language === 'zh' ? '开源自托管' : 'Open Source & Self-Hosted',
-      desc: language === 'zh'
-        ? '代码完全开源可审计，数据存储在本地，API 密钥不经过第三方'
+      title: false ? 'Open Source Self-Hosted' : 'Open Source & Self-Hosted',
+      desc: false
+        ? 'Code fully open source and auditable, data stored locally, API keys never go through third parties'
         : 'Fully open source, data stored locally, API keys never leave your server',
     },
   ]
 
   return (
-    <section className="py-24 relative" style={{ background: '#0B0E11' }}>
+    <section className="py-24 relative" style={{ background: 'var(--bg-secondary)' }}>
       {/* Background */}
       <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `linear-gradient(#F0B90B 1px, transparent 1px), linear-gradient(90deg, #F0B90B 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(var(--primary) 1px, transparent 1px), linear-gradient(90deg, var(--primary) 1px, transparent 1px)`,
           backgroundSize: '40px 40px',
         }}
       />
@@ -77,13 +77,11 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#EAECEF' }}>
+          <h2 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#F9FAFB' }}>
             {t('whyChooseNofx', language)}
           </h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: '#848E9C' }}>
-            {language === 'zh'
-              ? '不只是交易机器人，而是完整的 AI 交易操作系统'
-              : 'Not just a trading bot, but a complete AI trading operating system'}
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: '#9CA3AF' }}>
+            Not just a trading bot, but a complete AI trading operating system
           </p>
         </motion.div>
 
@@ -102,10 +100,10 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
               `}
               style={{
                 background: feature.highlight
-                  ? 'linear-gradient(135deg, rgba(240, 185, 11, 0.08) 0%, rgba(240, 185, 11, 0.02) 100%)'
+                  ? 'linear-gradient(135deg, var(--primary-bg, 0.08) 0%, var(--primary-bg, 0.02) 100%)'
                   : '#12161C',
                 border: feature.highlight
-                  ? '1px solid rgba(240, 185, 11, 0.2)'
+                  ? '1px solid var(--primary-bg, 0.2)'
                   : '1px solid rgba(255, 255, 255, 0.06)',
               }}
             >
@@ -114,8 +112,8 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
                 <div
                   className="absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium"
                   style={{
-                    background: 'rgba(240, 185, 11, 0.15)',
-                    color: '#F0B90B',
+                    background: 'var(--primary-bg, 0.15)',
+                    color: 'var(--primary)',
                   }}
                 >
                   {feature.badge}
@@ -127,28 +125,28 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
                 className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                 style={{
                   background: feature.highlight
-                    ? 'rgba(240, 185, 11, 0.15)'
-                    : 'rgba(240, 185, 11, 0.1)',
-                  border: '1px solid rgba(240, 185, 11, 0.2)',
+                    ? 'var(--primary-bg, 0.15)'
+                    : 'var(--primary-bg, 0.1)',
+                  border: '1px solid var(--primary-bg, 0.2)',
                 }}
                 whileHover={{ scale: 1.1, rotate: 5 }}
               >
                 <feature.icon
                   className="w-6 h-6"
-                  style={{ color: '#F0B90B' }}
+                  style={{ color: 'var(--primary)' }}
                 />
               </motion.div>
 
               {/* Text */}
               <h3
                 className="text-xl font-bold mb-3"
-                style={{ color: '#EAECEF' }}
+                style={{ color: '#F9FAFB' }}
               >
                 {feature.title}
               </h3>
               <p
                 className="text-sm leading-relaxed"
-                style={{ color: '#848E9C' }}
+                style={{ color: '#9CA3AF' }}
               >
                 {feature.desc}
               </p>
@@ -156,7 +154,7 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
               {/* Hover Glow */}
               <div
                 className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"
-                style={{ background: '#F0B90B' }}
+                style={{ background: 'var(--primary)' }}
               />
             </motion.div>
           ))}
@@ -170,10 +168,10 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
           viewport={{ once: true }}
         >
           {[
-            { value: '10+', label: language === 'zh' ? 'AI 模型支持' : 'AI Models' },
-            { value: '5+', label: language === 'zh' ? '交易所集成' : 'Exchanges' },
-            { value: '24/7', label: language === 'zh' ? '自动交易' : 'Auto Trading' },
-            { value: '100%', label: language === 'zh' ? '开源免费' : 'Open Source' },
+            { value: '10+', label: false ? 'AI modelsupport' : 'AI Models' },
+            { value: '5+', label: false ? 'brokerageintegrate' : 'Brokerages' },
+            { value: '24/7', label: false ? 'autotrade' : 'Auto Trading' },
+            { value: '100%', label: false ? 'open source free' : 'Open Source' },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -186,14 +184,14 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
               <div
                 className="text-2xl font-bold mb-1"
                 style={{
-                  background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
               >
                 {stat.value}
               </div>
-              <div className="text-xs" style={{ color: '#5E6673' }}>
+              <div className="text-xs" style={{ color: '#6B7280' }}>
                 {stat.label}
               </div>
             </div>

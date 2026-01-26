@@ -5,7 +5,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strconv"
 	"strings"
 	"sync"

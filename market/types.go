@@ -16,7 +16,68 @@ type Data struct {
 	IntradaySeries    *IntradayData
 	LongerTermContext *LongerTermData
 	// Multi-timeframe data (new)
-	TimeframeData map[string]*TimeframeSeriesData `json:"timeframe_data,omitempty"`
+	TimeframeData  map[string]*TimeframeSeriesData `json:"timeframe_data,omitempty"`
+	StockExtraData *StockExtraData                 `json:"stock_extra_data,omitempty"` // Stock-specific data
+}
+
+// StockExtraData contains stock-specific indicators (not applicable for crypto)
+type StockExtraData struct {
+	// News & Sentiment
+	RecentNews []NewsItem `json:"recent_news,omitempty"`
+	// Corporate Actions
+	CorporateActions []CorpAction `json:"corporate_actions,omitempty"`
+	// Volume Surge (2x+ average detection)
+	VolumeSurge   bool    `json:"volume_surge"`
+	VolumeRatio   float64 `json:"volume_ratio"` // Current volume / 20-day average
+	AverageVolume float64 `json:"average_volume"`
+	CurrentVolume float64 `json:"current_volume"`
+
+	// Analyst Ratings (FMP API)
+	AnalystRating     string  `json:"analyst_rating,omitempty"`      // Strong Buy/Buy/Hold/Sell/Strong Sell
+	AnalystTargetHigh float64 `json:"analyst_target_high,omitempty"` // Highest price target
+	AnalystTargetLow  float64 `json:"analyst_target_low,omitempty"`  // Lowest price target
+	AnalystTargetAvg  float64 `json:"analyst_target_avg,omitempty"`  // Average price target
+
+	// Earnings Calendar (FMP API)
+	NextEarningsDate  string  `json:"next_earnings_date,omitempty"`  // Date of next earnings
+	DaysUntilEarnings int     `json:"days_until_earnings,omitempty"` // Days until earnings
+	EpsEstimate       float64 `json:"eps_estimate,omitempty"`        // EPS estimate
+	EarningsTime      string  `json:"earnings_time,omitempty"`       // Before/After market
+
+	// Short Interest (FINRA API)
+	ShortInterest float64 `json:"short_interest,omitempty"` // Short interest as % of float
+	DaysToCover   float64 `json:"days_to_cover,omitempty"`  // Days to cover based on avg volume
+	SqueezeRisk   string  `json:"squeeze_risk,omitempty"`   // Low/Medium/High
+
+	// Zero DTE Options (Alpaca Options API)
+	ZeroDTEPutCallRatio float64 `json:"zero_dte_put_call_ratio,omitempty"` // Put/Call ratio
+	ZeroDTESentiment    string  `json:"zero_dte_sentiment,omitempty"`      // Bullish/Bearish/Neutral
+	MaxPainStrike       float64 `json:"max_pain_strike,omitempty"`         // Max pain strike price
+
+	// Trade Flow - Institutional Activity (Alpaca Trades API)
+	TradeFlowDirection string  `json:"trade_flow_direction,omitempty"` // Buying/Selling/Neutral
+	BuySellRatio       float64 `json:"buy_sell_ratio,omitempty"`       // Buy volume / Sell volume
+	InstitutionalVWAP  float64 `json:"institutional_vwap,omitempty"`   // VWAP from trade flow
+
+	// Anchored VWAP (Session-based calculation)
+	AnchoredVWAP    float64 `json:"anchored_vwap,omitempty"`     // VWAP from session start
+	AnchoredVWAPDev float64 `json:"anchored_vwap_dev,omitempty"` // % deviation from current price
+}
+
+// NewsItem represents a news article for display
+type NewsItem struct {
+	Headline  string `json:"headline"`
+	Source    string `json:"source"`
+	CreatedAt string `json:"created_at"`
+	Summary   string `json:"summary,omitempty"`
+}
+
+// CorpAction represents a corporate action summary
+type CorpAction struct {
+	Type        string  `json:"type"`
+	ExDate      string  `json:"ex_date"`
+	Description string  `json:"description"`
+	CashAmount  float64 `json:"cash_amount,omitempty"`
 }
 
 // KlineBar single kline bar with OHLCV data
@@ -31,16 +92,19 @@ type KlineBar struct {
 
 // TimeframeSeriesData series data for a single timeframe
 type TimeframeSeriesData struct {
-	Timeframe   string     `json:"timeframe"`    // Timeframe identifier, e.g. "5m", "15m", "1h"
-	Klines      []KlineBar `json:"klines"`       // Full OHLCV kline data
-	MidPrices   []float64  `json:"mid_prices"`   // Price series (deprecated, kept for compatibility)
-	EMA20Values []float64  `json:"ema20_values"` // EMA20 series
-	EMA50Values []float64  `json:"ema50_values"` // EMA50 series
-	MACDValues  []float64  `json:"macd_values"`  // MACD series
-	RSI7Values  []float64  `json:"rsi7_values"`  // RSI7 series
-	RSI14Values []float64  `json:"rsi14_values"` // RSI14 series
-	Volume      []float64  `json:"volume"`       // Volume series (deprecated, use Klines)
-	ATR14       float64    `json:"atr14"`        // ATR14
+	Timeframe     string     `json:"timeframe"`       // Timeframe identifier, e.g. "5m", "15m", "1h"
+	Klines        []KlineBar `json:"klines"`          // Full OHLCV kline data
+	MidPrices     []float64  `json:"mid_prices"`      // Price series (deprecated, kept for compatibility)
+	EMA20Values   []float64  `json:"ema20_values"`    // EMA20 series
+	EMA50Values   []float64  `json:"ema50_values"`    // EMA50 series
+	MACDValues    []float64  `json:"macd_values"`     // MACD series
+	RSI7Values    []float64  `json:"rsi7_values"`     // RSI7 series
+	RSI14Values   []float64  `json:"rsi14_values"`    // RSI14 series
+	Volume        []float64  `json:"volume"`          // Volume series (deprecated, use Klines)
+	ATR14         float64    `json:"atr14"`           // ATR14
+	VWAPValues    []float64  `json:"vwap_values"`     // VWAP series
+	CurrentVWAP   float64    `json:"current_vwap"`    // Current session VWAP
+	VolumeProfile []float64  `json:"volume_profile"`  // Volume at price levels
 }
 
 // OIData Open Interest data

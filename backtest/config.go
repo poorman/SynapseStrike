@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"nofx/market"
-	"nofx/store"
+	"SynapseStrike/market"
+	"SynapseStrike/store"
 )
 
 // AIConfig defines the AI client configuration used in backtesting.
@@ -20,8 +20,8 @@ type AIConfig struct {
 }
 
 type LeverageConfig struct {
-	BTCETHLeverage  int `json:"btc_eth_leverage"`
-	AltcoinLeverage int `json:"altcoin_leverage"`
+	LargeCapLeverage  int `json:"btc_eth_leverage"`
+	SmallCapLeverage int `json:"altcoin_leverage"`
 }
 
 // BacktestConfig describes the input configuration for a backtest run.
@@ -142,11 +142,11 @@ func (cfg *BacktestConfig) Validate() error {
 		cfg.AICfg.Temperature = 0.4
 	}
 
-	if cfg.Leverage.BTCETHLeverage <= 0 {
-		cfg.Leverage.BTCETHLeverage = 5
+	if cfg.Leverage.LargeCapLeverage <= 0 {
+		cfg.Leverage.LargeCapLeverage = 5
 	}
-	if cfg.Leverage.AltcoinLeverage <= 0 {
-		cfg.Leverage.AltcoinLeverage = 5
+	if cfg.Leverage.SmallCapLeverage <= 0 {
+		cfg.Leverage.SmallCapLeverage = 5
 	}
 
 	return nil
@@ -224,10 +224,10 @@ func (cfg *BacktestConfig) ToStrategyConfig() *store.StrategyConfig {
 		CustomPrompt: cfg.CustomPrompt,
 		RiskControl: store.RiskControlConfig{
 			MaxPositions:                 3,
-			BTCETHMaxLeverage:            cfg.Leverage.BTCETHLeverage,
-			AltcoinMaxLeverage:           cfg.Leverage.AltcoinLeverage,
-			BTCETHMaxPositionValueRatio:  5.0,
-			AltcoinMaxPositionValueRatio: 1.0,
+			LargeCapMaxMargin:            cfg.Leverage.LargeCapLeverage,
+			SmallCapMaxMargin:           cfg.Leverage.SmallCapLeverage,
+			LargeCapMaxPositionValueRatio:  5.0,
+			SmallCapMaxPositionValueRatio: 1.0,
 			MaxMarginUsage:               0.9,
 			MinPositionSize:              12,
 			MinRiskRewardRatio:           3.0,

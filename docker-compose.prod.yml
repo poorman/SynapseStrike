@@ -1,21 +1,21 @@
-# NOFX Production Deployment
+# SynapseStrike Production Deployment
 # 用户部署专用 - 使用官方预构建镜像
 #
 # 一键部署命令:
-# curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+# curl -fsSL https://raw.githubusercontent.com/SynapseStrikeAiOS/synapsestrike/main/install.sh | bash
 #
 # 或手动部署:
-# curl -O https://raw.githubusercontent.com/NoFxAiOS/nofx/main/docker-compose.prod.yml
+# curl -O https://raw.githubusercontent.com/SynapseStrikeAiOS/synapsestrike/main/docker-compose.prod.yml
 # docker compose -f docker-compose.prod.yml up -d
 
 services:
-  nofx:
-    image: ghcr.io/nofxaios/nofx/nofx-backend:latest
-    container_name: nofx-trading
+  synapsestrike:
+    image: ghcr.io/synapsestrikeaios/synapsestrike/synapsestrike-backend:latest
+    container_name: synapsestrike-trading
     restart: unless-stopped
     stop_grace_period: 30s
     ports:
-      - "${NOFX_BACKEND_PORT:-8080}:8080"
+      - "${SynapseStrike_BACKEND_PORT:-8080}:8080"
     volumes:
       # Data directory for database and logs
       - ./data:/app/data
@@ -26,7 +26,7 @@ services:
       - TZ=${TZ:-Asia/Shanghai}
       - AI_MAX_TOKENS=8000
     networks:
-      - nofx-network
+      - synapsestrike-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
       interval: 30s
@@ -34,16 +34,16 @@ services:
       retries: 3
       start_period: 60s
 
-  nofx-frontend:
-    image: ghcr.io/nofxaios/nofx/nofx-frontend:latest
-    container_name: nofx-frontend
+  synapsestrike-frontend:
+    image: ghcr.io/synapsestrikeaios/synapsestrike/synapsestrike-frontend:latest
+    container_name: synapsestrike-frontend
     restart: unless-stopped
     ports:
-      - "${NOFX_FRONTEND_PORT:-3000}:80"
+      - "${SynapseStrike_FRONTEND_PORT:-3000}:80"
     networks:
-      - nofx-network
+      - synapsestrike-network
     depends_on:
-      - nofx
+      - synapsestrike
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
       interval: 30s
@@ -52,5 +52,5 @@ services:
       start_period: 5s
 
 networks:
-  nofx-network:
+  synapsestrike-network:
     driver: bridge

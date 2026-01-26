@@ -26,12 +26,12 @@ export interface FAQCategory {
 
 /**
  * FAQ Data Configuration
- * Comprehensive FAQ covering all aspects of NOFX
+ * Comprehensive FAQ covering all aspects of SynapseStrike
  *
  * Categories:
  * 1. Getting Started - Basic concepts and overview
  * 2. Installation - Setup methods and requirements
- * 3. Configuration - AI models, exchanges, strategies
+ * 3. Configuration - AI models, brokerages, strategies
  * 4. Trading - How trading works, common issues
  * 5. Technical Issues - Troubleshooting common problems
  * 6. Security - API keys, encryption, best practices
@@ -47,8 +47,8 @@ export const faqCategories: FAQCategory[] = [
     items: [
       {
         id: 'what-is-nofx',
-        questionKey: 'faqWhatIsNOFX',
-        answerKey: 'faqWhatIsNOFXAnswer',
+        questionKey: 'faqWhatIsSynapseStrike',
+        answerKey: 'faqWhatIsSynapseStrikeAnswer',
       },
       {
         id: 'how-does-it-work',
@@ -61,9 +61,9 @@ export const faqCategories: FAQCategory[] = [
         answerKey: 'faqIsProfitableAnswer',
       },
       {
-        id: 'supported-exchanges',
-        questionKey: 'faqSupportedExchanges',
-        answerKey: 'faqSupportedExchangesAnswer',
+        id: 'supported-brokerages',
+        questionKey: 'faqSupportedBrokerages',
+        answerKey: 'faqSupportedBrokeragesAnswer',
       },
       {
         id: 'supported-ai-models',
@@ -111,8 +111,8 @@ export const faqCategories: FAQCategory[] = [
       },
       {
         id: 'update-nofx',
-        questionKey: 'faqUpdateNOFX',
-        answerKey: 'faqUpdateNOFXAnswer',
+        questionKey: 'faqUpdateSynapseStrike',
+        answerKey: 'faqUpdateSynapseStrikeAnswer',
       },
     ],
   },
@@ -129,9 +129,9 @@ export const faqCategories: FAQCategory[] = [
         answerKey: 'faqConfigureAIModelsAnswer',
       },
       {
-        id: 'configure-exchanges',
-        questionKey: 'faqConfigureExchanges',
-        answerKey: 'faqConfigureExchangesAnswer',
+        id: 'configure-brokerages',
+        questionKey: 'faqConfigureBrokerages',
+        answerKey: 'faqConfigureBrokeragesAnswer',
       },
       {
         id: 'binance-api-setup',
@@ -183,9 +183,9 @@ export const faqCategories: FAQCategory[] = [
         answerKey: 'faqOnlyShortPositionsAnswer',
       },
       {
-        id: 'leverage-settings',
-        questionKey: 'faqLeverageSettings',
-        answerKey: 'faqLeverageSettingsAnswer',
+        id: 'margin-settings',
+        questionKey: 'faqMarginSettings',
+        answerKey: 'faqMarginSettingsAnswer',
       },
       {
         id: 'stop-loss-take-profit',
@@ -277,8 +277,8 @@ export const faqCategories: FAQCategory[] = [
       },
       {
         id: 'can-nofx-steal-funds',
-        questionKey: 'faqCanNOFXStealFunds',
-        answerKey: 'faqCanNOFXStealFundsAnswer',
+        questionKey: 'faqCanSynapseStrikeStealFunds',
+        answerKey: 'faqCanSynapseStrikeStealFundsAnswer',
       },
     ],
   },

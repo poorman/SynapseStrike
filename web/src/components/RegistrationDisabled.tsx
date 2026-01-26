@@ -12,12 +12,12 @@ export function RegistrationDisabled() {
   return (
     <div
       className="min-h-screen flex items-center justify-center"
-      style={{ background: '#0B0E11', color: '#EAECEF' }}
+      style={{ background: 'var(--bg-secondary)', color: '#F9FAFB' }}
     >
       <div className="text-center max-w-md px-6">
         <img
-          src="/icons/nofx.svg"
-          alt="NoFx Logo"
+          src="/images/logo.png"
+          alt="SynapseStrike Logo"
           className="w-16 h-16 mx-auto mb-4"
         />
         <h1 className="text-2xl font-semibold mb-3">
@@ -28,7 +28,7 @@ export function RegistrationDisabled() {
         </p>
         <button
           className="mt-6 px-4 py-2 rounded text-sm font-semibold transition-colors hover:opacity-90"
-          style={{ background: '#F0B90B', color: '#000' }}
+          style={{ background: 'var(--primary)', color: '#000' }}
           onClick={handleBackToLogin}
         >
           {t('backToLogin', language)}

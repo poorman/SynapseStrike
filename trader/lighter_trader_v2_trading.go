@@ -7,7 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strconv"
 	"strings"
 	"time"

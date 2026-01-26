@@ -8,7 +8,7 @@ export interface ConfirmOptions {
   cancelText?: string
 }
 
-// 全局 confirm 函数的引用，将在 ConfirmDialogProvider 中设置
+// global confirm function'sreference，willat ConfirmDialogProvider insettings
 let globalConfirm:
   | ((options: ConfirmOptions & { message: string }) => Promise<boolean>)
   | null = null
@@ -19,7 +19,7 @@ export function setGlobalConfirm(
   globalConfirm = confirmFn
 }
 
-// 确认对话框函数，使用 shadcn AlertDialog
+// confirmdialogfunction，Use shadcn AlertDialog
 export function confirmToast(
   message: string,
   options: ConfirmOptions = {}
@@ -35,7 +35,7 @@ export function confirmToast(
   })
 }
 
-// 统一通知封装，避免组件直接依赖 sonner
+// unifiednotification wrapper，avoid component direct dependency sonner
 type Message = string | ReactNode
 
 function message(msg: Message, options?: Parameters<typeof toast>[1]) {

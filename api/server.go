@@ -1,25 +1,27 @@
 package api
 
 import (
+	"SynapseStrike/auth"
+	"SynapseStrike/backtest"
+	"SynapseStrike/config"
+	"SynapseStrike/crypto"
+	"SynapseStrike/logger"
+	"SynapseStrike/manager"
+	"SynapseStrike/metrics"
+	"SynapseStrike/store"
+	"SynapseStrike/trader"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
-	"nofx/auth"
-	"nofx/backtest"
-	"nofx/config"
-	"nofx/crypto"
-	"nofx/logger"
-	"nofx/manager"
-	"nofx/store"
-	"nofx/trader"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Server HTTP API server
@@ -89,6 +91,9 @@ func corsMiddleware() gin.HandlerFunc {
 
 // setupRoutes Setup routes
 func (s *Server) setupRoutes() {
+	// Prometheus metrics endpoint (no authentication, at root level)
+	s.router.GET("/metrics", gin.WrapH(promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{})))
+
 	// API route group
 	api := s.router.Group("/api")
 	{
@@ -116,6 +121,9 @@ func (s *Server) setupRoutes() {
 		api.GET("/equity-history", s.handleEquityHistory)
 		api.POST("/equity-history-batch", s.handleEquityHistoryBatch)
 		api.GET("/traders/:id/public-config", s.handleGetPublicTraderConfig)
+
+		// Market status (no authentication required)
+		api.GET("/market-status", s.handleMarketStatus)
 
 		// Authentication related routes (no authentication required)
 		api.POST("/register", s.handleRegister)
@@ -166,7 +174,22 @@ func (s *Server) setupRoutes() {
 			protected.PUT("/strategies/:id", s.handleUpdateStrategy)
 			protected.DELETE("/strategies/:id", s.handleDeleteStrategy)
 			protected.POST("/strategies/:id/activate", s.handleActivateStrategy)
+			protected.POST("/strategies/:id/deactivate", s.handleDeactivateStrategy)
 			protected.POST("/strategies/:id/duplicate", s.handleDuplicateStrategy)
+
+			// Tactics management (separate from strategies)
+			protected.GET("/tactics", s.handleGetTactics)
+			protected.GET("/tactics/active", s.handleGetActiveTactic)
+			protected.GET("/tactics/default-config", s.handleGetDefaultTacticConfig)
+			protected.POST("/tactics/preview-prompt", s.handleTacticPreviewPrompt)
+			protected.POST("/tactics/test-run", s.handleTacticTestRun)
+			protected.GET("/tactics/:id", s.handleGetTactic)
+			protected.POST("/tactics", s.handleCreateTactic)
+			protected.PUT("/tactics/:id", s.handleUpdateTactic)
+			protected.DELETE("/tactics/:id", s.handleDeleteTactic)
+			protected.POST("/tactics/:id/activate", s.handleActivateTactic)
+			protected.POST("/tactics/:id/deactivate", s.handleDeactivateTactic)
+			protected.POST("/tactics/:id/duplicate", s.handleDuplicateTactic)
 
 			// Debate Arena
 			protected.GET("/debates", s.debateHandler.HandleListDebates)
@@ -204,14 +227,32 @@ func (s *Server) handleHealth(c *gin.Context) {
 	})
 }
 
+// handleMarketStatus returns whether US stock market is currently open
+func (s *Server) handleMarketStatus(c *gin.Context) {
+	isOpen := trader.IsMarketOpen()
+
+	// Load Eastern Time for display
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Now()
+	if loc != nil {
+		now = now.In(loc)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"is_open":      isOpen,
+		"current_time": now.Format("2006-01-02 15:04:05 MST"),
+		"market_hours": "9:30 AM - 4:00 PM ET (Mon-Fri)",
+	})
+}
+
 // handleGetSystemConfig Get system configuration (configuration that client needs to know)
 func (s *Server) handleGetSystemConfig(c *gin.Context) {
 	cfg := config.Get()
 
 	c.JSON(http.StatusOK, gin.H{
 		"registration_enabled": cfg.RegistrationEnabled,
-		"btc_eth_leverage":     10, // Default value
-		"altcoin_leverage":     5,  // Default value
+		"large_cap_leverage":   10, // Default value
+		"small_cap_leverage":   5,  // Default value
 	})
 }
 
@@ -374,17 +415,18 @@ func (s *Server) getTraderFromQuery(c *gin.Context) (*manager.TraderManager, str
 
 // AI trader management related structures
 type CreateTraderRequest struct {
-	Name                string  `json:"name" binding:"required"`
-	AIModelID           string  `json:"ai_model_id" binding:"required"`
-	ExchangeID          string  `json:"exchange_id" binding:"required"`
-	StrategyID          string  `json:"strategy_id"` // Strategy ID (new version)
-	InitialBalance      float64 `json:"initial_balance"`
-	ScanIntervalMinutes int     `json:"scan_interval_minutes"`
-	IsCrossMargin       *bool   `json:"is_cross_margin"`     // Pointer type, nil means use default value true
-	ShowInCompetition   *bool   `json:"show_in_competition"` // Pointer type, nil means use default value true
+	Name                 string  `json:"name" binding:"required"`
+	AIModelID            string  `json:"ai_model_id" binding:"required"`
+	ExchangeID           string  `json:"brokerage_id" binding:"required"`
+	StrategyID           string  `json:"strategy_id"` // Strategy ID (new version)
+	InitialBalance       float64 `json:"initial_balance"`
+	ScanIntervalMinutes  int     `json:"scan_interval_minutes"`
+	IsCrossMargin        *bool   `json:"is_cross_margin"`         // Pointer type, nil means use default value true
+	ShowInCompetition    *bool   `json:"show_in_competition"`     // Pointer type, nil means use default value true
+	TradeOnlyMarketHours *bool   `json:"trade_only_market_hours"` // Pointer type, nil means use default value true
 	// The following fields are kept for backward compatibility, new version uses strategy config
-	BTCETHLeverage       int    `json:"btc_eth_leverage"`
-	AltcoinLeverage      int    `json:"altcoin_leverage"`
+	LargeCapLeverage     int    `json:"large_cap_leverage"`
+	SmallCapLeverage     int    `json:"small_cap_leverage"`
 	TradingSymbols       string `json:"trading_symbols"`
 	CustomPrompt         string `json:"custom_prompt"`
 	OverrideBasePrompt   bool   `json:"override_base_prompt"`
@@ -469,27 +511,30 @@ func (s *Server) handleCreateTrader(c *gin.Context) {
 	userID := c.GetString("user_id")
 	var req CreateTraderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Infof("❌ CreateTrader JSON bind error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	logger.Infof("🔧 CreateTrader request: name=%s, ai_model_id=%s, exchange_id=%s, strategy_id=%s",
+		req.Name, req.AIModelID, req.ExchangeID, req.StrategyID)
 
 	// Validate leverage values
-	if req.BTCETHLeverage < 0 || req.BTCETHLeverage > 50 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "BTC/ETH leverage must be between 1-50x"})
+	if req.LargeCapLeverage < 0 || req.LargeCapLeverage > 50 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Large Cap leverage must be between 1-50x"})
 		return
 	}
-	if req.AltcoinLeverage < 0 || req.AltcoinLeverage > 20 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Altcoin leverage must be between 1-20x"})
+	if req.SmallCapLeverage < 0 || req.SmallCapLeverage > 20 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Small Cap leverage must be between 1-20x"})
 		return
 	}
 
-	// Validate trading symbol format
+	// Validate trading symbol format (stock symbols - no suffix required)
 	if req.TradingSymbols != "" {
 		symbols := strings.Split(req.TradingSymbols, ",")
 		for _, symbol := range symbols {
 			symbol = strings.TrimSpace(symbol)
-			if symbol != "" && !strings.HasSuffix(strings.ToUpper(symbol), "USDT") {
-				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid symbol format: %s, must end with USDT", symbol)})
+			if symbol != "" && len(symbol) > 10 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid symbol format: %s, symbol too long", symbol)})
 				return
 			}
 		}
@@ -513,14 +558,19 @@ func (s *Server) handleCreateTrader(c *gin.Context) {
 		showInCompetition = *req.ShowInCompetition
 	}
 
-	// Set leverage default values
-	btcEthLeverage := 10 // Default value
-	altcoinLeverage := 5 // Default value
-	if req.BTCETHLeverage > 0 {
-		btcEthLeverage = req.BTCETHLeverage
+	tradeOnlyMarketHours := true // Default to only trade during market hours (9:30 AM - 4:00 PM ET)
+	if req.TradeOnlyMarketHours != nil {
+		tradeOnlyMarketHours = *req.TradeOnlyMarketHours
 	}
-	if req.AltcoinLeverage > 0 {
-		altcoinLeverage = req.AltcoinLeverage
+
+	// Set leverage default values
+	largeCapLeverage := 10 // Default value
+	smallCapLeverage := 5  // Default value
+	if req.LargeCapLeverage > 0 {
+		largeCapLeverage = req.LargeCapLeverage
+	}
+	if req.SmallCapLeverage > 0 {
+		smallCapLeverage = req.SmallCapLeverage
 	}
 
 	// Set system prompt template default value
@@ -645,8 +695,8 @@ func (s *Server) handleCreateTrader(c *gin.Context) {
 		ExchangeID:           req.ExchangeID,
 		StrategyID:           req.StrategyID, // Associated strategy ID (new version)
 		InitialBalance:       actualBalance,  // Use actual queried balance
-		BTCETHLeverage:       btcEthLeverage,
-		AltcoinLeverage:      altcoinLeverage,
+		LargeCapLeverage:     largeCapLeverage,
+		SmallCapLeverage:     smallCapLeverage,
 		TradingSymbols:       req.TradingSymbols,
 		UseCoinPool:          req.UseCoinPool,
 		UseOITop:             req.UseOITop,
@@ -655,6 +705,7 @@ func (s *Server) handleCreateTrader(c *gin.Context) {
 		SystemPromptTemplate: systemPromptTemplate,
 		IsCrossMargin:        isCrossMargin,
 		ShowInCompetition:    showInCompetition,
+		TradeOnlyMarketHours: tradeOnlyMarketHours,
 		ScanIntervalMinutes:  scanIntervalMinutes,
 		IsRunning:            false,
 	}
@@ -690,17 +741,18 @@ func (s *Server) handleCreateTrader(c *gin.Context) {
 
 // UpdateTraderRequest Update trader request
 type UpdateTraderRequest struct {
-	Name                string  `json:"name" binding:"required"`
-	AIModelID           string  `json:"ai_model_id" binding:"required"`
-	ExchangeID          string  `json:"exchange_id" binding:"required"`
-	StrategyID          string  `json:"strategy_id"` // Strategy ID (new version)
-	InitialBalance      float64 `json:"initial_balance"`
-	ScanIntervalMinutes int     `json:"scan_interval_minutes"`
-	IsCrossMargin       *bool   `json:"is_cross_margin"`
-	ShowInCompetition   *bool   `json:"show_in_competition"`
+	Name                 string  `json:"name" binding:"required"`
+	AIModelID            string  `json:"ai_model_id" binding:"required"`
+	ExchangeID           string  `json:"brokerage_id" binding:"required"`
+	StrategyID           string  `json:"strategy_id"` // Strategy ID (new version)
+	InitialBalance       float64 `json:"initial_balance"`
+	ScanIntervalMinutes  int     `json:"scan_interval_minutes"`
+	IsCrossMargin        *bool   `json:"is_cross_margin"`
+	ShowInCompetition    *bool   `json:"show_in_competition"`
+	TradeOnlyMarketHours *bool   `json:"trade_only_market_hours"` // Only trade during market hours
 	// The following fields are kept for backward compatibility, new version uses strategy config
-	BTCETHLeverage       int    `json:"btc_eth_leverage"`
-	AltcoinLeverage      int    `json:"altcoin_leverage"`
+	LargeCapLeverage     int    `json:"large_cap_leverage"`
+	SmallCapLeverage     int    `json:"small_cap_leverage"`
 	TradingSymbols       string `json:"trading_symbols"`
 	CustomPrompt         string `json:"custom_prompt"`
 	OverrideBasePrompt   bool   `json:"override_base_prompt"`
@@ -749,14 +801,19 @@ func (s *Server) handleUpdateTrader(c *gin.Context) {
 		showInCompetition = *req.ShowInCompetition
 	}
 
-	// Set leverage default values
-	btcEthLeverage := req.BTCETHLeverage
-	altcoinLeverage := req.AltcoinLeverage
-	if btcEthLeverage <= 0 {
-		btcEthLeverage = existingTrader.BTCETHLeverage // Keep original value
+	tradeOnlyMarketHours := existingTrader.TradeOnlyMarketHours // Keep original value
+	if req.TradeOnlyMarketHours != nil {
+		tradeOnlyMarketHours = *req.TradeOnlyMarketHours
 	}
-	if altcoinLeverage <= 0 {
-		altcoinLeverage = existingTrader.AltcoinLeverage // Keep original value
+
+	// Set leverage default values
+	largeCapLeverage := req.LargeCapLeverage
+	smallCapLeverage := req.SmallCapLeverage
+	if largeCapLeverage <= 0 {
+		largeCapLeverage = existingTrader.LargeCapLeverage // Keep original value
+	}
+	if smallCapLeverage <= 0 {
+		smallCapLeverage = existingTrader.SmallCapLeverage // Keep original value
 	}
 
 	// Set scan interval, allow updates
@@ -788,14 +845,15 @@ func (s *Server) handleUpdateTrader(c *gin.Context) {
 		ExchangeID:           req.ExchangeID,
 		StrategyID:           strategyID, // Associated strategy ID
 		InitialBalance:       req.InitialBalance,
-		BTCETHLeverage:       btcEthLeverage,
-		AltcoinLeverage:      altcoinLeverage,
+		LargeCapLeverage:     largeCapLeverage,
+		SmallCapLeverage:     smallCapLeverage,
 		TradingSymbols:       req.TradingSymbols,
 		CustomPrompt:         req.CustomPrompt,
 		OverrideBasePrompt:   req.OverrideBasePrompt,
 		SystemPromptTemplate: systemPromptTemplate,
 		IsCrossMargin:        isCrossMargin,
 		ShowInCompetition:    showInCompetition,
+		TradeOnlyMarketHours: tradeOnlyMarketHours,
 		ScanIntervalMinutes:  scanIntervalMinutes,
 		IsRunning:            existingTrader.IsRunning, // Keep original value
 	}
@@ -1275,6 +1333,10 @@ func (s *Server) handleClosePosition(c *gin.Context) {
 		} else {
 			createErr = fmt.Errorf("Lighter requires wallet address and API Key private key")
 		}
+	case "alpaca":
+		tempTrader = trader.NewAlpacaTrader(exchangeCfg.APIKey, exchangeCfg.SecretKey, false)
+	case "alpaca-paper":
+		tempTrader = trader.NewAlpacaTrader(exchangeCfg.APIKey, exchangeCfg.SecretKey, true)
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported exchange type"})
 		return
@@ -1336,6 +1398,7 @@ func (s *Server) handleGetModelConfigs(c *gin.Context) {
 			{ID: "gemini", Name: "Gemini AI", Provider: "gemini", Enabled: false},
 			{ID: "grok", Name: "Grok AI", Provider: "grok", Enabled: false},
 			{ID: "kimi", Name: "Kimi AI", Provider: "kimi", Enabled: false},
+			{ID: "localai", Name: "Local AI", Provider: "localai", Enabled: false},
 		}
 		c.JSON(http.StatusOK, defaultModels)
 		return
@@ -1632,8 +1695,7 @@ func (s *Server) handleCreateExchange(c *gin.Context) {
 
 	// Validate exchange type
 	validTypes := map[string]bool{
-		"binance": true, "bybit": true, "okx": true, "bitget": true,
-		"hyperliquid": true, "aster": true, "lighter": true,
+		"alpaca": true, "alpaca-paper": true, "ibkr": true, "simplefx": true, "oanda": true,
 	}
 	if !validTypes[req.ExchangeType] {
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid exchange type: %s", req.ExchangeType)})
@@ -1720,11 +1782,17 @@ func (s *Server) handleTraderList(c *gin.Context) {
 			}
 		}
 
-		// Get strategy name if strategy_id is set
+		// Get strategy name if strategy_id is set (check BOTH strategies and tactics tables)
 		var strategyName string
 		if trader.StrategyID != "" {
-			if strategy, err := s.store.Strategy().Get(userID, trader.StrategyID); err == nil {
+			// First try strategies table
+			if strategy, err := s.store.Strategy().Get(userID, trader.StrategyID); err == nil && strategy != nil {
 				strategyName = strategy.Name
+			} else {
+				// Fallback to tactics table (for Opus/Sonnet/Cursor tactics)
+				if tactic, err := s.store.Tactic().Get(userID, trader.StrategyID); err == nil && tactic != nil {
+					strategyName = tactic.Name
+				}
 			}
 		}
 
@@ -1734,7 +1802,7 @@ func (s *Server) handleTraderList(c *gin.Context) {
 			"trader_id":           trader.ID,
 			"trader_name":         trader.Name,
 			"ai_model":            trader.AIModelID, // Use complete ID
-			"exchange_id":         trader.ExchangeID,
+			"brokerage_id":        trader.ExchangeID,
 			"is_running":          isRunning,
 			"show_in_competition": trader.ShowInCompetition,
 			"initial_balance":     trader.InitialBalance,
@@ -1776,22 +1844,23 @@ func (s *Server) handleGetTraderConfig(c *gin.Context) {
 	aiModelID := traderConfig.AIModelID
 
 	result := map[string]interface{}{
-		"trader_id":             traderConfig.ID,
-		"trader_name":           traderConfig.Name,
-		"ai_model":              aiModelID,
-		"exchange_id":           traderConfig.ExchangeID,
-		"strategy_id":           traderConfig.StrategyID,
-		"initial_balance":       traderConfig.InitialBalance,
-		"scan_interval_minutes": traderConfig.ScanIntervalMinutes,
-		"btc_eth_leverage":      traderConfig.BTCETHLeverage,
-		"altcoin_leverage":      traderConfig.AltcoinLeverage,
-		"trading_symbols":       traderConfig.TradingSymbols,
-		"custom_prompt":         traderConfig.CustomPrompt,
-		"override_base_prompt":  traderConfig.OverrideBasePrompt,
-		"is_cross_margin":       traderConfig.IsCrossMargin,
-		"use_coin_pool":         traderConfig.UseCoinPool,
-		"use_oi_top":            traderConfig.UseOITop,
-		"is_running":            isRunning,
+		"trader_id":               traderConfig.ID,
+		"trader_name":             traderConfig.Name,
+		"ai_model":                aiModelID,
+		"brokerage_id":            traderConfig.ExchangeID,
+		"strategy_id":             traderConfig.StrategyID,
+		"initial_balance":         traderConfig.InitialBalance,
+		"scan_interval_minutes":   traderConfig.ScanIntervalMinutes,
+		"large_cap_leverage":      traderConfig.LargeCapLeverage,
+		"small_cap_leverage":      traderConfig.SmallCapLeverage,
+		"trading_symbols":         traderConfig.TradingSymbols,
+		"custom_prompt":           traderConfig.CustomPrompt,
+		"override_base_prompt":    traderConfig.OverrideBasePrompt,
+		"is_cross_margin":         traderConfig.IsCrossMargin,
+		"use_coin_pool":           traderConfig.UseCoinPool,
+		"use_oi_top":              traderConfig.UseOITop,
+		"is_running":              isRunning,
+		"trade_only_market_hours": traderConfig.TradeOnlyMarketHours,
 	}
 
 	c.JSON(http.StatusOK, result)
@@ -1848,7 +1917,7 @@ func (s *Server) handleAccount(c *gin.Context) {
 	c.JSON(http.StatusOK, account)
 }
 
-// handlePositions Position list
+// handlePositions Position list (filtered by trader_id from internal database)
 func (s *Server) handlePositions(c *gin.Context) {
 	_, traderID, err := s.getTraderFromQuery(c)
 	if err != nil {
@@ -1862,15 +1931,81 @@ func (s *Server) handlePositions(c *gin.Context) {
 		return
 	}
 
-	positions, err := trader.GetPositions()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("Failed to get position list: %v", err),
-		})
+	// Step 1: Get positions from internal database (filtered by trader_id)
+	// This ensures each trader only sees positions THEY opened
+	dbPositions, dbErr := s.store.Position().GetOpenPositions(traderID)
+
+	// Step 2: Get live positions from exchange for current prices
+	livePositions, liveErr := trader.GetPositions()
+
+	// If we have DB positions, merge with live data for current prices
+	if dbErr == nil && len(dbPositions) > 0 {
+		// Create a map of live positions by symbol+side for quick lookup
+		livePriceMap := make(map[string]map[string]interface{})
+		if liveErr == nil {
+			for _, lp := range livePositions {
+				symbol, _ := lp["symbol"].(string)
+				side, _ := lp["side"].(string)
+				// Normalize side for comparison
+				sideUpper := strings.ToUpper(side)
+				key := symbol + "_" + sideUpper
+				livePriceMap[key] = lp
+			}
+		}
+
+		// Convert DB positions to response format with live prices
+		positions := make([]map[string]interface{}, 0, len(dbPositions))
+		for _, dbPos := range dbPositions {
+			// Build position response using snake_case expected by frontend
+			posMap := map[string]interface{}{
+				"symbol":             dbPos.Symbol,
+				"side":               strings.ToLower(dbPos.Side),
+				"quantity":           dbPos.Quantity,
+				"entry_price":        dbPos.EntryPrice,
+				"mark_price":         dbPos.EntryPrice, // Default to entry price
+				"unrealized_pnl":     0.0,
+				"unrealized_pnl_pct": 0.0,
+				"liquidation_price":  0.0,
+				"margin":             float64(dbPos.Leverage),
+			}
+
+			// Merge with live data if available
+			key := dbPos.Symbol + "_" + strings.ToUpper(dbPos.Side)
+			if livePos, found := livePriceMap[key]; found {
+				if markPrice, ok := livePos["markPrice"].(float64); ok {
+					posMap["mark_price"] = markPrice
+				}
+				if uPnL, ok := livePos["unRealizedProfit"].(float64); ok {
+					posMap["unrealized_pnl"] = uPnL
+				}
+				if liqPrice, ok := livePos["liquidationPrice"].(float64); ok {
+					posMap["liquidation_price"] = liqPrice
+				}
+				// Calculate PnL %
+				if mark, mOk := posMap["mark_price"].(float64); mOk && mark > 0 && dbPos.EntryPrice > 0 {
+					if strings.ToUpper(dbPos.Side) == "LONG" {
+						posMap["unrealized_pnl_pct"] = (mark - dbPos.EntryPrice) / dbPos.EntryPrice * 100
+					} else {
+						posMap["unrealized_pnl_pct"] = (dbPos.EntryPrice - mark) / dbPos.EntryPrice * 100
+					}
+				}
+			}
+
+			positions = append(positions, posMap)
+		}
+
+		logger.Infof("📊 Returning %d positions for trader %s (filtered from DB, merged with live prices)", len(positions), traderID)
+		c.JSON(http.StatusOK, positions)
 		return
 	}
 
-	c.JSON(http.StatusOK, positions)
+	// Fallback: If no DB positions or DB error, return empty (not all exchange positions)
+	// This prevents showing positions from other traders on shared accounts
+	if dbErr != nil {
+		logger.Infof("⚠️ Could not get DB positions for trader %s: %v, returning empty", traderID, dbErr)
+	}
+
+	c.JSON(http.StatusOK, []map[string]interface{}{})
 }
 
 // handleDecisions Decision log list
@@ -2393,13 +2528,14 @@ func (s *Server) initUserDefaultConfigs(userID string) error {
 func (s *Server) handleGetSupportedModels(c *gin.Context) {
 	// Return static list of supported AI models with default versions
 	supportedModels := []map[string]interface{}{
-		{"id": "deepseek", "name": "DeepSeek", "provider": "deepseek", "defaultModel": "deepseek-chat"},
-		{"id": "qwen", "name": "Qwen", "provider": "qwen", "defaultModel": "qwen3-max"},
+		{"id": "deepseek", "name": "DeepSeek AI", "provider": "deepseek", "defaultModel": "deepseek-chat"},
+		{"id": "qwen", "name": "Qwen AI", "provider": "qwen", "defaultModel": "qwen3-max"},
 		{"id": "openai", "name": "OpenAI", "provider": "openai", "defaultModel": "gpt-5.1"},
-		{"id": "claude", "name": "Claude", "provider": "claude", "defaultModel": "claude-opus-4-5-20251101"},
-		{"id": "gemini", "name": "Google Gemini", "provider": "gemini", "defaultModel": "gemini-3-pro-preview"},
-		{"id": "grok", "name": "Grok (xAI)", "provider": "grok", "defaultModel": "grok-3-latest"},
-		{"id": "kimi", "name": "Kimi (Moonshot)", "provider": "kimi", "defaultModel": "moonshot-v1-auto"},
+		{"id": "claude", "name": "Claude AI", "provider": "claude", "defaultModel": "claude-opus-4-5-20251101"},
+		{"id": "gemini", "name": "Gemini AI", "provider": "gemini", "defaultModel": "gemini-3-pro-preview"},
+		{"id": "grok", "name": "Grok AI", "provider": "grok", "defaultModel": "grok-3-latest"},
+		{"id": "kimi", "name": "Kimi AI", "provider": "kimi", "defaultModel": "moonshot-v1-auto"},
+		{"id": "localai", "name": "Local AI", "provider": "localai", "defaultModel": "gpt-oss-20b"},
 	}
 
 	c.JSON(http.StatusOK, supportedModels)
@@ -2410,12 +2546,11 @@ func (s *Server) handleGetSupportedExchanges(c *gin.Context) {
 	// Return static list of supported exchange types
 	// Note: ID is empty for supported exchanges (they are templates, not actual accounts)
 	supportedExchanges := []SafeExchangeConfig{
-		{ExchangeType: "binance", Name: "Binance Futures", Type: "cex"},
-		{ExchangeType: "bybit", Name: "Bybit Futures", Type: "cex"},
-		{ExchangeType: "okx", Name: "OKX Futures", Type: "cex"},
-		{ExchangeType: "hyperliquid", Name: "Hyperliquid", Type: "dex"},
-		{ExchangeType: "aster", Name: "Aster DEX", Type: "dex"},
-		{ExchangeType: "lighter", Name: "LIGHTER DEX", Type: "dex"},
+		{ExchangeType: "alpaca", Name: "Alpaca (Live)", Type: "broker"},
+		{ExchangeType: "alpaca-paper", Name: "Alpaca (Paper)", Type: "broker"},
+		{ExchangeType: "ibkr", Name: "Interactive Brokers", Type: "broker"},
+		{ExchangeType: "simplefx", Name: "SimpleFX", Type: "broker"},
+		{ExchangeType: "oanda", Name: "OANDA", Type: "forex"},
 	}
 
 	c.JSON(http.StatusOK, supportedExchanges)
@@ -2739,24 +2874,90 @@ func (s *Server) handleGetPublicTraderConfig(c *gin.Context) {
 		return
 	}
 
-	trader, err := s.traderManager.GetTrader(traderID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Trader does not exist"})
+	// First try to find trader in database (works for all traders, not just running ones)
+	traderRecord, err := s.store.Trader().GetByID(traderID)
+	if err != nil || traderRecord == nil {
+		// Fall back to in-memory trader manager (for compatibility)
+		trader, err := s.traderManager.GetTrader(traderID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Trader does not exist"})
+			return
+		}
+
+		// Get trader status information from in-memory trader
+		status := trader.GetStatus()
+		result := map[string]interface{}{
+			"trader_id":    trader.GetID(),
+			"trader_name":  trader.GetName(),
+			"ai_model":     trader.GetAIModel(),
+			"brokerage_id": trader.GetExchange(),
+			"exchange":     trader.GetExchange(),
+			"is_running":   status["is_running"],
+			"ai_provider":  status["ai_provider"],
+			"start_time":   status["start_time"],
+		}
+		c.JSON(http.StatusOK, result)
 		return
 	}
 
-	// Get trader status information
-	status := trader.GetStatus()
+	// Get running status from in-memory trader if available
+	isRunning := false
+	var aiProvider string
+	if trader, err := s.traderManager.GetTrader(traderID); err == nil {
+		status := trader.GetStatus()
+		if running, ok := status["is_running"].(bool); ok {
+			isRunning = running
+		}
+		if provider, ok := status["ai_provider"].(string); ok {
+			aiProvider = provider
+		}
+	} else {
+		// Fall back to database stored running status
+		isRunning = traderRecord.IsRunning
+	}
 
-	// Only return public configuration information, not including sensitive data like API keys
+	// Get strategy name if strategy is bound (check BOTH strategies and tactics tables)
+	var strategyName string
+	if traderRecord.StrategyID != "" {
+		// First try strategies table
+		if strategy, err := s.store.Strategy().Get(traderRecord.UserID, traderRecord.StrategyID); err == nil && strategy != nil {
+			strategyName = strategy.Name
+		} else {
+			// Fallback to tactics table (for Opus/Sonnet/Cursor tactics)
+			if tactic, err := s.store.Tactic().Get(traderRecord.UserID, traderRecord.StrategyID); err == nil && tactic != nil {
+				strategyName = tactic.Name
+			}
+		}
+	}
+
+	// Get exchange type for display
+	brokerageName := traderRecord.ExchangeID
+	if exchanges, err := s.store.Exchange().List(traderRecord.UserID); err == nil {
+		for _, ex := range exchanges {
+			if ex.ID == traderRecord.ExchangeID {
+				brokerageName = ex.ExchangeType
+				break
+			}
+		}
+	}
+
+	// Return full public configuration (no sensitive data like API keys)
 	result := map[string]interface{}{
-		"trader_id":   trader.GetID(),
-		"trader_name": trader.GetName(),
-		"ai_model":    trader.GetAIModel(),
-		"exchange":    trader.GetExchange(),
-		"is_running":  status["is_running"],
-		"ai_provider": status["ai_provider"],
-		"start_time":  status["start_time"],
+		"trader_id":             traderRecord.ID,
+		"trader_name":           traderRecord.Name,
+		"ai_model":              traderRecord.AIModelID,
+		"brokerage_id":          brokerageName,
+		"exchange":              brokerageName,
+		"initial_balance":       traderRecord.InitialBalance,
+		"is_cross_margin":       traderRecord.IsCrossMargin,
+		"scan_interval_minutes": traderRecord.ScanIntervalMinutes,
+		"is_running":            isRunning,
+		"ai_provider":           aiProvider,
+		"strategy_id":           traderRecord.StrategyID,
+		"strategy_name":         strategyName,
+		"large_cap_leverage":    traderRecord.LargeCapLeverage,
+		"small_cap_leverage":    traderRecord.SmallCapLeverage,
+		"show_in_competition":   traderRecord.ShowInCompetition,
 	}
 
 	c.JSON(http.StatusOK, result)

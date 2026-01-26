@@ -4,7 +4,7 @@ import (
 	"math"
 	"sort"
 
-	"nofx/market"
+	"SynapseStrike/market"
 )
 
 // ResampleEquity resamples equity curve based on timeframe.

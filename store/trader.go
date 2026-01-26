@@ -15,23 +15,24 @@ type TraderStore struct {
 
 // Trader trader configuration
 type Trader struct {
-	ID                  string    `json:"id"`
-	UserID              string    `json:"user_id"`
-	Name                string    `json:"name"`
-	AIModelID           string    `json:"ai_model_id"`
-	ExchangeID          string    `json:"exchange_id"`
-	StrategyID          string    `json:"strategy_id"`           // Associated strategy ID
-	InitialBalance      float64   `json:"initial_balance"`
-	ScanIntervalMinutes int       `json:"scan_interval_minutes"`
-	IsRunning           bool      `json:"is_running"`
-	IsCrossMargin       bool      `json:"is_cross_margin"`
-	ShowInCompetition   bool      `json:"show_in_competition"`   // Whether to show in competition page
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
+	ID                   string    `json:"id"`
+	UserID               string    `json:"user_id"`
+	Name                 string    `json:"name"`
+	AIModelID            string    `json:"ai_model_id"`
+	ExchangeID           string    `json:"brokerage_id"`
+	StrategyID           string    `json:"strategy_id"`           // Associated strategy ID
+	InitialBalance       float64   `json:"initial_balance"`
+	ScanIntervalMinutes  int       `json:"scan_interval_minutes"`
+	IsRunning            bool      `json:"is_running"`
+	IsCrossMargin        bool      `json:"is_cross_margin"`
+	ShowInCompetition    bool      `json:"show_in_competition"`   // Whether to show in competition page
+	TradeOnlyMarketHours bool      `json:"trade_only_market_hours"` // Only trade during stock market hours (9:30 AM - 4:00 PM ET)
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
 
 	// Following fields are deprecated, kept for backward compatibility, new traders should use StrategyID
-	BTCETHLeverage       int    `json:"btc_eth_leverage,omitempty"`
-	AltcoinLeverage      int    `json:"altcoin_leverage,omitempty"`
+	LargeCapLeverage       int    `json:"large_cap_leverage,omitempty"`
+	SmallCapLeverage      int    `json:"small_cap_leverage,omitempty"`
 	TradingSymbols       string `json:"trading_symbols,omitempty"`
 	UseCoinPool          bool   `json:"use_coin_pool,omitempty"`
 	UseOITop             bool   `json:"use_oi_top,omitempty"`
@@ -59,8 +60,8 @@ func (s *TraderStore) initTables() error {
 			initial_balance REAL NOT NULL,
 			scan_interval_minutes INTEGER DEFAULT 3,
 			is_running BOOLEAN DEFAULT 0,
-			btc_eth_leverage INTEGER DEFAULT 5,
-			altcoin_leverage INTEGER DEFAULT 5,
+			large_cap_leverage INTEGER DEFAULT 5,
+			small_cap_leverage INTEGER DEFAULT 5,
 			trading_symbols TEXT DEFAULT '',
 			use_coin_pool BOOLEAN DEFAULT 0,
 			use_oi_top BOOLEAN DEFAULT 0,
@@ -93,14 +94,15 @@ func (s *TraderStore) initTables() error {
 		`ALTER TABLE traders ADD COLUMN custom_prompt TEXT DEFAULT ''`,
 		`ALTER TABLE traders ADD COLUMN override_base_prompt BOOLEAN DEFAULT 0`,
 		`ALTER TABLE traders ADD COLUMN is_cross_margin BOOLEAN DEFAULT 1`,
-		`ALTER TABLE traders ADD COLUMN btc_eth_leverage INTEGER DEFAULT 5`,
-		`ALTER TABLE traders ADD COLUMN altcoin_leverage INTEGER DEFAULT 5`,
+		`ALTER TABLE traders ADD COLUMN large_cap_leverage INTEGER DEFAULT 5`,
+		`ALTER TABLE traders ADD COLUMN small_cap_leverage INTEGER DEFAULT 5`,
 		`ALTER TABLE traders ADD COLUMN trading_symbols TEXT DEFAULT ''`,
 		`ALTER TABLE traders ADD COLUMN use_coin_pool BOOLEAN DEFAULT 0`,
 		`ALTER TABLE traders ADD COLUMN use_oi_top BOOLEAN DEFAULT 0`,
 		`ALTER TABLE traders ADD COLUMN system_prompt_template TEXT DEFAULT 'default'`,
 		`ALTER TABLE traders ADD COLUMN strategy_id TEXT DEFAULT ''`,
 		`ALTER TABLE traders ADD COLUMN show_in_competition BOOLEAN DEFAULT 1`,
+		`ALTER TABLE traders ADD COLUMN trade_only_market_hours BOOLEAN DEFAULT 0`,
 	}
 	for _, q := range alterQueries {
 		s.db.Exec(q)
@@ -142,8 +144,8 @@ func (s *TraderStore) migrateTradersRemoveFK() error {
 			initial_balance REAL NOT NULL,
 			scan_interval_minutes INTEGER DEFAULT 3,
 			is_running BOOLEAN DEFAULT 0,
-			btc_eth_leverage INTEGER DEFAULT 5,
-			altcoin_leverage INTEGER DEFAULT 5,
+			large_cap_leverage INTEGER DEFAULT 5,
+			small_cap_leverage INTEGER DEFAULT 5,
 			trading_symbols TEXT DEFAULT '',
 			use_coin_pool BOOLEAN DEFAULT 0,
 			use_oi_top BOOLEAN DEFAULT 0,
@@ -159,7 +161,7 @@ func (s *TraderStore) migrateTradersRemoveFK() error {
 		-- Copy data from old table
 		INSERT OR IGNORE INTO traders_new
 		SELECT id, user_id, name, ai_model_id, exchange_id, initial_balance,
-		       scan_interval_minutes, is_running, btc_eth_leverage, altcoin_leverage,
+		       scan_interval_minutes, is_running, large_cap_leverage, small_cap_leverage,
 		       trading_symbols, use_coin_pool, use_oi_top, custom_prompt,
 		       override_base_prompt, system_prompt_template, is_cross_margin,
 		       COALESCE(strategy_id, ''), created_at, updated_at
@@ -200,13 +202,13 @@ func (s *TraderStore) Create(trader *Trader) error {
 	_, err := s.db.Exec(`
 		INSERT INTO traders (id, user_id, name, ai_model_id, exchange_id, strategy_id, initial_balance,
 		                     scan_interval_minutes, is_running, is_cross_margin, show_in_competition,
-		                     btc_eth_leverage, altcoin_leverage, trading_symbols, use_coin_pool,
-		                     use_oi_top, custom_prompt, override_base_prompt, system_prompt_template)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		                     large_cap_leverage, small_cap_leverage, trading_symbols, use_coin_pool,
+		                     use_oi_top, custom_prompt, override_base_prompt, system_prompt_template, trade_only_market_hours)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, trader.ID, trader.UserID, trader.Name, trader.AIModelID, trader.ExchangeID, trader.StrategyID,
 		trader.InitialBalance, trader.ScanIntervalMinutes, trader.IsRunning, trader.IsCrossMargin, trader.ShowInCompetition,
-		trader.BTCETHLeverage, trader.AltcoinLeverage, trader.TradingSymbols, trader.UseCoinPool,
-		trader.UseOITop, trader.CustomPrompt, trader.OverrideBasePrompt, trader.SystemPromptTemplate)
+		trader.LargeCapLeverage, trader.SmallCapLeverage, trader.TradingSymbols, trader.UseCoinPool,
+		trader.UseOITop, trader.CustomPrompt, trader.OverrideBasePrompt, trader.SystemPromptTemplate, trader.TradeOnlyMarketHours)
 	return err
 }
 
@@ -215,8 +217,8 @@ func (s *TraderStore) List(userID string) ([]*Trader, error) {
 	rows, err := s.db.Query(`
 		SELECT id, user_id, name, ai_model_id, exchange_id, COALESCE(strategy_id, ''),
 		       initial_balance, scan_interval_minutes, is_running, COALESCE(is_cross_margin, 1),
-		       COALESCE(show_in_competition, 1),
-		       COALESCE(btc_eth_leverage, 5), COALESCE(altcoin_leverage, 5), COALESCE(trading_symbols, ''),
+		       COALESCE(show_in_competition, 1), COALESCE(trade_only_market_hours, 0),
+		       COALESCE(large_cap_leverage, 5), COALESCE(small_cap_leverage, 5), COALESCE(trading_symbols, ''),
 		       COALESCE(use_coin_pool, 0), COALESCE(use_oi_top, 0), COALESCE(custom_prompt, ''),
 		       COALESCE(override_base_prompt, 0), COALESCE(system_prompt_template, 'default'),
 		       created_at, updated_at
@@ -234,8 +236,8 @@ func (s *TraderStore) List(userID string) ([]*Trader, error) {
 		err := rows.Scan(
 			&t.ID, &t.UserID, &t.Name, &t.AIModelID, &t.ExchangeID, &t.StrategyID,
 			&t.InitialBalance, &t.ScanIntervalMinutes, &t.IsRunning, &t.IsCrossMargin,
-			&t.ShowInCompetition,
-			&t.BTCETHLeverage, &t.AltcoinLeverage, &t.TradingSymbols,
+			&t.ShowInCompetition, &t.TradeOnlyMarketHours,
+			&t.LargeCapLeverage, &t.SmallCapLeverage, &t.TradingSymbols,
 			&t.UseCoinPool, &t.UseOITop, &t.CustomPrompt, &t.OverrideBasePrompt,
 			&t.SystemPromptTemplate, &createdAt, &updatedAt,
 		)
@@ -275,12 +277,13 @@ func (s *TraderStore) Update(trader *Trader) error {
 			scan_interval_minutes = CASE WHEN ? > 0 THEN ? ELSE scan_interval_minutes END,
 			is_cross_margin = ?,
 			show_in_competition = ?,
+			trade_only_market_hours = ?,
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = ? AND user_id = ?
 	`, trader.Name, trader.AIModelID, trader.ExchangeID, trader.StrategyID,
 		trader.InitialBalance, trader.InitialBalance,
 		trader.ScanIntervalMinutes, trader.ScanIntervalMinutes,
-		trader.IsCrossMargin, trader.ShowInCompetition,
+		trader.IsCrossMargin, trader.ShowInCompetition, trader.TradeOnlyMarketHours,
 		trader.ID, trader.UserID)
 	return err
 }
@@ -321,9 +324,10 @@ func (s *TraderStore) GetFullConfig(userID, traderID string) (*TraderFullConfig,
 		SELECT
 			t.id, t.user_id, t.name, t.ai_model_id, t.exchange_id, COALESCE(t.strategy_id, ''),
 			t.initial_balance, t.scan_interval_minutes, t.is_running, COALESCE(t.is_cross_margin, 1),
-			COALESCE(t.btc_eth_leverage, 5), COALESCE(t.altcoin_leverage, 5), COALESCE(t.trading_symbols, ''),
+			COALESCE(t.large_cap_leverage, 5), COALESCE(t.small_cap_leverage, 5), COALESCE(t.trading_symbols, ''),
 			COALESCE(t.use_coin_pool, 0), COALESCE(t.use_oi_top, 0), COALESCE(t.custom_prompt, ''),
 			COALESCE(t.override_base_prompt, 0), COALESCE(t.system_prompt_template, 'default'),
+			COALESCE(t.trade_only_market_hours, 0),
 			t.created_at, t.updated_at,
 			a.id, a.user_id, a.name, a.provider, a.enabled, a.api_key,
 			COALESCE(a.custom_api_url, ''), COALESCE(a.custom_model_name, ''), a.created_at, a.updated_at,
@@ -339,9 +343,9 @@ func (s *TraderStore) GetFullConfig(userID, traderID string) (*TraderFullConfig,
 	`, traderID, userID).Scan(
 		&trader.ID, &trader.UserID, &trader.Name, &trader.AIModelID, &trader.ExchangeID, &trader.StrategyID,
 		&trader.InitialBalance, &trader.ScanIntervalMinutes, &trader.IsRunning, &trader.IsCrossMargin,
-		&trader.BTCETHLeverage, &trader.AltcoinLeverage, &trader.TradingSymbols,
+		&trader.LargeCapLeverage, &trader.SmallCapLeverage, &trader.TradingSymbols,
 		&trader.UseCoinPool, &trader.UseOITop, &trader.CustomPrompt, &trader.OverrideBasePrompt,
-		&trader.SystemPromptTemplate, &traderCreatedAt, &traderUpdatedAt,
+		&trader.SystemPromptTemplate, &trader.TradeOnlyMarketHours, &traderCreatedAt, &traderUpdatedAt,
 		&aiModel.ID, &aiModel.UserID, &aiModel.Name, &aiModel.Provider, &aiModel.Enabled, &aiModel.APIKey,
 		&aiModel.CustomAPIURL, &aiModel.CustomModelName, &aiModelCreatedAt, &aiModelUpdatedAt,
 		&exchange.ID, &exchange.ExchangeType, &exchange.AccountName,
@@ -451,17 +455,18 @@ func (s *TraderStore) GetByID(traderID string) (*Trader, error) {
 	err := s.db.QueryRow(`
 		SELECT id, user_id, name, ai_model_id, exchange_id, COALESCE(strategy_id, ''),
 		       initial_balance, scan_interval_minutes, is_running, COALESCE(is_cross_margin, 1),
-		       COALESCE(btc_eth_leverage, 5), COALESCE(altcoin_leverage, 5), COALESCE(trading_symbols, ''),
+		       COALESCE(large_cap_leverage, 5), COALESCE(small_cap_leverage, 5), COALESCE(trading_symbols, ''),
 		       COALESCE(use_coin_pool, 0), COALESCE(use_oi_top, 0), COALESCE(custom_prompt, ''),
 		       COALESCE(override_base_prompt, 0), COALESCE(system_prompt_template, 'default'),
+		       COALESCE(trade_only_market_hours, 0),
 		       created_at, updated_at
-		FROM traders WHERE id = ?
+		FROM traders t WHERE t.id = ?
 	`, traderID).Scan(
 		&t.ID, &t.UserID, &t.Name, &t.AIModelID, &t.ExchangeID, &t.StrategyID,
 		&t.InitialBalance, &t.ScanIntervalMinutes, &t.IsRunning, &t.IsCrossMargin,
-		&t.BTCETHLeverage, &t.AltcoinLeverage, &t.TradingSymbols,
+		&t.LargeCapLeverage, &t.SmallCapLeverage, &t.TradingSymbols,
 		&t.UseCoinPool, &t.UseOITop, &t.CustomPrompt, &t.OverrideBasePrompt,
-		&t.SystemPromptTemplate, &createdAt, &updatedAt,
+		&t.SystemPromptTemplate, &t.TradeOnlyMarketHours, &createdAt, &updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -475,8 +480,8 @@ func (s *TraderStore) ListAll() ([]*Trader, error) {
 	rows, err := s.db.Query(`
 		SELECT id, user_id, name, ai_model_id, exchange_id, COALESCE(strategy_id, ''),
 		       initial_balance, scan_interval_minutes, is_running, COALESCE(is_cross_margin, 1),
-		       COALESCE(show_in_competition, 1),
-		       COALESCE(btc_eth_leverage, 5), COALESCE(altcoin_leverage, 5), COALESCE(trading_symbols, ''),
+		       COALESCE(show_in_competition, 1), COALESCE(trade_only_market_hours, 0),
+		       COALESCE(large_cap_leverage, 5), COALESCE(small_cap_leverage, 5), COALESCE(trading_symbols, ''),
 		       COALESCE(use_coin_pool, 0), COALESCE(use_oi_top, 0), COALESCE(custom_prompt, ''),
 		       COALESCE(override_base_prompt, 0), COALESCE(system_prompt_template, 'default'),
 		       created_at, updated_at
@@ -494,8 +499,8 @@ func (s *TraderStore) ListAll() ([]*Trader, error) {
 		err := rows.Scan(
 			&t.ID, &t.UserID, &t.Name, &t.AIModelID, &t.ExchangeID, &t.StrategyID,
 			&t.InitialBalance, &t.ScanIntervalMinutes, &t.IsRunning, &t.IsCrossMargin,
-			&t.ShowInCompetition,
-			&t.BTCETHLeverage, &t.AltcoinLeverage, &t.TradingSymbols,
+			&t.ShowInCompetition, &t.TradeOnlyMarketHours,
+			&t.LargeCapLeverage, &t.SmallCapLeverage, &t.TradingSymbols,
 			&t.UseCoinPool, &t.UseOITop, &t.CustomPrompt, &t.OverrideBasePrompt,
 			&t.SystemPromptTemplate, &createdAt, &updatedAt,
 		)

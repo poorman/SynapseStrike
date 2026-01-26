@@ -3,11 +3,12 @@ package manager
 import (
 	"context"
 	"fmt"
-	"nofx/debate"
-	"nofx/decision"
-	"nofx/logger"
-	"nofx/store"
-	"nofx/trader"
+	"SynapseStrike/debate"
+	"SynapseStrike/decision"
+	"SynapseStrike/logger"
+	"SynapseStrike/market"
+	"SynapseStrike/store"
+	"SynapseStrike/trader"
 	"sort"
 	"sync"
 	"time"
@@ -625,18 +626,35 @@ func (tm *TraderManager) addTraderFromStore(traderCfg *store.Trader, aiModelCfg 
 	}
 
 	// Load strategy config (must have strategy)
+	// Check BOTH strategies and tactics tables since the Create Trader modal
+	// allows selecting from either API endpoint
 	var strategyConfig *store.StrategyConfig
 	if traderCfg.StrategyID != "" {
+		// First try the strategies table
 		strategy, err := st.Strategy().Get(traderCfg.UserID, traderCfg.StrategyID)
-		if err != nil {
-			return fmt.Errorf("failed to load strategy %s for trader %s: %w", traderCfg.StrategyID, traderCfg.Name, err)
+		if err == nil {
+			// Found in strategies table
+			strategyConfig, err = strategy.ParseConfig()
+			if err != nil {
+				return fmt.Errorf("failed to parse strategy config for trader %s: %w", traderCfg.Name, err)
+			}
+			logger.Infof("✓ Trader %s loaded strategy config: %s", traderCfg.Name, strategy.Name)
+		} else {
+			// Not found in strategies table, try tactics table
+			tactic, tacticErr := st.Tactic().Get(traderCfg.UserID, traderCfg.StrategyID)
+			if tacticErr != nil {
+				// Not found in either table
+				return fmt.Errorf("failed to load strategy %s for trader %s: not found in strategies or tactics tables", traderCfg.StrategyID, traderCfg.Name)
+			}
+			// Found in tactics table - parse the config
+			tacticConfig, parseErr := tactic.ParseConfig()
+			if parseErr != nil {
+				return fmt.Errorf("failed to parse tactic config for trader %s: %w", traderCfg.Name, parseErr)
+			}
+			// Convert TacticConfig to StrategyConfig (they have the same structure)
+			strategyConfig = (*store.StrategyConfig)(tacticConfig)
+			logger.Infof("✓ Trader %s loaded tactic config: %s", traderCfg.Name, tactic.Name)
 		}
-		// Parse JSON config
-		strategyConfig, err = strategy.ParseConfig()
-		if err != nil {
-			return fmt.Errorf("failed to parse strategy config for trader %s: %w", traderCfg.Name, err)
-		}
-		logger.Infof("✓ Trader %s loaded strategy config: %s", traderCfg.Name, strategy.Name)
 	} else {
 		return fmt.Errorf("trader %s has no strategy configured", traderCfg.Name)
 	}
@@ -661,6 +679,7 @@ func (tm *TraderManager) addTraderFromStore(traderCfg *store.Trader, aiModelCfg 
 		InitialBalance:       traderCfg.InitialBalance,
 		IsCrossMargin:        traderCfg.IsCrossMargin,
 		ShowInCompetition:    traderCfg.ShowInCompetition,
+		TradeOnlyMarketHours: traderCfg.TradeOnlyMarketHours,
 		StrategyConfig:       strategyConfig,
 	}
 
@@ -693,6 +712,13 @@ func (tm *TraderManager) addTraderFromStore(traderCfg *store.Trader, aiModelCfg 
 		traderConfig.LighterAPIKeyPrivateKey = exchangeCfg.LighterAPIKeyPrivateKey
 		traderConfig.LighterAPIKeyIndex = exchangeCfg.LighterAPIKeyIndex
 		traderConfig.LighterTestnet = exchangeCfg.Testnet
+	case "alpaca", "alpaca-paper", "alpaca-live":
+		// Alpaca uses standard API key/secret format, reuse Binance fields
+		traderConfig.BinanceAPIKey = exchangeCfg.APIKey
+		traderConfig.BinanceSecretKey = exchangeCfg.SecretKey
+		// Also set credentials for market data API (separate from trading API)
+		market.SetAlpacaCredentials(exchangeCfg.APIKey, exchangeCfg.SecretKey)
+		logger.Infof("✓ Set Alpaca credentials for market data API")
 	}
 
 	// Set API keys based on AI model

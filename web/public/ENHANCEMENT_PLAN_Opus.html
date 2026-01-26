@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Strategy Enhancement Plan - Phase 1</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 {
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: #888; margin-bottom: 2rem; }
+        .philosophy {
+            background: rgba(124, 58, 237, 0.1);
+            border-left: 4px solid #7c3aed;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .philosophy blockquote {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #a78bfa;
+        }
+        .pillars {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .pillar {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .pillar h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .pillar.entry h2 { color: #00d4ff; }
+        .pillar.risk h2 { color: #22c55e; }
+        .pillar.filter h2 { color: #ef4444; }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+        .feature:hover { background: rgba(255,255,255,0.05); }
+        .toggle {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #666;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .toggle.on { background: #22c55e; border-color: #22c55e; }
+        .toggle.on::after { content: '✓'; color: white; font-size: 12px; }
+        .feature-info { flex: 1; }
+        .feature-name { font-weight: 600; color: #fff; }
+        .feature-desc { font-size: 0.85rem; color: #888; }
+        .feature-params {
+            font-size: 0.75rem;
+            color: #a78bfa;
+            margin-top: 0.25rem;
+        }
+        .phases {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .phases h2 { color: #fbbf24; margin-bottom: 1rem; }
+        .phase {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+        }
+        .phase-num {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #7c3aed, #00d4ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .phase.current { border: 1px solid #22c55e; }
+        .phase.current .phase-num { background: #22c55e; }
+        .phase-content { flex: 1; }
+        .phase-title { font-weight: 600; color: #fff; }
+        .phase-desc { font-size: 0.85rem; color: #888; }
+        .status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+        .status.done { background: #22c55e20; color: #22c55e; }
+        .status.current { background: #fbbf2420; color: #fbbf24; }
+        .status.upcoming { background: #666; color: #aaa; }
+        .architecture {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .architecture h2 { color: #00d4ff; margin-bottom: 1rem; }
+        .arch-diagram {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre;
+            color: #a78bfa;
+        }
+        .summary {
+            margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        .summary-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .summary-card h3 { color: #888; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .summary-card .value { font-size: 2rem; font-weight: bold; color: #00d4ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Trading Strategy Enhancement Plan</h1>
+        <p class="subtitle">Profitable Trading Framework - From Indicators to Edge</p>
+
+        <div class="philosophy">
+            <blockquote>"Indicators don't make money. Trading SYSTEMS make money."</blockquote>
+            <p style="margin-top: 1rem; color: #888;">A profitable system needs: Entry Edge + Risk Control + Exit Strategy + Filter Logic</p>
+        </div>
+
+        <div class="pillars">
+            <div class="pillar entry">
+                <h2>🎯 Entry Signals</h2>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Multi-TF Confluence</div>
+                        <div class="feature-desc">5m + 15m + 1H alignment</div>
+                        <div class="feature-params">30-40% fewer false signals</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">VWAP Deviation Entry</div>
+                        <div class="feature-desc">Enter when 1-2.5 ATR from VWAP</div>
+                        <div class="feature-params">Mode: mean_reversion</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Volume Confirmation</div>
+                        <div class="feature-desc">Only enter on elevated volume</div>
+                        <div class="feature-params">Min: 1.5x average</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Trend Filter (EMA Stack)</div>
+                        <div class="feature-desc">9/21/50 EMA alignment</div>
+                        <div class="feature-params">Trade with trend only</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">RSI Zone Filter</div>
+                        <div class="feature-desc">Avoid overbought/oversold</div>
+                        <div class="feature-params">Threshold: 20-80</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pillar risk">
+                <h2>🛡️ Risk Management</h2>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">ATR-Based Stop Loss</div>
+                        <div class="feature-desc">Volatility-aware stops</div>
+                        <div class="feature-params">1.5x ATR, 14-period</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Position Sizing</div>
+                        <div class="feature-desc">Risk-based position sizing</div>
+                        <div class="feature-params">1% risk, 10% max position</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Daily Loss Limit</div>
+                        <div class="feature-desc">Stop trading after limit hit</div>
+                        <div class="feature-params">Default: 2% daily</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Trailing Stop</div>
+                        <div class="feature-desc">Lock in profits</div>
+                        <div class="feature-params">1.5 ATR, activate at 1R</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Partial Profit Taking</div>
+                        <div class="feature-desc">Secure gains + ride trends</div>
+                        <div class="feature-params">50% at 2R</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pillar filter">
+                <h2>🚫 Trade Filters</h2>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Market Hours Filter</div>
+                        <div class="feature-desc">Trade regular hours only</div>
+                        <div class="feature-params">9:30 AM - 4:00 PM ET</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Earnings Blackout</div>
+                        <div class="feature-desc">Skip earnings periods</div>
+                        <div class="feature-params">±1 day</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">FOMC Filter</div>
+                        <div class="feature-desc">Skip Fed announcement days</div>
+                        <div class="feature-params">Auto-detect</div>
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="toggle on"></div>
+                    <div class="feature-info">
+                        <div class="feature-name">Low Volume Filter</div>
+                        <div class="feature-desc">Skip thin markets</div>
+                        <div class="feature-params">Skip if &lt; 0.5x avg</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phases">
+            <h2>📈 Implementation Phases</h2>
+            <div class="phase current">
+                <div class="phase-num">1</div>
+                <div class="phase-content">
+                    <div class="phase-title">Foundation (Week 1-2)</div>
+                    <div class="phase-desc">ATR Stops, Position Sizing, Daily Limits, VWAP Entry, Market Hours</div>
+                </div>
+                <span class="status current">In Progress</span>
+            </div>
+            <div class="phase">
+                <div class="phase-num">2</div>
+                <div class="phase-content">
+                    <div class="phase-title">Intelligence (Week 3-4)</div>
+                    <div class="phase-desc">Earnings Blackout, News Sentiment, Volume Confirmation, Trailing Stops</div>
+                </div>
+                <span class="status upcoming">Upcoming</span>
+            </div>
+            <div class="phase">
+                <div class="phase-num">3</div>
+                <div class="phase-content">
+                    <div class="phase-title">Advanced (Week 5-8)</div>
+                    <div class="phase-desc">AI Ensemble (2/3 agreement), Kelly Criterion, Paper Trading, Analytics</div>
+                </div>
+                <span class="status upcoming">Upcoming</span>
+            </div>
+        </div>
+
+        <div class="architecture">
+            <h2>🎮 Master AI Controller Architecture</h2>
+            <div class="arch-diagram">┌─────────────────────────────────────────────────────────┐
+│                   MASTER AI (Local)                      │
+│  • Manages all trading algorithms                        │
+│  • Aggregates signals from Claude/GPT/Gemini            │
+│  • Applies risk management rules                         │
+└─────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│               SIGNAL GENERATION LAYER                    │
+├──────────────────┬──────────────────┬───────────────────┤
+│   Claude AI      │    GPT-4 AI      │   Gemini AI       │
+└──────────────────┴──────────────────┴───────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│               CONSENSUS ENGINE (2/3 Agreement)           │
+└─────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│        FILTER & RISK LAYER → EXECUTION LAYER            │
+└─────────────────────────────────────────────────────────┘</div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Features Added</h3>
+                <div class="value">15</div>
+            </div>
+            <div class="summary-card">
+                <h3>Expected Signal Improvement</h3>
+                <div class="value">30-40%</div>
+            </div>
+            <div class="summary-card">
+                <h3>Phases</h3>
+                <div class="value">3</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

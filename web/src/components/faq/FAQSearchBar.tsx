@@ -15,7 +15,7 @@ export function FAQSearchBar({
     <div className="relative">
       <Search
         className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5"
-        style={{ color: '#848E9C' }}
+        style={{ color: '#9CA3AF' }}
       />
       <input
         type="text"
@@ -24,16 +24,16 @@ export function FAQSearchBar({
         placeholder={placeholder}
         className="w-full pl-12 pr-12 py-3 rounded-lg text-base transition-all focus:outline-none focus:ring-2"
         style={{
-          background: '#1E2329',
-          border: '1px solid #2B3139',
-          color: '#EAECEF',
+          background: 'rgba(22, 27, 34, 0.88)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          color: '#F9FAFB',
         }}
         onFocus={(e) => {
-          e.target.style.borderColor = '#F0B90B'
-          e.target.style.boxShadow = '0 0 0 3px rgba(240, 185, 11, 0.1)'
+          e.target.style.borderColor = 'var(--primary)'
+          e.target.style.boxShadow = '0 0 0 3px var(--primary-bg, 0.1)'
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = '#2B3139'
+          e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)'
           e.target.style.boxShadow = 'none'
         }}
       />
@@ -41,7 +41,7 @@ export function FAQSearchBar({
         <button
           onClick={() => onSearchChange('')}
           className="absolute right-4 top-1/2 transform -translate-y-1/2 hover:opacity-70 transition-opacity"
-          style={{ color: '#848E9C' }}
+          style={{ color: '#9CA3AF' }}
         >
           <X className="w-5 h-5" />
         </button>

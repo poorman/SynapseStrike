@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"nofx/mcp"
+	"SynapseStrike/mcp"
 )
 
 // ============================================================

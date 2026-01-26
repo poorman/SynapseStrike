@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"nofx/decision"
-	"nofx/market"
+	"SynapseStrike/decision"
+	"SynapseStrike/market"
 )
 
 type cachedDecision struct {
@@ -134,7 +134,7 @@ func computeCacheKey(ctx *decision.Context, variant string, ts int64) (string, e
 		CurrentTime    string                   `json:"current_time"`
 		Account        decision.AccountInfo     `json:"account"`
 		Positions      []decision.PositionInfo  `json:"positions"`
-		CandidateCoins []decision.CandidateCoin `json:"candidate_coins"`
+		CandidateStocks []decision.CandidateStock `json:"candidate_stocks"`
 		MarketData     map[string]market.Data   `json:"market"`
 		MarginUsedPct  float64                  `json:"margin_used_pct"`
 		Runtime        int                      `json:"runtime_minutes"`
@@ -145,7 +145,7 @@ func computeCacheKey(ctx *decision.Context, variant string, ts int64) (string, e
 		CurrentTime:    ctx.CurrentTime,
 		Account:        ctx.Account,
 		Positions:      ctx.Positions,
-		CandidateCoins: ctx.CandidateCoins,
+		CandidateStocks: ctx.CandidateStocks,
 		MarginUsedPct:  ctx.Account.MarginUsedPct,
 		Runtime:        ctx.RuntimeMinutes,
 		CallCount:      ctx.CallCount,

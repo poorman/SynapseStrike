@@ -19,7 +19,7 @@ export function CompetitionPage() {
     'competition',
     api.getCompetition,
     {
-      refreshInterval: 15000, // 15秒刷新（竞赛数据不需要太频繁更新）
+      refreshInterval: 15000, // 15sec refresh（competitiondatanotneed too frequentUpdate）
       revalidateOnFocus: false,
       dedupingInterval: 10000,
     }
@@ -27,13 +27,13 @@ export function CompetitionPage() {
 
   const handleTraderClick = async (traderId: string) => {
     try {
-      const traderConfig = await api.getTraderConfig(traderId)
+      // Use public config endpoint for competition page (no auth required)
+      const traderConfig = await api.getPublicTraderConfig(traderId)
       setSelectedTrader(traderConfig)
       setIsModalOpen(true)
     } catch (error) {
       console.error('Failed to fetch trader config:', error)
-      // 对于未登录用户，不显示详细配置，这是正常行为
-      // 竞赛页面主要用于查看排行榜和基本信息
+      // For competition page, still show something if public config fails
     }
   }
 
@@ -65,42 +65,42 @@ export function CompetitionPage() {
     )
   }
 
-  // 如果有数据返回但没有交易员，显示空状态
+  // ifhasdatareturnbut notrader，showemptystatus
   if (!competition.traders || competition.traders.length === 0) {
     return (
       <div className="space-y-5 animate-fade-in">
-        {/* Competition Header - 精简版 */}
+        {/* Competition Header - compact version */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
           <div className="flex items-center gap-3 md:gap-4">
             <div
               className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center"
               style={{
-                background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-                boxShadow: '0 4px 14px rgba(240, 185, 11, 0.4)',
+                background: 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)',
+                boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
               }}
             >
               <Trophy
                 className="w-6 h-6 md:w-7 md:h-7"
-                style={{ color: '#000' }}
+                style={{ color: '#fff' }}
               />
             </div>
             <div>
               <h1
                 className="text-xl md:text-2xl font-bold flex items-center gap-2"
-                style={{ color: '#EAECEF' }}
+                style={{ color: '#FAFAFA' }}
               >
                 {t('aiCompetition', language)}
                 <span
                   className="text-xs font-normal px-2 py-1 rounded"
                   style={{
-                    background: 'rgba(240, 185, 11, 0.15)',
-                    color: '#F0B90B',
+                    background: 'rgba(124, 58, 237, 0.15)',
+                    color: 'rgb(195, 245, 60)',
                   }}
                 >
                   0 {t('traders', language)}
                 </span>
               </h1>
-              <p className="text-xs" style={{ color: '#848E9C' }}>
+              <p className="text-xs" style={{ color: '#9CA3AF' }}>
                 {t('liveBattle', language)}
               </p>
             </div>
@@ -111,12 +111,12 @@ export function CompetitionPage() {
         <div className="binance-card p-8 text-center">
           <Trophy
             className="w-16 h-16 mx-auto mb-4 opacity-40"
-            style={{ color: '#848E9C' }}
+            style={{ color: '#9CA3AF' }}
           />
-          <h3 className="text-lg font-bold mb-2" style={{ color: '#EAECEF' }}>
+          <h3 className="text-lg font-bold mb-2" style={{ color: '#F9FAFB' }}>
             {t('noTraders', language)}
           </h3>
-          <p className="text-sm" style={{ color: '#848E9C' }}>
+          <p className="text-sm" style={{ color: '#9CA3AF' }}>
             {t('createFirstTrader', language)}
           </p>
         </div>
@@ -124,66 +124,66 @@ export function CompetitionPage() {
     )
   }
 
-  // 按收益率排序
+  // sort by returns
   const sortedTraders = [...competition.traders].sort(
     (a, b) => b.total_pnl_pct - a.total_pnl_pct
   )
 
-  // 找出领先者
+  // find leader
   const leader = sortedTraders[0]
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Competition Header - 精简版 */}
+      {/* Competition Header - compact version */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
         <div className="flex items-center gap-3 md:gap-4">
           <div
             className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-              boxShadow: '0 4px 14px rgba(240, 185, 11, 0.4)',
+              background: 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)',
+              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
             }}
           >
             <Trophy
               className="w-6 h-6 md:w-7 md:h-7"
-              style={{ color: '#000' }}
+              style={{ color: '#fff' }}
             />
           </div>
           <div>
             <h1
               className="text-xl md:text-2xl font-bold flex items-center gap-2"
-              style={{ color: '#EAECEF' }}
+              style={{ color: '#FAFAFA' }}
             >
               {t('aiCompetition', language)}
               <span
                 className="text-xs font-normal px-2 py-1 rounded"
                 style={{
-                  background: 'rgba(240, 185, 11, 0.15)',
-                  color: '#F0B90B',
+                  background: 'rgba(124, 58, 237, 0.15)',
+                  color: 'rgb(195, 245, 60)',
                 }}
               >
                 {competition.count} {t('traders', language)}
               </span>
             </h1>
-            <p className="text-xs" style={{ color: '#848E9C' }}>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>
               {t('liveBattle', language)}
             </p>
           </div>
         </div>
         <div className="text-left md:text-right w-full md:w-auto">
-          <div className="text-xs mb-1" style={{ color: '#848E9C' }}>
+          <div className="text-xs mb-1" style={{ color: '#9CA3AF' }}>
             {t('leader', language)}
           </div>
           <div
             className="text-base md:text-lg font-bold"
-            style={{ color: '#F0B90B' }}
+            style={{ color: 'rgb(195, 245, 60)' }}
           >
             {leader?.trader_name}
           </div>
           <div
             className="text-sm font-semibold"
             style={{
-              color: (leader?.total_pnl ?? 0) >= 0 ? '#0ECB81' : '#F6465D',
+              color: (leader?.total_pnl ?? 0) >= 0 ? 'var(--primary)' : '#F6465D',
             }}
           >
             {(leader?.total_pnl ?? 0) >= 0 ? '+' : ''}
@@ -202,11 +202,11 @@ export function CompetitionPage() {
           <div className="flex items-center justify-between mb-4">
             <h2
               className="text-lg font-bold flex items-center gap-2"
-              style={{ color: '#EAECEF' }}
+              style={{ color: '#F9FAFB' }}
             >
               {t('performanceComparison', language)}
             </h2>
-            <div className="text-xs" style={{ color: '#848E9C' }}>
+            <div className="text-xs" style={{ color: '#9CA3AF' }}>
               {t('realTimePnL', language)}
             </div>
           </div>
@@ -221,16 +221,16 @@ export function CompetitionPage() {
           <div className="flex items-center justify-between mb-4">
             <h2
               className="text-lg font-bold flex items-center gap-2"
-              style={{ color: '#EAECEF' }}
+              style={{ color: '#F9FAFB' }}
             >
               {t('leaderboard', language)}
             </h2>
             <div
               className="text-xs px-2 py-1 rounded"
               style={{
-                background: 'rgba(240, 185, 11, 0.1)',
-                color: '#F0B90B',
-                border: '1px solid rgba(240, 185, 11, 0.2)',
+                background: 'rgba(124, 58, 237, 0.1)',
+                color: 'rgb(195, 245, 60)',
+                border: '1px solid rgba(124, 58, 237, 0.2)',
               }}
             >
               {t('live', language)}
@@ -251,12 +251,12 @@ export function CompetitionPage() {
                   className="rounded p-3 transition-all duration-300 hover:translate-y-[-1px] cursor-pointer hover:shadow-lg"
                   style={{
                     background: isLeader
-                      ? 'linear-gradient(135deg, rgba(240, 185, 11, 0.08) 0%, #0B0E11 100%)'
-                      : '#0B0E11',
-                    border: `1px solid ${isLeader ? 'rgba(240, 185, 11, 0.4)' : '#2B3139'}`,
+                      ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(15, 15, 18, 0.95) 100%)'
+                      : 'var(--glass-bg)',
+                    border: `1px solid ${isLeader ? 'rgba(124, 58, 237, 0.3)' : 'rgba(255, 255, 255, 0.06)'}`,
                     boxShadow: isLeader
-                      ? '0 3px 15px rgba(240, 185, 11, 0.12), 0 0 0 1px rgba(240, 185, 11, 0.15)'
-                      : '0 1px 4px rgba(0, 0, 0, 0.3)',
+                      ? '0 3px 15px rgba(124, 58, 237, 0.15), 0 0 0 1px rgba(124, 58, 237, 0.1)'
+                      : '0 1px 2px rgba(0, 0, 0, 0.4)',
                   }}
                 >
                   <div className="flex items-center justify-between">
@@ -267,13 +267,13 @@ export function CompetitionPage() {
                         className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
                         style={{
                           background: index === 0
-                            ? 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)'
+                            ? 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)'
                             : index === 1
-                              ? 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 100%)'
+                              ? 'linear-gradient(135deg, #A1A1AA 0%, #D4D4D8 100%)'
                               : index === 2
                                 ? 'linear-gradient(135deg, #CD7F32 0%, #E8A64C 100%)'
-                                : '#2B3139',
-                          color: index < 3 ? '#000' : '#848E9C',
+                                : 'rgba(255, 255, 255, 0.06)',
+                          color: index < 3 ? '#fff' : '#A1A1AA',
                         }}
                       >
                         {index + 1}
@@ -287,16 +287,16 @@ export function CompetitionPage() {
                       <div>
                         <div
                           className="font-bold text-sm"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {trader.trader_name}
                         </div>
                         <div
-                          className="text-xs mono font-semibold"
+                          className="text-xs font-semibold tracking-wide"
                           style={{ color: traderColor }}
                         >
-                          {trader.ai_model.toUpperCase()} +{' '}
-                          {trader.exchange.toUpperCase()}
+                          {(trader.ai_model || 'AI').toUpperCase()}
+                          {trader.brokerage ? ` • ${trader.brokerage.toUpperCase()}` : ''}
                         </div>
                       </div>
                     </div>
@@ -305,12 +305,12 @@ export function CompetitionPage() {
                     <div className="flex items-center gap-2 md:gap-3 flex-wrap md:flex-nowrap">
                       {/* Total Equity */}
                       <div className="text-right">
-                        <div className="text-xs" style={{ color: '#848E9C' }}>
+                        <div className="text-xs" style={{ color: '#9CA3AF' }}>
                           {t('equity', language)}
                         </div>
                         <div
                           className="text-xs md:text-sm font-bold mono"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {trader.total_equity?.toFixed(2) || '0.00'}
                         </div>
@@ -318,7 +318,7 @@ export function CompetitionPage() {
 
                       {/* P&L */}
                       <div className="text-right min-w-[70px] md:min-w-[90px]">
-                        <div className="text-xs" style={{ color: '#848E9C' }}>
+                        <div className="text-xs" style={{ color: '#9CA3AF' }}>
                           {t('pnl', language)}
                         </div>
                         <div
@@ -326,7 +326,7 @@ export function CompetitionPage() {
                           style={{
                             color:
                               (trader.total_pnl ?? 0) >= 0
-                                ? '#0ECB81'
+                                ? 'var(--primary)'
                                 : '#F6465D',
                           }}
                         >
@@ -335,7 +335,7 @@ export function CompetitionPage() {
                         </div>
                         <div
                           className="text-xs mono"
-                          style={{ color: '#848E9C' }}
+                          style={{ color: '#9CA3AF' }}
                         >
                           {(trader.total_pnl ?? 0) >= 0 ? '+' : ''}
                           {trader.total_pnl?.toFixed(2) || '0.00'}
@@ -344,16 +344,16 @@ export function CompetitionPage() {
 
                       {/* Positions */}
                       <div className="text-right">
-                        <div className="text-xs" style={{ color: '#848E9C' }}>
+                        <div className="text-xs" style={{ color: '#9CA3AF' }}>
                           {t('pos', language)}
                         </div>
                         <div
                           className="text-xs md:text-sm font-bold mono"
-                          style={{ color: '#EAECEF' }}
+                          style={{ color: '#F9FAFB' }}
                         >
                           {trader.position_count}
                         </div>
-                        <div className="text-xs" style={{ color: '#848E9C' }}>
+                        <div className="text-xs" style={{ color: '#9CA3AF' }}>
                           {trader.margin_used_pct.toFixed(1)}%
                         </div>
                       </div>
@@ -365,13 +365,13 @@ export function CompetitionPage() {
                           style={
                             trader.is_running
                               ? {
-                                  background: 'rgba(14, 203, 129, 0.1)',
-                                  color: '#0ECB81',
-                                }
+                                background: 'rgba(14, 203, 129, 0.1)',
+                                color: 'var(--primary)',
+                              }
                               : {
-                                  background: 'rgba(246, 70, 93, 0.1)',
-                                  color: '#F6465D',
-                                }
+                                background: 'rgba(246, 70, 93, 0.1)',
+                                color: '#F6465D',
+                              }
                           }
                         >
                           {trader.is_running ? '●' : '○'}
@@ -394,7 +394,7 @@ export function CompetitionPage() {
         >
           <h2
             className="text-lg font-bold mb-4 flex items-center gap-2"
-            style={{ color: '#EAECEF' }}
+            style={{ color: '#F9FAFB' }}
           >
             {t('headToHead', language)}
           </h2>
@@ -421,16 +421,16 @@ export function CompetitionPage() {
                   style={
                     isWinning
                       ? {
-                          background:
-                            'linear-gradient(135deg, rgba(14, 203, 129, 0.08) 0%, rgba(14, 203, 129, 0.02) 100%)',
-                          border: '2px solid rgba(14, 203, 129, 0.3)',
-                          boxShadow: '0 3px 15px rgba(14, 203, 129, 0.12)',
-                        }
+                        background:
+                          'linear-gradient(135deg, rgba(14, 203, 129, 0.08) 0%, rgba(14, 203, 129, 0.02) 100%)',
+                        border: '2px solid rgba(14, 203, 129, 0.3)',
+                        boxShadow: '0 3px 15px rgba(14, 203, 129, 0.12)',
+                      }
                       : {
-                          background: '#0B0E11',
-                          border: '1px solid #2B3139',
-                          boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
-                        }
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
+                      }
                   }
                 >
                   <div className="text-center">
@@ -454,18 +454,18 @@ export function CompetitionPage() {
                       className="text-lg md:text-2xl font-bold mono mb-1"
                       style={{
                         color:
-                          (trader.total_pnl ?? 0) >= 0 ? '#0ECB81' : '#F6465D',
+                          (trader.total_pnl ?? 0) >= 0 ? 'var(--primary)' : '#F6465D',
                       }}
                     >
                       {trader.total_pnl_pct != null &&
-                      !isNaN(trader.total_pnl_pct)
+                        !isNaN(trader.total_pnl_pct)
                         ? `${trader.total_pnl_pct >= 0 ? '+' : ''}${trader.total_pnl_pct.toFixed(2)}%`
                         : '—'}
                     </div>
                     {hasValidData && isWinning && gap > 0 && (
                       <div
                         className="text-xs font-semibold"
-                        style={{ color: '#0ECB81' }}
+                        style={{ color: 'var(--primary)' }}
                       >
                         {t('leadingBy', language, { gap: gap.toFixed(2) })}
                       </div>
@@ -483,7 +483,7 @@ export function CompetitionPage() {
                     {!hasValidData && (
                       <div
                         className="text-xs font-semibold"
-                        style={{ color: '#848E9C' }}
+                        style={{ color: '#9CA3AF' }}
                       >
                         —
                       </div>

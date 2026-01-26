@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynapseStrike Tactics Enhancement Plan</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-purple: #8b5cf6;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-blue: #58a6ff;
+            --border-color: #30363d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 15px;
+            color: var(--accent-blue);
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+            color: var(--accent-purple);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .warning-box {
+            background: rgba(248, 81, 73, 0.1);
+            border-left: 4px solid var(--accent-red);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .success-box {
+            background: rgba(63, 185, 80, 0.1);
+            border-left: 4px solid var(--accent-green);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .info-box {
+            background: rgba(88, 166, 255, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .phase-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .phase-card h3 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phase-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+        }
+
+        .edge-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .edge-edge {
+            background: rgba(63, 185, 80, 0.2);
+            color: var(--accent-green);
+        }
+
+        .edge-filter {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+        }
+
+        .edge-timing {
+            background: rgba(210, 153, 34, 0.2);
+            color: var(--accent-yellow);
+        }
+
+        .edge-risk {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            color: var(--accent-green);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .metric {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(88, 166, 255, 0.15);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            margin-left: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        .priority-high {
+            color: var(--accent-red);
+            font-weight: 600;
+        }
+
+        .priority-medium {
+            color: var(--accent-yellow);
+            font-weight: 600;
+        }
+
+        .priority-low {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 SynapseStrike Tactics Enhancement Plan</h1>
+        <p class="subtitle">A Logical, Phased Approach to Profitable Trading</p>
+
+        <div class="warning-box">
+            <h4>⚠️ Current State Analysis</h4>
+            <p><strong>Problem:</strong> Existing indicators are generating losses, not profits.</p>
+            <p><strong>Root Cause:</strong> Random technical indicators without a coherent trading edge strategy.</p>
+            <p><strong>Solution:</strong> Reorganize features by <em>trading edge type</em>, not technical category.
+                Build systematically from proven foundations.</p>
+        </div>
+
+        <h2>📊 New Organizational Structure</h2>
+
+        <div class="info-box">
+            <h4>🧠 Core Philosophy</h4>
+            <p>Instead of random indicators, we organize features by <strong>type of trading edge</strong>:</p>
+            <ul>
+                <li><strong>Edge Generators:</strong> Features that create alpha (directional signals)</li>
+                <li><strong>Noise Filters:</strong> Features that reduce false signals</li>
+                <li><strong>Timing Optimizers:</strong> Features that improve entry/exit timing</li>
+                <li><strong>Risk Controllers:</strong> Features that protect capital</li>
+            </ul>
+        </div>
+
+        <h2>🚀 Phased Implementation Roadmap</h2>
+
+        <!-- Phase 1 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 1</span> Foundation: Multi-Timeframe Confluence ✅</h3>
+            <p><strong>Status:</strong> <span style="color: var(--accent-green);">COMPLETED</span></p>
+            <p><strong>Impact:</strong> 30-40% reduction in false signals</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Confluence Timeframes</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>Select 2-4 timeframes (e.g., 15m, 1h, 4h) - AI only trades when all align</small>
+                </li>
+                <li><strong>Strict Mode Toggle</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>ALL timeframes must agree vs. minimum match threshold</small>
+                </li>
+                <li><strong>Minimum Match Count</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>If not strict: require N out of M timeframes to align</small>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Win rate improvement of 5-10%, fewer whipsaw losses</p>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 2</span> Smart Order Execution</h3>
+            <p><strong>Priority:</strong> <span class="priority-high">CRITICAL</span> - Saves money on every trade</p>
+            <p><strong>Expected Impact:</strong> 0.1-0.3% saved per trade = 10-30% of typical edge</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Limit Order Placement</strong> <span class="edge-type edge-timing">Timing</span>
+                    <br><small>Replace market orders with limit orders at VWAP ± (ATR × multiplier)</small>
+                    <br><strong>Config:</strong> <code>limit_offset_atr_multiplier</code> (default: 0.5)
+                </li>
+                <li><strong>Order Timeout</strong> <span class="edge-type edge-timing">Timing</span>
+                    <br><small>Cancel and retry with market order if not filled within N seconds</small>
+                    <br><strong>Config:</strong> <code>limit_timeout_seconds</code> (default: 5-10)
+                </li>
+                <li><strong>TWAP Execution (Large Orders)</strong> <span class="edge-type edge-timing">Timing</span>
+                    <br><small>Split large orders across time to minimize market impact</small>
+                    <br><strong>Config:</strong> <code>enable_twap</code>, <code>twap_duration_seconds</code>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Average fill price 0.1-0.3% better than market orders</p>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 3</span> Adaptive Position Sizing</h3>
+            <p><strong>Priority:</strong> <span class="priority-high">CRITICAL</span> - Compounds winning streaks,
+                protects during losses</p>
+            <p><strong>Expected Impact:</strong> 20-50% improvement in Sharpe ratio</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Kelly Criterion Sizing</strong> <span class="edge-type edge-risk">Risk Control</span>
+                    <br><small>Dynamic position sizing based on win rate and P&L distribution</small>
+                    <br><strong>Formula:</strong> <code>f = (p×b - q) / b</code> where p=win rate, b=avg win/loss,
+                    q=loss rate
+                    <br><strong>Config:</strong> <code>enable_kelly</code>, <code>kelly_fraction</code> (0.25 = quarter
+                    Kelly for safety)
+                </li>
+                <li><strong>Lookback Window</strong> <span class="edge-type edge-risk">Risk Control</span>
+                    <br><small>Use last N trades to calculate win rate and avg win/loss</small>
+                    <br><strong>Config:</strong> <code>kelly_lookback_trades</code> (default: 20-50)
+                </li>
+                <li><strong>Max Position Override</strong> <span class="edge-type edge-risk">Risk Control</span>
+                    <br><small>Never exceed max position size even if Kelly says increase</small>
+                    <br><strong>Config:</strong> <code>max_kelly_position_pct</code> (default: 10% of equity)
+                </li>
+                <li><strong>Volatility Adjustment</strong> <span class="edge-type edge-risk">Risk Control</span>
+                    <br><small>Scale position size inverse to recent volatility (ATR-based)</small>
+                    <br><strong>Config:</strong> <code>enable_vol_adjustment</code>, <code>vol_target_atr_pct</code>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Larger positions during winning streaks, smaller during drawdowns
+            </p>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 4</span> Intelligent Stop Loss & Take Profit</h3>
+            <p><strong>Priority:</strong> <span class="priority-high">CRITICAL</span> - Prevents giving back profits</p>
+            <p><strong>Expected Impact:</strong> 15-25% improvement in avg profit per winning trade</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>ATR-Based Stops</strong> <span class="edge-type edge-risk">Risk Control</span>
+                    <br><small>Set stop loss at entry ± (ATR × multiplier) instead of fixed percentage</small>
+                    <br><strong>Config:</strong> <code>stop_atr_multiplier</code> (default: 1.5-2.0)
+                </li>
+                <li><strong>Trailing Stop Activation</strong> <span class="edge-type edge-risk">Risk Control</span>
+                    <br><small>Activate trailing stop after reaching breakeven + 1 ATR</small>
+                    <br><strong>Config:</strong> <code>enable_trailing</code>, <code>trail_trigger_r_multiple</code>
+                    (default: 1.0)
+                </li>
+                <li><strong>Partial Profit Taking</strong> <span class="edge-type edge-timing">Timing</span>
+                    <br><small>Take 50% profit at 2R, trail remaining 50%</small>
+                    <br><strong>Config:</strong> <code>enable_partial_tp</code>, <code>first_tp_r_multiple</code>
+                    (default: 2.0), <code>first_tp_pct</code> (default: 50%)
+                </li>
+                <li><strong>Time-Based Stops</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>Exit if position hasn't moved as expected within N bars</small>
+                    <br><strong>Config:</strong> <code>enable_time_stop</code>, <code>time_stop_bars</code> (default:
+                    3-5)
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Average R-multiple per trade increases from 0.5R to 1.5R+</p>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 5</span> Event-Based Filters</h3>
+            <p><strong>Priority:</strong> <span class="priority-medium">HIGH</span> - Avoids unpredictable volatility
+            </p>
+            <p><strong>Expected Impact:</strong> 10-20% reduction in unexpected losses</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Earnings Blackout</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>No new positions 24h before/after earnings</small>
+                    <br><strong>Config:</strong> <code>enable_earnings_filter</code>,
+                    <code>earnings_blackout_hours</code> (default: 24)
+                </li>
+                <li><strong>Fed/FOMC Filter</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>No new positions on Fed announcement days</small>
+                    <br><strong>Config:</strong> <code>enable_fomc_filter</code>
+                </li>
+                <li><strong>Major Economic Data</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>Skip NFP, CPI, GDP release days</small>
+                    <br><strong>Config:</strong> <code>enable_econ_data_filter</code>, <code>econ_events_list</code>
+                </li>
+                <li><strong>Market Hours Filter</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>Only trade during liquid hours (avoid open/close chop)</small>
+                    <br><strong>Config:</strong> <code>enable_market_hours</code>, <code>trade_start_time</code>,
+                    <code>trade_end_time</code>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Reduced max drawdown by avoiding event-driven whipsaws</p>
+        </div>
+
+        <!-- Phase 6 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 6</span> Volume & Liquidity Analysis</h3>
+            <p><strong>Priority:</strong> <span class="priority-medium">MEDIUM</span> - Confirms conviction</p>
+            <p><strong>Expected Impact:</strong> 5-15% improvement in win rate</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Volume Surge Detection</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Only trade breakouts with 2x+ average volume</small>
+                    <br><strong>Config:</strong> <code>enable_volume_surge</code>, <code>volume_surge_multiplier</code>
+                    (default: 2.0)
+                </li>
+                <li><strong>Volume Profile POC</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Identify Point of Control for support/resistance</small>
+                    <br><strong>Config:</strong> <code>enable_volume_profile</code>, <code>vp_bins</code> (default: 24)
+                </li>
+                <li><strong>VWAP Deviation</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Trade mean reversion when price deviates 2+ std from VWAP</small>
+                    <br><strong>Config:</strong> <code>enable_vwap_reversion</code>, <code>vwap_std_threshold</code>
+                    (default: 2.0)
+                </li>
+                <li><strong>Anchored VWAP Breakout</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Trade when price breaks above/below session VWAP with conviction</small>
+                    <br><strong>Config:</strong> <code>enable_anchored_vwap</code>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Higher quality signals with institutional participation</p>
+        </div>
+
+        <!-- Phase 7 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 7</span> Sentiment & Flow Analysis</h3>
+            <p><strong>Priority:</strong> <span class="priority-medium">MEDIUM</span> - Confirms smart money direction
+            </p>
+            <p><strong>Expected Impact:</strong> 10-20% improvement in directional accuracy</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Options Flow Gamma Squeeze</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Detect dealer hedging flows that create momentum</small>
+                    <br><strong>Config:</strong> <code>enable_gamma_squeeze</code>, <code>gamma_threshold</code>
+                </li>
+                <li><strong>Zero DTE Put/Call Imbalance</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Heavy call buying = bullish, heavy puts = bearish</small>
+                    <br><strong>Config:</strong> <code>enable_zero_dte</code>, <code>pc_ratio_threshold</code>
+                </li>
+                <li><strong>Dark Pool Print Detection</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>Large institutional block trades signal direction</small>
+                    <br><strong>Config:</strong> <code>enable_dark_pool</code>, <code>dark_pool_min_size</code>
+                </li>
+                <li><strong>Short Interest Squeeze</strong> <span class="edge-type edge-edge">Edge Generator</span>
+                    <br><small>High short interest + volume surge = squeeze potential</small>
+                    <br><strong>Config:</strong> <code>enable_short_squeeze</code>,
+                    <code>short_interest_threshold</code> (default: 20%)
+                </li>
+                <li><strong>News Sentiment (AI)</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>Use AI to classify news as bullish/bearish/neutral</small>
+                    <br><strong>Config:</strong> <code>enable_news_sentiment</code>, <code>sentiment_threshold</code>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Align with smart money, avoid retail traps</p>
+        </div>
+
+        <!-- Phase 8 -->
+        <div class="phase-card">
+            <h3><span class="phase-badge">Phase 8</span> Market Regime Detection</h3>
+            <p><strong>Priority:</strong> <span class="priority-low">LOW</span> - Advanced optimization</p>
+            <p><strong>Expected Impact:</strong> 5-10% improvement in consistency</p>
+
+            <h4>Features:</h4>
+            <ul class="feature-list">
+                <li><strong>Trend vs. Range Classification</strong> <span class="edge-type edge-filter">Noise
+                        Filter</span>
+                    <br><small>Use ADX to determine if market is trending or ranging</small>
+                    <br><strong>Config:</strong> <code>enable_regime_detection</code>, <code>adx_trend_threshold</code>
+                    (default: 25)
+                </li>
+                <li><strong>Volatility Regime</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>High vol = momentum strategies, low vol = mean reversion</small>
+                    <br><strong>Config:</strong> <code>enable_vol_regime</code>, <code>vol_threshold_percentile</code>
+                </li>
+                <li><strong>Correlation Regime</strong> <span class="edge-type edge-filter">Noise Filter</span>
+                    <br><small>High correlation = risk-off, low = stock-picking environment</small>
+                    <br><strong>Config:</strong> <code>enable_correlation_regime</code>
+                </li>
+            </ul>
+
+            <p><strong>Measurable Success:</strong> Different strategies activate in different market conditions</p>
+        </div>
+
+        <h2>📈 Success Metrics Framework</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Phase</th>
+                    <th>Primary Metric</th>
+                    <th>Target Improvement</th>
+                    <th>How to Measure</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Phase 1: Confluence</td>
+                    <td>Win Rate</td>
+                    <td>+5-10%</td>
+                    <td>Compare win% before/after with A/B test</td>
+                </tr>
+                <tr>
+                    <td>Phase 2: Smart Orders</td>
+                    <td>Avg Slippage</td>
+                    <td>-0.1 to -0.3%</td>
+                    <td>Fill price vs. signal price</td>
+                </tr>
+                <tr>
+                    <td>Phase 3: Position Sizing</td>
+                    <td>Sharpe Ratio</td>
+                    <td>+20-50%</td>
+                    <td>Return / Volatility ratio</td>
+                </tr>
+                <tr>
+                    <td>Phase 4: Stops/TPs</td>
+                    <td>Avg R-Multiple</td>
+                    <td>0.5R → 1.5R</td>
+                    <td>Avg win size vs. avg loss size</td>
+                </tr>
+                <tr>
+                    <td>Phase 5: Event Filters</td>
+                    <td>Max Drawdown</td>
+                    <td>-10 to -20%</td>
+                    <td>Peak-to-trough equity drop</td>
+                </tr>
+                <tr>
+                    <td>Phase 6: Volume Analysis</td>
+                    <td>Win Rate</td>
+                    <td>+5-15%</td>
+                    <td>Quality of signals (fewer false breakouts)</td>
+                </tr>
+                <tr>
+                    <td>Phase 7: Sentiment</td>
+                    <td>Directional Accuracy</td>
+                    <td>+10-20%</td>
+                    <td>% of trades in correct direction</td>
+                </tr>
+                <tr>
+                    <td>Phase 8: Regime Detection</td>
+                    <td>Consistency</td>
+                    <td>+5-10%</td>
+                    <td>Reduced variance in monthly returns</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🎛️ Recommended UI Configuration Panel</h2>
+
+        <div class="info-box">
+            <h4>UI Redesign: From Technical Categories to Trading Edges</h4>
+
+            <h4>Section 1: Edge Generators 🎯</h4>
+            <ul>
+                <li>☐ Multi-Timeframe Confluence (Phase 1)</li>
+                <li>☐ Volume Surge Breakouts (Phase 6)</li>
+                <li>☐ VWAP Mean Reversion (Phase 6)</li>
+                <li>☐ Anchored VWAP Breakouts (Phase 6)</li>
+                <li>☐ Volume Profile POC (Phase 6)</li>
+                <li>☐ Options Gamma Squeeze (Phase 7)</li>
+                <li>☐ Zero DTE Skew (Phase 7)</li>
+                <li>☐ Dark Pool Prints (Phase 7)</li>
+                <li>☐ Short Squeeze Detection (Phase 7)</li>
+            </ul>
+
+            <h4>Section 2: Noise Filters 🛡️</h4>
+            <ul>
+                <li>☐ Earnings Blackout (Phase 5)</li>
+                <li>☐ Fed/FOMC Filter (Phase 5)</li>
+                <li>☐ Economic Data Filter (Phase 5)</li>
+                <li>☐ Market Hours Restriction (Phase 5)</li>
+                <li>☐ News Sentiment Filter (Phase 7)</li>
+                <li>☐ Trend vs. Range Regime (Phase 8)</li>
+                <li>☐ Volatility Regime (Phase 8)</li>
+            </ul>
+
+            <h4>Section 3: Execution & Timing ⚡</h4>
+            <ul>
+                <li>☐ Limit Orders (Phase 2)</li>
+                <li>☐ TWAP for Large Orders (Phase 2)</li>
+                <li>☐ Partial Profit Taking (Phase 4)</li>
+                <li>☐ Time-Based Exits (Phase 4)</li>
+            </ul>
+
+            <h4>Section 4: Risk Management 🔒</h4>
+            <ul>
+                <li>☐ Kelly Criterion Sizing (Phase 3)</li>
+                <li>☐ Volatility Adjustment (Phase 3)</li>
+                <li>☐ ATR-Based Stops (Phase 4)</li>
+                <li>☐ Trailing Stops (Phase 4)</li>
+                <li>☐ Max Position Override (Phase 3)</li>
+            </ul>
+        </div>
+
+        <h2>🧪 Testing Protocol</h2>
+
+        <div class="success-box">
+            <h4>One-by-One Testing Approach</h4>
+            <ol>
+                <li><strong>Baseline:</strong> Run 100 trades with NO features enabled (pure AI decisions)</li>
+                <li><strong>Phase 1 Test:</strong> Enable ONLY confluence, run 100 trades, compare metrics</li>
+                <li><strong>Phase 2 Test:</strong> Keep confluence + add smart orders, run 100 trades</li>
+                <li><strong>Continue:</strong> Each phase builds on previous, measure incremental improvement</li>
+                <li><strong>A/B Testing:</strong> Run two traders side-by-side (one with feature, one without)</li>
+            </ol>
+
+            <h4>Success Criteria for Each Phase:</h4>
+            <ul>
+                <li>✅ Sharpe ratio increases OR max drawdown decreases</li>
+                <li>✅ Win rate improves OR average R-multiple improves</li>
+                <li>✅ Profit factor (gross profit / gross loss) > 1.5</li>
+            </ul>
+
+            <p><strong>If a phase FAILS:</strong> Disable it, analyze why, refine parameters, retest</p>
+        </div>
+
+        <h2>🎓 Key Insights</h2>
+
+        <div class="info-box">
+            <h4>Why This Approach Works:</h4>
+            <ul>
+                <li><strong>Modular:</strong> Each feature has a clear on/off toggle</li>
+                <li><strong>Testable:</strong> Each phase has specific success metrics</li>
+                <li><strong>Logical:</strong> Organized by edge type, not random indicators</li>
+                <li><strong>Focused:</strong> Removed noise, kept only profit-generating features</li>
+                <li><strong>Measurable:</strong> Every feature has expected impact quantified</li>
+                <li><strong>Hierarchical:</strong> Foundation first (confluence), then optimization</li>
+            </ul>
+        </div>
+
+        <h2>🚫 What We Removed (And Why)</h2>
+
+        <div class="warning-box">
+            <h4>Ineffective Indicators Removed:</h4>
+            <ul>
+                <li><strong>EMA/MACD/RSI (standalone):</strong> Lagging indicators, no edge without context</li>
+                <li><strong>Generic "Open Interest":</strong> Replaced with specific OI-based edges (gamma, dark pool)
+                </li>
+                <li><strong>Generic "Funding Rate":</strong> Crypto-specific, not relevant for stocks</li>
+                <li><strong>Analyst Ratings:</strong> Already priced in, no alpha</li>
+                <li><strong>Corporate Actions:</strong> Calendar events, not predictive signals</li>
+            </ul>
+
+            <p><strong>Philosophy:</strong> If an indicator doesn't generate a specific trading edge, it's noise.</p>
+        </div>
+
+        <h2>🎯 Next Steps</h2>
+
+        <ol>
+            <li>Review and approve this plan</li>
+            <li>Begin Phase 2 implementation (Smart Order Execution)</li>
+            <li>Set up A/B testing infrastructure</li>
+            <li>Define baseline metrics (current performance)</li>
+            <li>Implement one phase, test, measure, iterate</li>
+        </ol>
+
+        <p style="margin-top: 40px; text-align: center; color: var(--text-secondary);">
+            <em>Last Updated: January 1, 2026</em>
+        </p>
+    </div>
+</body>
+
+</html>

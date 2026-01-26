@@ -15,15 +15,12 @@ export function Header({ simple = false }: HeaderProps) {
         <div className="flex items-center justify-between">
           {/* Left - Logo and Title */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center">
-              <img src="/icons/nofx.svg" alt="NoFx Logo" className="w-8 h-8" />
-            </div>
             <div>
-              <h1 className="text-xl font-bold" style={{ color: '#EAECEF' }}>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--primary)' }}>
                 {t('appTitle', language)}
               </h1>
               {!simple && (
-                <p className="text-xs mono" style={{ color: '#848E9C' }}>
+                <p className="text-xs mono" style={{ color: '#9CA3AF' }}>
                   {t('subtitle', language)}
                 </p>
               )}
@@ -33,26 +30,26 @@ export function Header({ simple = false }: HeaderProps) {
           {/* Right - Language Toggle (always show) */}
           <div
             className="flex gap-1 rounded p-1"
-            style={{ background: '#1E2329' }}
+            style={{ background: 'rgba(22, 27, 34, 0.88)' }}
           >
             <button
-              onClick={() => setLanguage('zh')}
+              onClick={() => setLanguage('en')}
               className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
               style={
-                language === 'zh'
-                  ? { background: '#F0B90B', color: '#000' }
-                  : { background: 'transparent', color: '#848E9C' }
+                false
+                  ? { background: 'var(--primary)', color: '#000' }
+                  : { background: 'transparent', color: '#9CA3AF' }
               }
             >
-              中文
+              Chinese
             </button>
             <button
               onClick={() => setLanguage('en')}
               className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
               style={
                 language === 'en'
-                  ? { background: '#F0B90B', color: '#000' }
-                  : { background: 'transparent', color: '#848E9C' }
+                  ? { background: 'var(--primary)', color: '#000' }
+                  : { background: 'transparent', color: '#9CA3AF' }
               }
             >
               EN
@@ -60,6 +57,6 @@ export function Header({ simple = false }: HeaderProps) {
           </div>
         </div>
       </Container>
-    </header>
+    </header >
   )
 }

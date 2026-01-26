@@ -223,7 +223,8 @@ func (cs *CryptoService) DecryptFromStorage(value string, aadParts ...string) (s
 		return "", errors.New("data encryption key not configured")
 	}
 	if !isEncryptedStorageValue(value) {
-		return "", errors.New("data not encrypted")
+		// Not encrypted - return plain-text value as-is (for backwards compatibility)
+		return value, nil
 	}
 
 	payload := strings.TrimPrefix(value, storagePrefix)

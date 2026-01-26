@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"strings"
 	"sync"
 	"time"

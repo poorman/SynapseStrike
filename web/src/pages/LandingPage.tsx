@@ -43,8 +43,8 @@ export function LandingPage() {
       <div
         className="min-h-screen"
         style={{
-          background: '#0B0E11',
-          color: '#EAECEF',
+          background: 'var(--bg-secondary)',
+          color: '#F9FAFB',
         }}
       >
         <HeroSection language={language} />
@@ -58,13 +58,13 @@ export function LandingPage() {
           {/* Background Glow */}
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl opacity-30"
-            style={{ background: 'radial-gradient(circle, rgba(240, 185, 11, 0.15) 0%, transparent 70%)' }}
+            style={{ background: 'radial-gradient(circle, var(--primary-bg, 0.15) 0%, transparent 70%)' }}
           />
 
           <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
             <motion.h2
               className="text-4xl lg:text-5xl font-bold mb-6"
-              style={{ color: '#EAECEF' }}
+              style={{ color: '#F9FAFB' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -73,7 +73,7 @@ export function LandingPage() {
             </motion.h2>
             <motion.p
               className="text-lg mb-10 max-w-2xl mx-auto"
-              style={{ color: '#848E9C' }}
+              style={{ color: '#9CA3AF' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -93,13 +93,13 @@ export function LandingPage() {
                 onClick={() => setShowLoginModal(true)}
                 className="group flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg"
                 style={{
-                  background: 'linear-gradient(135deg, #F0B90B 0%, #FCD535 100%)',
-                  color: '#0B0E11',
-                  boxShadow: '0 4px 24px rgba(240, 185, 11, 0.3)',
+                  background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+                  color: '#FFFFFF',
+                  boxShadow: '0 4px 24px var(--primary-bg, 0.3)',
                 }}
                 whileHover={{
                   scale: 1.02,
-                  boxShadow: '0 8px 32px rgba(240, 185, 11, 0.4)',
+                  boxShadow: '0 8px 32px var(--primary-bg, 0.4)',
                 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -114,13 +114,13 @@ export function LandingPage() {
                 className="group flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg"
                 style={{
                   background: 'rgba(255, 255, 255, 0.05)',
-                  color: '#EAECEF',
+                  color: '#F9FAFB',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
                 whileHover={{
                   scale: 1.02,
                   background: 'rgba(255, 255, 255, 0.08)',
-                  borderColor: 'rgba(240, 185, 11, 0.3)',
+                  borderColor: 'var(--primary-bg, 0.3)',
                 }}
                 whileTap={{ scale: 0.98 }}
               >

@@ -11,29 +11,23 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
     {
       icon: Download,
       number: '01',
-      title: language === 'zh' ? '一键部署' : 'One-Click Deploy',
-      desc: language === 'zh'
-        ? '在你的服务器上运行一条命令即可完成部署'
-        : 'Run a single command on your server to deploy',
+      title: 'One-Click Deploy',
+      desc: 'Run a single command on your server to deploy',
       code: 'curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash',
     },
     {
       icon: Rocket,
       number: '02',
-      title: language === 'zh' ? '访问面板' : 'Access Dashboard',
-      desc: language === 'zh'
-        ? '通过浏览器访问你的服务器'
-        : 'Access your server via browser',
+      title: 'Access Dashboard',
+      desc: 'Access your server via browser',
       code: 'http://YOUR_SERVER_IP:3000',
     },
     {
       icon: TrendingUp,
       number: '03',
-      title: language === 'zh' ? '开始交易' : 'Start Trading',
-      desc: language === 'zh'
-        ? '创建交易员，让 AI 开始工作'
-        : 'Create trader, let AI do the work',
-      code: language === 'zh' ? '配置模型 → 配置交易所 → 创建交易员' : 'Configure Model → Exchange → Create Trader',
+      title: 'Start Trading',
+      desc: 'Create trader, let AI do the work',
+      code: 'Configure Model → Brokerage → Create Trader',
     },
   ]
 
@@ -42,7 +36,7 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
       {/* Background Decoration */}
       <div
         className="absolute left-0 top-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl opacity-20"
-        style={{ background: 'radial-gradient(circle, rgba(240, 185, 11, 0.15) 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, var(--primary-bg, 0.15) 0%, transparent 70%)' }}
       />
 
       <div className="max-w-6xl mx-auto px-4 relative z-10">
@@ -53,10 +47,10 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#EAECEF' }}>
+          <h2 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#F9FAFB' }}>
             {t('howToStart', language)}
           </h2>
-          <p className="text-lg" style={{ color: '#848E9C' }}>
+          <p className="text-lg" style={{ color: '#9CA3AF' }}>
             {t('fourSimpleSteps', language)}
           </p>
         </motion.div>
@@ -66,7 +60,7 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
           {/* Connecting Line */}
           <div
             className="absolute left-[39px] top-0 bottom-0 w-px hidden lg:block"
-            style={{ background: 'linear-gradient(to bottom, transparent, rgba(240, 185, 11, 0.3), transparent)' }}
+            style={{ background: 'linear-gradient(to bottom, transparent, var(--primary-bg, 0.3), transparent)' }}
           />
 
           <div className="space-y-6">
@@ -91,12 +85,12 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
                     <motion.div
                       className="w-20 h-20 rounded-2xl flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(240, 185, 11, 0.2) 0%, rgba(240, 185, 11, 0.05) 100%)',
-                        border: '1px solid rgba(240, 185, 11, 0.3)',
+                        background: 'linear-gradient(135deg, var(--primary-bg, 0.2) 0%, var(--primary-bg, 0.05) 100%)',
+                        border: '1px solid var(--primary-bg, 0.3)',
                       }}
                       whileHover={{ scale: 1.1 }}
                     >
-                      <step.icon className="w-8 h-8" style={{ color: '#F0B90B' }} />
+                      <step.icon className="w-8 h-8" style={{ color: 'var(--primary)' }} />
                     </motion.div>
                   </div>
 
@@ -105,15 +99,15 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
                     <div className="flex items-center gap-3 mb-2">
                       <span
                         className="text-sm font-mono font-bold"
-                        style={{ color: '#F0B90B' }}
+                        style={{ color: 'var(--primary)' }}
                       >
                         {step.number}
                       </span>
-                      <h3 className="text-xl font-bold" style={{ color: '#EAECEF' }}>
+                      <h3 className="text-xl font-bold" style={{ color: '#F9FAFB' }}>
                         {step.title}
                       </h3>
                     </div>
-                    <p className="mb-4" style={{ color: '#848E9C' }}>
+                    <p className="mb-4" style={{ color: '#9CA3AF' }}>
                       {step.desc}
                     </p>
 
@@ -125,8 +119,8 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
                         border: '1px solid rgba(255, 255, 255, 0.06)',
                       }}
                     >
-                      <span style={{ color: '#5E6673' }}>$</span>
-                      <span style={{ color: '#EAECEF' }}>{step.code}</span>
+                      <span style={{ color: '#6B7280' }}>$</span>
+                      <span style={{ color: '#F9FAFB' }}>{step.code}</span>
                     </div>
                   </div>
                 </div>
@@ -139,8 +133,8 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
         <motion.div
           className="mt-12 p-6 rounded-2xl flex items-start gap-4"
           style={{
-            background: 'rgba(240, 185, 11, 0.05)',
-            border: '1px solid rgba(240, 185, 11, 0.15)',
+            background: 'var(--primary-bg, 0.05)',
+            border: '1px solid var(--primary-bg, 0.15)',
           }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -148,15 +142,15 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
         >
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(240, 185, 11, 0.1)' }}
+            style={{ background: 'var(--primary-bg, 0.1)' }}
           >
-            <AlertTriangle className="w-6 h-6" style={{ color: '#F0B90B' }} />
+            <AlertTriangle className="w-6 h-6" style={{ color: 'var(--primary)' }} />
           </div>
           <div>
-            <div className="font-semibold mb-2" style={{ color: '#F0B90B' }}>
+            <div className="font-semibold mb-2" style={{ color: 'var(--primary)' }}>
               {t('importantRiskWarning', language)}
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: '#5E6673' }}>
+            <p className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>
               {t('riskWarningText', language)}
             </p>
           </div>

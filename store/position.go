@@ -368,7 +368,7 @@ type RecentTrade struct {
 	PnLPct       float64 `json:"pnl_pct"`
 	EntryTime    string  `json:"entry_time"`    // Entry time (开仓时间)
 	ExitTime     string  `json:"exit_time"`     // Exit time (平仓时间)
-	HoldDuration string  `json:"hold_duration"` // Hold duration (持仓时长), e.g. "2h30m"
+	HoldDuration string  `json:"hold_duration"` // Hold duration (hold duration), e.g. "2h30m"
 }
 
 // GetRecentTrades gets recent closed trades

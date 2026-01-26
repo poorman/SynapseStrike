@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynapseStrike Enhancement Plan</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-purple: #8b5cf6;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-blue: #58a6ff;
+            --border-color: #30363d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin: 25px 0 10px;
+            color: var(--accent-blue);
+        }
+
+        h4 {
+            font-size: 1rem;
+            margin: 15px 0 8px;
+            color: var(--accent-purple);
+        }
+
+        p,
+        li {
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        ul {
+            padding-left: 25px;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .tier-1 {
+            background: linear-gradient(135deg, #f85149, #d29922);
+        }
+
+        .tier-2 {
+            background: linear-gradient(135deg, #d29922, #3fb950);
+        }
+
+        .tier-3 {
+            background: linear-gradient(135deg, #58a6ff, #8b5cf6);
+        }
+
+        .tier-4 {
+            background: linear-gradient(135deg, #8b949e, #6e7681);
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .feature-card h4 {
+            margin-top: 0;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        .completed {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .high-impact {
+            color: var(--accent-green);
+        }
+
+        .medium-impact {
+            color: var(--accent-yellow);
+        }
+
+        .fix-card {
+            background: linear-gradient(135deg, rgba(63, 185, 80, 0.1), rgba(63, 185, 80, 0.05));
+            border: 1px solid rgba(63, 185, 80, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .fix-card h4 {
+            color: var(--accent-green);
+        }
+
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚀 SynapseStrike Enhancement Plan</h1>
+        <p>Strategic roadmap for building the most advanced AI trading platform</p>
+
+        <h2>Part 1: Rename App <span class="completed">✅ COMPLETED</span></h2>
+        <p>Successfully renamed from "nofx" to "SynapseStrike" across all UI components.</p>
+
+        <h2>Part 2: Strategic Feature Recommendations</h2>
+
+        <!-- Tier 1 -->
+        <h3><span class="tier-badge tier-1">🔥 Tier 1</span> High-Impact Profit Boosters</h3>
+
+        <div class="feature-card">
+            <h4>1. Multi-Timeframe Analysis Engine</h4>
+            <p>Currently the AI analyzes a single timeframe. Add 15m + 1H + 4H confluence signals - only trade when all
+                timeframes align.</p>
+            <p><strong>Expected Impact:</strong> <span class="high-impact">30-40% fewer false signals</span></p>
+        </div>
+
+        <div class="feature-card">
+            <h4>2. Adaptive Position Sizing with Kelly Criterion</h4>
+            <p>Replace fixed margin with dynamic sizing based on recent performance.</p>
+            <pre><code>Position Size = (Win Rate × Avg Win - Loss Rate × Avg Loss) / Avg Loss</code></pre>
+        </div>
+
+        <div class="feature-card">
+            <h4>3. Smart Entry with Limit Orders</h4>
+            <p>Place limit orders at VWAP ± ATR deviation instead of market orders.</p>
+            <p><strong>Expected Impact:</strong> <span class="high-impact">Save 0.1-0.3% per trade in slippage</span>
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <h4>4. Trailing Stop Evolution</h4>
+            <ul>
+                <li>ATR-based trailing (volatility-aware)</li>
+                <li>Breakeven + 1 ATR after 2R profit</li>
+                <li>Partial profit taking (50% at 2R, rest trails)</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h4>5. News/Earnings Filter</h4>
+            <p>Skip trading around high-impact events: earnings releases, Fed announcements, major economic data.</p>
+        </div>
+
+        <!-- Tier 2 -->
+        <h3><span class="tier-badge tier-2">⚡ Tier 2</span> Competitive Edge Features</h3>
+
+        <div class="feature-card">
+            <h4>6. Paper Trading Simulator with Analytics</h4>
+            <p>Full trade execution simulation with performance analytics dashboard.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>7. Strategy Backtesting Engine</h4>
+            <p>Historical performance testing, walk-forward optimization, drawdown analysis.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>8. Multi-Strategy Portfolio</h4>
+            <p>Run multiple strategies simultaneously: Momentum + Mean Reversion blend, sector rotation.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>9. AI Model Ensemble</h4>
+            <p>Combine Claude + GPT-4 + Gemini with weighted voting. Only trade when 2/3+ agree.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>10. Real-Time Performance Dashboard</h4>
+            <p>Sharpe/Sortino ratios, max drawdown tracking, win rate by time of day, P&L attribution.</p>
+        </div>
+
+        <!-- Tier 3 -->
+        <h3><span class="tier-badge tier-3">🚀 Tier 3</span> Cutting-Edge Features</h3>
+
+        <div class="feature-card">
+            <h4>11. Order Flow Analysis</h4>
+            <p>Large block trade detection, supply/demand zones, dark pool tracking.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>12. Sentiment Analysis Feed</h4>
+            <p>Real-time sentiment from Twitter/X, Reddit, news headlines, StockTwits.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>13. Options Flow Integration</h4>
+            <p>Track unusual options activity, large sweeps, smart money tracking.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>14. Machine Learning Enhancement</h4>
+            <p>Pattern recognition, false signal filtering, market regime detection.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>15. Risk Management Suite</h4>
+            <p>Daily loss limit, correlation-based limits, VaR monitoring, auto-hedging.</p>
+        </div>
+
+        <!-- Tier 4 -->
+        <h3><span class="tier-badge tier-4">🛡️ Tier 4</span> Robustness & Reliability</h3>
+
+        <div class="feature-card">
+            <h4>16. Failover & High Availability</h4>
+            <p>Redundant API connections, automatic broker failover, order recovery.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>17. Audit Trail & Compliance</h4>
+            <p>Complete trade logging, decision recording, tax reporting export.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>18. Alert System</h4>
+            <p>Telegram/Discord alerts, email, mobile push, voice alerts.</p>
+        </div>
+
+        <!-- Priority Table -->
+        <h2>Recommended Priority Order</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Feature</th>
+                    <th>Development Time</th>
+                    <th>Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Multi-Timeframe Analysis</td>
+                    <td>1 week</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Smart Entry (Limit Orders)</td>
+                    <td>3 days</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Trailing Stop Evolution</td>
+                    <td>3 days</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>News/Earnings Filter</td>
+                    <td>2 days</td>
+                    <td class="medium-impact">Medium</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Daily Loss Limit</td>
+                    <td>1 day</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Paper Trading Mode</td>
+                    <td>1 week</td>
+                    <td class="medium-impact">Medium</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>AI Model Ensemble</td>
+                    <td>1 week</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Performance Dashboard</td>
+                    <td>1 week</td>
+                    <td class="medium-impact">Medium</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Recent Fixes -->
+        <h2>Recent Bug Fixes (December 2025)</h2>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: Fractional Short Selling Error</h4>
+            <p><strong>Issue:</strong> Alpaca doesn't allow fractional shares for short selling</p>
+            <p><strong>Fix:</strong> OpenShort now rounds down to whole shares</p>
+            <p><strong>File:</strong> <code>trader/alpaca_trader.go</code></p>
+        </div>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: Position Size Exceeds Account Equity</h4>
+            <p><strong>Issue:</strong> AI requested positions larger than account equity were rejected</p>
+            <p><strong>Fix:</strong> Now auto-adjusts to maximum allowed (like leverage)</p>
+            <p><strong>File:</strong> <code>decision/engine.go</code></p>
+        </div>
+
+        <div class="footer">
+            <p>SynapseStrike Enhancement Plan • Last Updated: December 29, 2025</p>
+        </div>
+    </div>
+</body>
+
+</html>

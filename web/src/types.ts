@@ -16,7 +16,7 @@ export interface SystemStatus {
 export interface AccountInfo {
   total_equity: number
   wallet_balance: number
-  unrealized_profit: number // 未实现盈亏（交易所API官方值）
+  unrealized_profit: number // unrealized PnL（brokerageAPIofficial value）
   available_balance: number
   total_pnl: number
   total_pnl_pct: number
@@ -33,7 +33,7 @@ export interface Position {
   entry_price: number
   mark_price: number
   quantity: number
-  leverage: number
+  margin: number
   unrealized_pnl: number
   unrealized_pnl_pct: number
   liquidation_price: number
@@ -44,7 +44,7 @@ export interface DecisionAction {
   action: string
   symbol: string
   quantity: number
-  leverage: number
+  margin: number
   price: number
   stop_loss?: number      // Stop loss price
   take_profit?: number    // Take profit price
@@ -72,7 +72,7 @@ export interface DecisionRecord {
   decision_json: string
   account_state: AccountSnapshot
   positions: any[]
-  candidate_coins: string[]
+  candidate_stocks: string[]
   decisions: DecisionAction[]
   execution_log: string[]
   success: boolean
@@ -87,18 +87,18 @@ export interface Statistics {
   total_close_positions: number
 }
 
-// AI Trading相关类型
+// AI Tradingrelated types
 export interface TraderInfo {
   trader_id: string
   trader_name: string
   ai_model: string
-  exchange_id?: string
+  brokerage_id?: string
   is_running?: boolean
   show_in_competition?: boolean
   strategy_id?: string
   strategy_name?: string
   custom_prompt?: string
-  use_coin_pool?: boolean
+  use_stock_pool?: boolean
   use_oi_top?: boolean
   system_prompt_template?: string
 }
@@ -113,65 +113,43 @@ export interface AIModel {
   customModelName?: string
 }
 
-export interface Exchange {
-  id: string                     // UUID (empty for supported exchange templates)
-  exchange_type: string          // "binance", "bybit", "okx", "hyperliquid", "aster", "lighter"
+export interface Brokerage {
+  id: string                     // UUID (empty for supported brokerage templates)
+  brokerage_type: string          // "alpaca", "alpaca-paper", "ibkr", "simplefx", "oanda"
   account_name: string           // User-defined account name
   name: string                   // Display name
-  type: 'cex' | 'dex'
+  type: 'broker' | 'forex'
   enabled: boolean
   apiKey?: string
   secretKey?: string
-  passphrase?: string            // OKX specific
-  testnet?: boolean
-  // Hyperliquid specific
-  hyperliquidWalletAddr?: string
-  // Aster specific
-  asterUser?: string
-  asterSigner?: string
-  asterPrivateKey?: string
-  // LIGHTER specific
-  lighterWalletAddr?: string
-  lighterPrivateKey?: string
-  lighterApiKeyPrivateKey?: string
-  lighterApiKeyIndex?: number
 }
 
-export interface CreateExchangeRequest {
-  exchange_type: string          // "binance", "bybit", "okx", "hyperliquid", "aster", "lighter"
+export interface CreateBrokerageRequest {
+  exchange_type: string          // "alpaca", "alpaca-paper", "ibkr", "simplefx", "oanda"
   account_name: string           // User-defined account name
   enabled: boolean
   api_key?: string
   secret_key?: string
-  passphrase?: string
-  testnet?: boolean
-  hyperliquid_wallet_addr?: string
-  aster_user?: string
-  aster_signer?: string
-  aster_private_key?: string
-  lighter_wallet_addr?: string
-  lighter_private_key?: string
-  lighter_api_key_private_key?: string
-  lighter_api_key_index?: number
 }
 
 export interface CreateTraderRequest {
   name: string
   ai_model_id: string
-  exchange_id: string
-  strategy_id?: string // 策略ID（新版，使用保存的策略配置）
-  initial_balance?: number // 可选：创建时由后端自动获取，编辑时可手动更新
+  brokerage_id: string
+  strategy_id?: string // StrategyID（new version，Usesave'sStrategyconfig）
+  initial_balance?: number // optional：createwhenauto by backendget，editwhenmanualUpdate
   scan_interval_minutes?: number
   is_cross_margin?: boolean
-  show_in_competition?: boolean // 是否在竞技场显示
-  // 以下字段为向后兼容保留，新版使用策略配置
-  btc_eth_leverage?: number
-  altcoin_leverage?: number
+  show_in_competition?: boolean // Show in competition
+  trade_only_market_hours?: boolean // Only trade during market hours
+  // withfields forbackward compatiblekeep，new versionUseStrategyconfig
+  large_cap_margin?: number
+  small_cap_margin?: number
   trading_symbols?: string
   custom_prompt?: string
   override_base_prompt?: boolean
   system_prompt_template?: string
-  use_coin_pool?: boolean
+  use_stock_pool?: boolean
   use_oi_top?: boolean
 }
 
@@ -186,21 +164,21 @@ export interface UpdateModelConfigRequest {
   }
 }
 
-export interface UpdateExchangeConfigRequest {
-  exchanges: {
+export interface UpdateBrokerageConfigRequest {
+  brokerages: {
     [key: string]: {
       enabled: boolean
       api_key: string
       secret_key: string
       passphrase?: string
       testnet?: boolean
-      // Hyperliquid 特定字段
+      // Hyperliquid specific fields
       hyperliquid_wallet_addr?: string
-      // Aster 特定字段
+      // Aster specific fields
       aster_user?: string
       aster_signer?: string
       aster_private_key?: string
-      // LIGHTER 特定字段
+      // LIGHTER specific fields
       lighter_wallet_addr?: string
       lighter_private_key?: string
       lighter_api_key_private_key?: string
@@ -214,7 +192,7 @@ export interface CompetitionTraderData {
   trader_id: string
   trader_name: string
   ai_model: string
-  exchange: string
+  brokerage: string
   total_equity: number
   total_pnl: number
   total_pnl_pct: number
@@ -233,22 +211,23 @@ export interface TraderConfigData {
   trader_id?: string
   trader_name: string
   ai_model: string
-  exchange_id: string
-  strategy_id?: string  // 策略ID
-  strategy_name?: string  // 策略名称
+  brokerage_id: string
+  strategy_id?: string  // StrategyID
+  strategy_name?: string  // Strategyname
   is_cross_margin: boolean
-  show_in_competition: boolean  // 是否在竞技场显示
+  show_in_competition: boolean  // Show in competition
+  trade_only_market_hours?: boolean  // Only trade during market hours
   scan_interval_minutes: number
   initial_balance: number
   is_running: boolean
-  // 以下为旧版字段（向后兼容）
-  btc_eth_leverage?: number
-  altcoin_leverage?: number
+  // withare legacy fields（backward compatible）
+  large_cap_margin?: number
+  small_cap_margin?: number
   trading_symbols?: string
   custom_prompt?: string
   override_base_prompt?: boolean
   system_prompt_template?: string
-  use_coin_pool?: boolean
+  use_stock_pool?: boolean
   use_oi_top?: boolean
 }
 
@@ -317,7 +296,7 @@ export interface BacktestTradeEvent {
   slippage: number;
   order_value: number;
   realized_pnl: number;
-  leverage?: number;
+  margin?: number;
   cycle: number;
   position_after: number;
   liquidation: boolean;
@@ -379,9 +358,9 @@ export interface BacktestStartConfig {
     secret_key?: string;
     base_url?: string;
   };
-  leverage?: {
-    btc_eth_leverage?: number;
-    altcoin_leverage?: number;
+  margin?: {
+    large_cap_margin?: number;
+    small_cap_margin?: number;
   };
 }
 
@@ -405,22 +384,32 @@ export interface PromptSectionsConfig {
 }
 
 export interface StrategyConfig {
-  coin_source: CoinSourceConfig;
+  stock_source: StockSourceConfig;
   indicators: IndicatorConfig;
   custom_prompt?: string;
   risk_control: RiskControlConfig;
+  execution: ExecutionConfig;
   prompt_sections?: PromptSectionsConfig;
 }
 
-export interface CoinSourceConfig {
-  source_type: 'static' | 'coinpool' | 'oi_top' | 'mixed';
-  static_coins?: string[];
-  use_coin_pool: boolean;
-  coin_pool_limit?: number;
-  coin_pool_api_url?: string;  // AI500 币种池 API URL
-  use_oi_top: boolean;
+export interface StockSourceConfig {
+  source_type: 'static' | 'coinpool' | 'stockpool' | 'ai100' | 'oi_top' | 'top_winners' | 'top_losers' | 'mixed';
+  static_stocks?: string[];
+  use_stock_pool: boolean;
+  stock_pool_limit?: number;
+  stock_pool_api_url?: string;  // AI500 symbolpool API URL
+  use_ai100?: boolean;          // Enable AI100 Stocks data provider
+  ai100_limit?: number;         // AI100 fetch limit
+  ai100_api_url?: string;       // AI100 Stocks API URL
+  use_oi_top?: boolean;
   oi_top_limit?: number;
   oi_top_api_url?: string;     // OI Top API URL
+  use_movers_top?: boolean;
+  movers_top_limit?: number;
+  movers_top_api_url?: string;
+  use_top_losers?: boolean;
+  top_losers_limit?: number;
+  top_losers_api_url?: string;
 }
 
 export interface IndicatorConfig {
@@ -435,20 +424,83 @@ export interface IndicatorConfig {
   enable_volume: boolean;
   enable_oi: boolean;
   enable_funding_rate: boolean;
+  // VWAP indicators (calculated from bar data)
+  enable_vwap_indicator?: boolean;   // Volume Weighted Average Price
+  enable_anchored_vwap?: boolean;    // Anchored VWAP from session start
+  anchored_vwap_period?: number;     // Bars to anchor from
+  enable_volume_profile?: boolean;   // Volume Profile with POC, VAH, VAL
+  volume_profile_bins?: number;      // Number of price bins
   ema_periods?: number[];
   rsi_periods?: number[];
   atr_periods?: number[];
   external_data_sources?: ExternalDataSource[];
-  // 量化数据源（资金流向、持仓变化、价格变化）
+  // Quant Data Sources (fund flow, position changes)
   enable_quant_data?: boolean;
   quant_data_api_url?: string;
   enable_quant_oi?: boolean;
   enable_quant_netflow?: boolean;
-  // OI 排行数据（市场持仓量增减排行）
+  // Stock Features (market-wide OI ranking)
   enable_oi_ranking?: boolean;
   oi_ranking_api_url?: string;
   oi_ranking_duration?: string;  // "1h", "4h", "24h"
   oi_ranking_limit?: number;
+  // Stock Ranking Data Indicators
+  enable_stock_news?: boolean;      // Real-time news & sentiment
+  enable_trade_flow?: boolean;      // Trade flow analysis
+  enable_vwap?: boolean;            // Multi-timeframe VWAP
+  enable_corporate_actions?: boolean; // Corporate actions calendar
+  enable_volume_surge?: boolean;    // Volume surge detection
+  enable_earnings?: boolean;        // Earnings calendar
+  enable_analyst_ratings?: boolean; // Analyst ratings/price targets
+  enable_short_interest?: boolean;  // Short interest data
+  enable_zero_dte?: boolean;        // Zero DTE options sentiment
+  stock_news_limit?: number;        // Number of news items (default 10)
+  // Multi-Timeframe Confluence Engine
+  enable_confluence?: boolean;       // Enable multi-timeframe confluence mode
+  confluence_timeframes?: string[];  // Timeframes to check for confluence (e.g., ['15m', '1h', '4h'])
+  confluence_require_all?: boolean;  // Require ALL timeframes to align (strict mode)
+  confluence_min_match?: number;     // Minimum number of timeframes that must align (2 of 3, etc.)
+
+  // ============================================================================
+  // Phase 1: Core Profit Engine Features
+  // ============================================================================
+
+  // Phase 1.2: VWAP Deviation Entry System
+  enable_vwap_deviation?: boolean;     // Enable VWAP deviation-based entries
+  vwap_min_deviation_atr?: number;     // Min ATR deviation from VWAP (default: 1.5)
+  vwap_max_deviation_atr?: number;     // Max ATR deviation from VWAP (default: 2.5)
+  vwap_entry_mode?: string;            // "mean_reversion" or "breakout" (default: mean_reversion)
+  vwap_timeframe?: string;            // VWAP timeframe: "15m" | "1h" | "4h" | "1d" (default: "1h")
+
+  // Phase 1.3: Volume Confirmation Filter
+  enable_volume_confirmation?: boolean; // Enable volume confirmation
+  volume_min_ratio?: number;           // Min volume ratio vs average (default: 1.5)
+  volume_lookback_period?: number;      // Volume lookback period in bars (default: 20)
+  volume_comparison_method?: string;    // "sma" | "ema" | "median" (default: "sma")
+
+  // Phase 1.4: Order Flow Analysis
+  enable_order_flow?: boolean;         // Enable order flow analysis
+  order_flow_large_block_threshold?: number; // Large block threshold in $ (default: 500000)
+  order_flow_track_dark_pool?: boolean; // Track dark pool activity
+  order_flow_supply_demand_zones?: boolean; // Supply/demand zone detection
+  order_flow_institutional_weight?: number; // Institutional flow weight 0.0-1.0 (default: 0.7)
+
+  // ============================================================================
+  // Algorithms Section
+  // ============================================================================
+
+  // VWAP + Slope & Stretch Algorithm
+  enable_vwap_slope_stretch?: boolean;   // Enable VWAP + Slope & Stretch algorithm
+  vwap_entry_time?: string;              // Entry time in ET (default: "10:00")
+
+  // Top Movers Scalping Algorithm
+  enable_top_movers_scalping?: boolean;  // Enable Top Movers Scalping algorithm
+  tms_min_price?: number;                // Minimum price filter (default: 0.50)
+  tms_max_spread_pct?: number;           // Maximum bid-ask spread % (default: 0.5)
+  tms_min_rvol?: number;                 // Minimum relative volume (default: 2.0)
+  tms_max_trades_per_ticker?: number;    // Max trades per ticker per day (default: 3)
+  tms_consecutive_loss_limit?: number;   // Stop after N consecutive losses (default: 2)
+  tms_trading_end_time?: string;         // Stop trading after this time ET (default: "10:15")
 }
 
 export interface KlineConfig {
@@ -457,7 +509,7 @@ export interface KlineConfig {
   longer_timeframe?: string;
   longer_count?: number;
   enable_multi_timeframe: boolean;
-  // 新增：支持选择多个时间周期
+  // add new：supportSelectmultiplewheninterval
   selected_timeframes?: string[];
 }
 
@@ -472,24 +524,79 @@ export interface ExternalDataSource {
 }
 
 export interface RiskControlConfig {
-  // Max number of coins held simultaneously (CODE ENFORCED)
+  // Max number of stocks held simultaneously (CODE ENFORCED)
   max_positions: number;
 
-  // Trading Leverage - exchange leverage for opening positions (AI guided)
-  btc_eth_max_leverage: number;    // BTC/ETH max exchange leverage
-  altcoin_max_leverage: number;    // Altcoin max exchange leverage
+  // Trading Margin - brokerage margin for opening positions (AI guided)
+  large_cap_max_margin: number;    // Large Cap max brokerage margin
+  small_cap_max_margin: number;    // Small Cap max brokerage margin
 
   // Position Value Ratio - single position notional value / account equity (CODE ENFORCED)
   // Max position value = equity × this ratio
-  btc_eth_max_position_value_ratio?: number;     // default: 5 (BTC/ETH max position = 5x equity)
-  altcoin_max_position_value_ratio?: number;     // default: 1 (Altcoin max position = 1x equity)
+  large_cap_max_position_value_ratio?: number;     // default: 5 (Large Cap max position = 5x equity)
+  small_cap_max_position_value_ratio?: number;     // default: 1 (Small Cap max position = 1x equity)
+
+  // Max Amount per Trade - absolute cap on position size in USD (CODE ENFORCED)
+  max_position_size_usd?: number;                  // 0 = no limit, e.g. 1000 for $1000 max per trade
 
   // Risk Parameters
   max_margin_usage: number;        // Max margin utilization, e.g. 0.9 = 90% (CODE ENFORCED)
-  min_position_size: number;       // Min position size in USDT (CODE ENFORCED)
+  min_position_size: number;       // Min position size in  (CODE ENFORCED)
   min_risk_reward_ratio: number;   // Min take_profit / stop_loss ratio (AI guided)
   min_confidence: number;          // Min AI confidence to open position (AI guided)
+
+  // ============================================================================
+  // Phase 1: Risk Management Features
+  // ============================================================================
+
+  // ATR-Based Stop Loss
+  use_atr_stop_loss?: boolean;      // Enable ATR-based stop loss (default: true)
+  atr_stop_multiplier?: number;     // ATR multiplier for stop loss (default: 1.5)
+  atr_period?: number;              // ATR calculation period (default: 14)
+
+  // Position Sizing by Risk
+  use_risk_based_sizing?: boolean;  // Enable risk-based position sizing
+  risk_per_trade_pct?: number;      // Risk per trade as % of equity (default: 1%)
+  max_position_pct?: number;        // Max position size as % of equity (default: 10%)
+
+  // Daily Loss Limit
+  use_daily_loss_limit?: boolean;   // Enable daily loss limit
+  daily_loss_limit_pct?: number;    // Daily loss limit as % of equity (default: 2%)
+
+  // Trailing Stop
+  use_trailing_stop?: boolean;      // Enable ATR-based trailing stop
+  trailing_stop_atr?: number;       // Trail by X ATR (default: 1.5)
+  trailing_activation_r?: number;   // Activate after X R profit (default: 1.0)
+
+  // Partial Profit Taking
+  use_partial_profits?: boolean;    // Enable partial profit taking
+  partial_profit_pct?: number;      // % to close at first target (default: 50%)
+  partial_profit_r?: number;        // R-multiple for first target (default: 2.0)
+
+  // Market Hours Filter
+  use_market_hours_filter?: boolean; // Only trade during market hours
+  market_open_time?: string;         // Market open time (default: "09:30")
+  market_close_time?: string;        // Market close time (default: "16:00")
+  market_timezone?: string;          // Timezone (default: "America/New_York")
 }
+
+// Execution Configuration (Phase 2: Smart Order Execution)
+export interface ExecutionConfig {
+  // Smart Limit Orders - Place limit orders to reduce slippage
+  enable_limit_orders?: boolean;        // Enable smart limit orders (default: false)
+  limit_offset_atr_multiplier?: number; // ATR multiplier for limit offset (default: 0.5)
+  limit_timeout_seconds?: number;       // Timeout before switching to market order (default: 5-10s)
+
+  // TWAP (Time-Weighted Average Price) - Split large orders to reduce market impact
+  enable_twap?: boolean;                // Enable TWAP for large orders (default: false)
+  twap_duration_seconds?: number;       // Duration to split order over (default: 60s)
+  twap_min_size?: number;               // Minimum order size to trigger TWAP (default: $50,000)
+  twap_slice_count?: number;            // Number of slices to split order into (default: 5-10)
+
+  // Order Type Preference
+  preferred_order_type?: string;        // "market" | "limit" | "smart" (default: "market")
+}
+
 
 // Debate Arena Types
 export type DebateStatus = 'pending' | 'running' | 'voting' | 'completed' | 'cancelled';
@@ -499,7 +606,7 @@ export interface DebateDecision {
   action: string;
   symbol: string;
   confidence: number;
-  leverage?: number;
+  margin?: number;
   position_pct?: number;
   position_size_usd?: number;
   stop_loss?: number;
@@ -525,7 +632,7 @@ export interface DebateSession {
   max_rounds: number;
   current_round: number;
   final_decision?: DebateDecision;
-  final_decisions?: DebateDecision[];  // Multi-coin decisions
+  final_decisions?: DebateDecision[];  // Multi-stock decisions
   auto_execute: boolean;
   created_at: string;
   updated_at: string;
@@ -554,7 +661,7 @@ export interface DebateMessage {
   message_type: string;
   content: string;
   decision?: DebateDecision;
-  decisions?: DebateDecision[];  // Multi-coin decisions
+  decisions?: DebateDecision[];  // Multi-stock decisions
   confidence: number;
   created_at: string;
 }
@@ -567,7 +674,7 @@ export interface DebateVote {
   action: string;
   symbol: string;
   confidence: number;
-  leverage?: number;
+  margin?: number;
   position_pct?: number;
   stop_loss_pct?: number;
   take_profit_pct?: number;

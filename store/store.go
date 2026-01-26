@@ -5,7 +5,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"nofx/logger"
+	"SynapseStrike/logger"
 	"sync"
 
 	_ "modernc.org/sqlite"
@@ -24,6 +24,7 @@ type Store struct {
 	backtest *BacktestStore
 	position *PositionStore
 	strategy *StrategyStore
+	tactic   *TacticStore
 	equity   *EquityStore
 
 	// Encryption functions
@@ -139,6 +140,9 @@ func (s *Store) initTables() error {
 	}
 	if err := s.Strategy().initTables(); err != nil {
 		return fmt.Errorf("failed to initialize strategy tables: %w", err)
+	}
+	if err := s.Tactic().initTables(); err != nil {
+		return fmt.Errorf("failed to initialize tactic tables: %w", err)
 	}
 	if err := s.Equity().initTables(); err != nil {
 		return fmt.Errorf("failed to initialize equity tables: %w", err)
@@ -265,6 +269,16 @@ func (s *Store) Equity() *EquityStore {
 		s.equity = &EquityStore{db: s.db}
 	}
 	return s.equity
+}
+
+// Tactic gets tactic storage
+func (s *Store) Tactic() *TacticStore {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.tactic == nil {
+		s.tactic = &TacticStore{db: s.db}
+	}
+	return s.tactic
 }
 
 // Close closes database connection

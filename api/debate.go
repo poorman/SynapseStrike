@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"sync"
 
-	"nofx/debate"
-	"nofx/logger"
-	"nofx/provider"
-	"nofx/store"
+	"SynapseStrike/debate"
+	"SynapseStrike/logger"
+	"SynapseStrike/store"
 
 	"github.com/gin-gonic/gin"
 )
@@ -149,51 +148,41 @@ func (h *DebateHandler) HandleCreateDebate(c *gin.Context) {
 	}
 
 	// Auto-select symbol based on strategy if not provided
+	// For multi-stock strategies, leave symbol empty to enable multi-stock mode
 	if req.Symbol == "" {
-		req.Symbol = "BTCUSDT" // default fallback
 		if strategyConfig, err := strategy.ParseConfig(); err == nil {
 			coinSource := strategyConfig.CoinSource
-			switch coinSource.SourceType {
-			case "static":
-				if len(coinSource.StaticCoins) > 0 {
-					req.Symbol = coinSource.StaticCoins[0]
-				}
-			case "coinpool":
-				// Fetch from coin pool API
-				if coinSource.CoinPoolAPIURL != "" {
-					provider.SetCoinPoolAPI(coinSource.CoinPoolAPIURL)
-				}
-				if coins, err := provider.GetTopRatedCoins(1); err == nil && len(coins) > 0 {
-					req.Symbol = coins[0]
-					logger.Infof("Fetched coin from pool API: %s", req.Symbol)
-				}
-			case "oi_top":
-				// Fetch from OI top API
-				if coinSource.OITopAPIURL != "" {
-					provider.SetOITopAPI(coinSource.OITopAPIURL)
-				}
-				if coins, err := provider.GetOITopSymbols(); err == nil && len(coins) > 0 {
-					req.Symbol = coins[0]
-					logger.Infof("Fetched coin from OI Top API: %s", req.Symbol)
-				}
-			case "mixed":
-				// Try coin pool first, then OI top
-				if coinSource.UseCoinPool && coinSource.CoinPoolAPIURL != "" {
-					provider.SetCoinPoolAPI(coinSource.CoinPoolAPIURL)
-					if coins, err := provider.GetTopRatedCoins(1); err == nil && len(coins) > 0 {
-						req.Symbol = coins[0]
-						logger.Infof("Fetched coin from pool API (mixed): %s", req.Symbol)
-					}
-				} else if coinSource.UseOITop && coinSource.OITopAPIURL != "" {
-					provider.SetOITopAPI(coinSource.OITopAPIURL)
-					if coins, err := provider.GetOITopSymbols(); err == nil && len(coins) > 0 {
-						req.Symbol = coins[0]
-						logger.Infof("Fetched coin from OI Top API (mixed): %s", req.Symbol)
-					}
+			
+			// Check for stock symbols (static_stocks field)
+			if len(coinSource.StaticStocks) > 1 {
+				// Multiple stocks - leave symbol empty for multi-stock mode
+				req.Symbol = "" // Multi-stock mode - debate will analyze ALL stocks
+				logger.Infof("Multi-stock debate mode enabled with %d stocks: %v", len(coinSource.StaticStocks), coinSource.StaticStocks)
+			} else if len(coinSource.StaticStocks) == 1 {
+				// Single stock - use it
+				req.Symbol = coinSource.StaticStocks[0]
+				logger.Infof("Single stock debate: %s", req.Symbol)
+			} else if len(coinSource.StaticCoins) > 1 {
+				// Multiple crypto coins - multi-coin mode
+				req.Symbol = ""
+				logger.Infof("Multi-coin debate mode enabled with %d coins: %v", len(coinSource.StaticCoins), coinSource.StaticCoins)
+			} else if len(coinSource.StaticCoins) == 1 {
+				// Single coin
+				req.Symbol = coinSource.StaticCoins[0]
+				logger.Infof("Single coin debate: %s", req.Symbol)
+			} else {
+				// Handle other source types - default to multi mode
+				switch coinSource.SourceType {
+				case "coinpool", "oi_top", "mixed", "ai_100", "dynamic":
+					// These source types provide multiple candidates - use multi mode
+					req.Symbol = ""
+					logger.Infof("Multi-asset debate mode for source type: %s", coinSource.SourceType)
+				default:
+					req.Symbol = "AAPL" // fallback
+					logger.Infof("Fallback to single stock: AAPL")
 				}
 			}
-			logger.Infof("Auto-selected symbol %s for debate based on strategy %s (source_type=%s)",
-				req.Symbol, strategy.Name, coinSource.SourceType)
+			logger.Infof("Debate symbol mode: '%s' (empty = multi-stock), strategy: %s", req.Symbol, strategy.Name)
 		}
 	}
 

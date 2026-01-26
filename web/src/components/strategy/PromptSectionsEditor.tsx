@@ -11,41 +11,40 @@ interface PromptSectionsEditorProps {
 
 // Default prompt sections (same as backend defaults)
 const defaultSections: PromptSectionsConfig = {
-  role_definition: `# 你是专业的加密货币交易AI
+  role_definition: `# You are a professional stock trading AI
 
-你专注于技术分析和风险管理，基于市场数据做出理性的交易决策。
-你的目标是在控制风险的前提下，捕捉高概率的交易机会。`,
+You focus on technical analysis and risk management, making rational trading decisions based on market data.
+Your goal is to capture high-probability trading opportunities while controlling risk.`,
 
-  trading_frequency: `# ⏱️ 交易频率认知
+  trading_frequency: `# ⏱️ Trading Frequency Awareness
 
-- 优秀交易员：每天2-4笔 ≈ 每小时0.1-0.2笔
-- 每小时>2笔 = 过度交易
-- 单笔持仓时间≥30-60分钟
-如果你发现自己每个周期都在交易 → 标准过低；若持仓<30分钟就平仓 → 过于急躁。`,
+- Excellent traders: 2-4 trades per day ≈ 0.1-0.2 trades per hour
+- >2 trades per hour = overtrading
+- Minimum position holding time: 30-60 minutes
+If you trade every cycle → standards too low; if closing positions <30 min → too impatient.`,
 
-  entry_standards: `# 🎯 开仓标准（严格）
+  entry_standards: `# 🎯 Entry Standards (Strict)
 
-只在多重信号共振时开仓：
-- 趋势方向明确（EMA排列、价格位置）
-- 动量确认（MACD、RSI协同）
-- 波动率适中（ATR合理范围）
-- 量价配合（成交量支持方向）
+Only open positions when multiple signals align:
+- Clear trend direction (EMA alignment, price position)
+- Momentum confirmation (MACD, RSI agreement)
+- Moderate volatility (ATR in reasonable range)
+- Volume-price agreement (volume supports direction)
 
-避免：单一指标、信号矛盾、横盘震荡、刚平仓即重启。`,
+Avoid: single indicator, conflicting signals, sideways consolidation, re-entry immediately after closing.`,
 
-  decision_process: `# 📋 决策流程
+  decision_process: `# 📋 Decision Process
 
-1. 检查持仓 → 是否该止盈/止损
-2. 扫描候选币 + 多时间框 → 是否存在强信号
-3. 评估风险回报比 → 是否满足最小要求
-4. 先写思维链，再输出结构化JSON`,
+1. Check positions → should we take profit/stop loss
+2. Scan candidate stocks + multiple timeframes → is there a strong signal
+3. Evaluate risk/reward ratio → does it meet minimum requirements
+4. Write chain of thought first, then output structured JSON`,
 }
 
 export function PromptSectionsEditor({
   config,
   onChange,
   disabled,
-  language,
 }: PromptSectionsEditorProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     role_definition: false,
@@ -55,21 +54,21 @@ export function PromptSectionsEditor({
   })
 
   const t = (key: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      promptSections: { zh: 'System Prompt 自定义', en: 'System Prompt Customization' },
-      promptSectionsDesc: { zh: '自定义 AI 行为和决策逻辑（输出格式和风控规则不可修改）', en: 'Customize AI behavior and decision logic (output format and risk rules are fixed)' },
-      roleDefinition: { zh: '角色定义', en: 'Role Definition' },
-      roleDefinitionDesc: { zh: '定义 AI 的身份和核心目标', en: 'Define AI identity and core objectives' },
-      tradingFrequency: { zh: '交易频率', en: 'Trading Frequency' },
-      tradingFrequencyDesc: { zh: '设定交易频率预期和过度交易警告', en: 'Set trading frequency expectations and overtrading warnings' },
-      entryStandards: { zh: '开仓标准', en: 'Entry Standards' },
-      entryStandardsDesc: { zh: '定义开仓信号条件和避免事项', en: 'Define entry signal conditions and avoidances' },
-      decisionProcess: { zh: '决策流程', en: 'Decision Process' },
-      decisionProcessDesc: { zh: '设定决策步骤和思考流程', en: 'Set decision steps and thinking process' },
-      resetToDefault: { zh: '重置为默认', en: 'Reset to Default' },
-      chars: { zh: '字符', en: 'chars' },
+    const translations: Record<string, string> = {
+      promptSections: 'System Prompt Customization',
+      promptSectionsDesc: 'Customize AI behavior and decision logic (output format and risk rules are fixed)',
+      roleDefinition: 'Role Definition',
+      roleDefinitionDesc: 'Define AI identity and core objectives',
+      tradingFrequency: 'Trading Frequency',
+      tradingFrequencyDesc: 'Set trading frequency expectations and overtrading warnings',
+      entryStandards: 'Entry Standards',
+      entryStandardsDesc: 'Define entry signal conditions and avoidances',
+      decisionProcess: 'Decision Process',
+      decisionProcessDesc: 'Set decision steps and thinking process',
+      resetToDefault: 'Reset to Default',
+      chars: 'chars',
     }
-    return translations[key]?.[language] || key
+    return translations[key] || key
   }
 
   const sections = [
@@ -106,10 +105,10 @@ export function PromptSectionsEditor({
       <div className="flex items-start gap-2 mb-4">
         <FileText className="w-5 h-5 mt-0.5" style={{ color: '#a855f7' }} />
         <div>
-          <h3 className="font-medium" style={{ color: '#EAECEF' }}>
+          <h3 className="font-medium" style={{ color: '#F9FAFB' }}>
             {t('promptSections')}
           </h3>
-          <p className="text-xs mt-1" style={{ color: '#848E9C' }}>
+          <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
             {t('promptSectionsDesc')}
           </p>
         </div>
@@ -126,19 +125,19 @@ export function PromptSectionsEditor({
             <div
               key={key}
               className="rounded-lg overflow-hidden"
-              style={{ background: '#0B0E11', border: '1px solid #2B3139' }}
+              style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
             >
               <button
                 onClick={() => toggleSection(key)}
-                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors text-left"
+                className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[var(--bg-secondary)]/5 transition-colors text-left"
               >
                 <div className="flex items-center gap-2">
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4" style={{ color: '#848E9C' }} />
+                    <ChevronDown className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                   ) : (
-                    <ChevronRight className="w-4 h-4" style={{ color: '#848E9C' }} />
+                    <ChevronRight className="w-4 h-4" style={{ color: '#9CA3AF' }} />
                   )}
-                  <span className="text-sm font-medium" style={{ color: '#EAECEF' }}>
+                  <span className="text-sm font-medium" style={{ color: '#F9FAFB' }}>
                     {label}
                   </span>
                   {isModified && (
@@ -146,18 +145,18 @@ export function PromptSectionsEditor({
                       className="px-1.5 py-0.5 text-[10px] rounded"
                       style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7' }}
                     >
-                      {language === 'zh' ? '已修改' : 'Modified'}
+                      Modified
                     </span>
                   )}
                 </div>
-                <span className="text-[10px]" style={{ color: '#848E9C' }}>
+                <span className="text-[10px]" style={{ color: '#9CA3AF' }}>
                   {value.length} {t('chars')}
                 </span>
               </button>
 
               {isExpanded && (
                 <div className="px-3 pb-3">
-                  <p className="text-xs mb-2" style={{ color: '#848E9C' }}>
+                  <p className="text-xs mb-2" style={{ color: '#9CA3AF' }}>
                     {desc}
                   </p>
                   <textarea
@@ -167,9 +166,9 @@ export function PromptSectionsEditor({
                     rows={6}
                     className="w-full px-3 py-2 rounded-lg resize-y font-mono text-xs"
                     style={{
-                      background: '#1E2329',
-                      border: '1px solid #2B3139',
-                      color: '#EAECEF',
+                      background: 'rgba(22, 27, 34, 0.88)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      color: '#F9FAFB',
                       minHeight: '120px',
                     }}
                   />
@@ -177,8 +176,8 @@ export function PromptSectionsEditor({
                     <button
                       onClick={() => resetSection(sectionKey)}
                       disabled={disabled || !isModified}
-                      className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors hover:bg-white/5 disabled:opacity-30"
-                      style={{ color: '#848E9C' }}
+                      className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors hover:bg-[var(--bg-secondary)]/5 disabled:opacity-30"
+                      style={{ color: '#9CA3AF' }}
                     >
                       <RotateCcw className="w-3 h-3" />
                       {t('resetToDefault')}

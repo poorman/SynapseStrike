@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"nofx/decision"
-	"nofx/market"
-	"nofx/provider"
-	"nofx/store"
+	"SynapseStrike/decision"
+	"SynapseStrike/market"
+	"SynapseStrike/provider"
+	"SynapseStrike/store"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/suite"

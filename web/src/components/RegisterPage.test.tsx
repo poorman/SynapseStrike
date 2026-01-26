@@ -1,25 +1,25 @@
 import { describe, it, expect } from 'vitest'
 
 /**
- * PR #XXX 测试: 修复密码校验不一致的问题
+ * PR #XXX test: fixpasswordvalidationnotconsistent'sissue
  *
- * 问题：RegisterPage 中存在两处密码校验逻辑:
- * 1. PasswordChecklist 组件提供的可视化校验
- * 2. 自定义的 isStrongPassword 函数
- * 这导致校验规则可能不一致
+ * issue：RegisterPage instoreattwo placespasswordvalidationlogic:
+ * 1. PasswordChecklist component provides'svisualizationvalidation
+ * 2. custom's isStrongPassword function
+ * thiscausevalidationrulesmaynotconsistent
  *
- * 修复：移除重复的 isStrongPassword 函数,统一使用 PasswordChecklist 的校验结果
+ * fix：removeduplicate's isStrongPassword function,unifiedUse PasswordChecklist 'svalidationresult
  *
- * 本测试专注于验证密码校验逻辑的一致性,确保:
- * 1. 移除了重复的 isStrongPassword 函数
- * 2. 使用统一的 PasswordChecklist 校验
- * 3. 特殊字符规则在正常显示和错误提示中保持一致
+ * thistestfocus onverifypasswordvalidationlogic'sconsistency,ensure:
+ * 1. removedoneduplicate's isStrongPassword function
+ * 2. Useunified's PasswordChecklist validation
+ * 3. special charactersrulesatnormal displayanderrorhintinkeepconsistent
  */
 
 describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
   /**
-   * 测试密码校验规则逻辑
-   * 这些测试验证密码校验的核心逻辑,与 PasswordChecklist 组件的规则一致
+   * testpasswordvalidationruleslogic
+   * thissometestverifypasswordvalidation'scorelogic,and PasswordChecklist component'srulesconsistent
    */
   describe('password validation rules', () => {
     it('should validate minimum 8 characters', () => {
@@ -57,7 +57,7 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
     })
 
     it('should require special character from allowed set', () => {
-      // 根据 RegisterPage.tsx 中的设置,特殊字符正则为 /[@#$%!&*?]/
+      // based on RegisterPage.tsx in'ssettings,special charactersrunningthenas /[@#$%!&*?]/
       const hasSpecialChar = (pwd: string) => /[@#$%!&*?]/.test(pwd)
 
       expect(hasSpecialChar('NoSpecial123')).toBe(false)
@@ -70,7 +70,7 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
       expect(hasSpecialChar('HasStar123*')).toBe(true)
       expect(hasSpecialChar('HasQuestion123?')).toBe(true)
 
-      // 不在允许列表中的特殊字符应该不通过
+      // notatallowlistin'sspecial charactersshouldthisnotvia
       expect(hasSpecialChar('HasCaret123^')).toBe(false)
       expect(hasSpecialChar('HasTilde123~')).toBe(false)
     })
@@ -86,8 +86,8 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
   })
 
   /**
-   * 测试完整的密码强度校验
-   * 模拟 PasswordChecklist 的完整校验逻辑
+   * testcomplete'spasswordstrengthvalidation
+   * modesimulate PasswordChecklist 'scompletevalidationlogic
    */
   describe('complete password strength validation', () => {
     const validatePassword = (
@@ -193,22 +193,22 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
   })
 
   /**
-   * 测试特殊字符一致性
-   * 确保在 RegisterPage 的正常显示(第 229-251 行)和错误提示(第 300-323 行)中
-   * 使用相同的特殊字符正则 /[@#$%!&*?]/
+   * testspecial charactersconsistency
+   * ensureat RegisterPage 'snormal display(Line 229-251 line)anderrorhint(Line 300-323 line)in
+   * Usesame'sspecial charactersrunningthen /[@#$%!&*?]/
    */
   describe('special character consistency', () => {
     it('should use consistent special character regex across all validations', () => {
-      // RegisterPage 中两处 PasswordChecklist 都应该使用相同的 specialCharsRegex
+      // RegisterPage intwo places PasswordChecklist allshouldthisUsesame's specialCharsRegex
       const specialCharsRegex = /[@#$%!&*?]/
 
-      // 测试允许的特殊字符
+      // testallow'sspecial characters
       const validSpecialChars = ['@', '#', '$', '%', '!', '&', '*', '?']
       validSpecialChars.forEach((char) => {
         expect(specialCharsRegex.test(char)).toBe(true)
       })
 
-      // 测试不允许的特殊字符
+      // testnotallow'sspecial characters
       const invalidSpecialChars = ['^', '~', '`', '(', ')', '-', '_', '=', '+']
       invalidSpecialChars.forEach((char) => {
         expect(specialCharsRegex.test(char)).toBe(false)
@@ -254,7 +254,7 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
   })
 
   /**
-   * 测试边界情况
+   * testedge cases
    */
   describe('edge cases', () => {
     const validatePassword = (pwd: string, confirmPwd: string): boolean => {
@@ -311,16 +311,16 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
   })
 
   /**
-   * 测试重构后的一致性
-   * 确保移除 isStrongPassword 函数后,所有校验都通过 PasswordChecklist
+   * testrefactorafter'sconsistency
+   * ensureremove isStrongPassword functionafter,allvalidationallvia PasswordChecklist
    */
   describe('refactoring consistency verification', () => {
     it('should have removed duplicate isStrongPassword function', () => {
-      // 这个测试验证重构的意图:
-      // 在重构之前,存在一个 isStrongPassword 函数
-      // 重构后应该移除该函数,只使用 PasswordChecklist 的校验
+      // thisitemstestverifyrefactor'sintent:
+      // before refactor, store at one items isStrongPassword function
+      // refactoraftershouldthisremovethisfunction,onlyUse PasswordChecklist 'svalidation
 
-      // 我们通过模拟 PasswordChecklist 的逻辑来验证一致性
+      // weviamodesimulate PasswordChecklist 'slogicfromverifyconsistency
       const passwordChecklistValidation = (pwd: string, confirm: string) => {
         return {
           minLength: pwd.length >= 8,
@@ -332,7 +332,7 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
         }
       }
 
-      // 测试几个密码
+      // testfewitemspassword
       const testCases = [
         { pwd: 'Weak', confirm: 'Weak', shouldPass: false },
         { pwd: 'StrongPass123!', confirm: 'StrongPass123!', shouldPass: true },
@@ -351,7 +351,7 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
     })
 
     it('should use consistent validation logic across the component', () => {
-      // 验证校验逻辑的一致性
+      // verifyvalidationlogic'sconsistency
       const validation1 = {
         minLength: 8,
         requireCapital: true,
@@ -361,7 +361,7 @@ describe('RegisterPage - Password Validation Consistency (Logic Tests)', () => {
         specialCharsRegex: /[@#$%!&*?]/,
       }
 
-      // 在 RegisterPage 的正常显示和错误提示中应该使用相同的配置
+      // at RegisterPage 'snormal displayanderrorhintinshouldthisUsesame'sconfig
       const validation2 = {
         minLength: 8,
         requireCapital: true,

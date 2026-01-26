@@ -211,7 +211,7 @@ jobs:
         run: go vet ./...
 
       - name: Build
-        run: go build -v -o nofx
+        run: go build -v -o synapsestrike
 
   # Frontend tests
   frontend-tests:

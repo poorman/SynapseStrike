@@ -28,9 +28,9 @@ jobs:
         run: |
           cat > .env <<EOF
           # Minimal config for healthcheck testing
-          NOFX_BACKEND_PORT=8080
-          NOFX_FRONTEND_PORT=3000
-          NOFX_TIMEZONE=UTC
+          SynapseStrike_BACKEND_PORT=8080
+          SynapseStrike_FRONTEND_PORT=3000
+          SynapseStrike_TIMEZONE=UTC
           DATA_ENCRYPTION_KEY=test-key-32-chars-minimum-length
           JWT_SECRET=test-jwt-secret-minimum-32-chars
           EOF
@@ -59,7 +59,7 @@ jobs:
         run: |
           echo "🔍 Checking backend container health..."
 
-          BACKEND_HEALTH=$(docker inspect nofx-trading --format='{{.State.Health.Status}}')
+          BACKEND_HEALTH=$(docker inspect synapsestrike-trading --format='{{.State.Health.Status}}')
           echo "Backend health status: $BACKEND_HEALTH"
 
           if [ "$BACKEND_HEALTH" != "healthy" ]; then
@@ -67,10 +67,10 @@ jobs:
             echo "Health status: $BACKEND_HEALTH"
             echo ""
             echo "Health logs:"
-            docker inspect nofx-trading --format='{{json .State.Health}}' | jq
+            docker inspect synapsestrike-trading --format='{{json .State.Health}}' | jq
             echo ""
             echo "Container logs:"
-            docker logs nofx-trading
+            docker logs synapsestrike-trading
             exit 1
           fi
 
@@ -80,7 +80,7 @@ jobs:
         run: |
           echo "🔍 Checking frontend container health..."
 
-          FRONTEND_HEALTH=$(docker inspect nofx-frontend --format='{{.State.Health.Status}}')
+          FRONTEND_HEALTH=$(docker inspect synapsestrike-frontend --format='{{.State.Health.Status}}')
           echo "Frontend health status: $FRONTEND_HEALTH"
 
           if [ "$FRONTEND_HEALTH" != "healthy" ]; then
@@ -88,10 +88,10 @@ jobs:
             echo "Health status: $FRONTEND_HEALTH"
             echo ""
             echo "Health logs:"
-            docker inspect nofx-frontend --format='{{json .State.Health}}' | jq
+            docker inspect synapsestrike-frontend --format='{{json .State.Health}}' | jq
             echo ""
             echo "Container logs:"
-            docker logs nofx-frontend
+            docker logs synapsestrike-frontend
             exit 1
           fi
 
@@ -122,12 +122,12 @@ jobs:
 
           # Test backend healthcheck command
           echo "Testing backend healthcheck..."
-          docker exec nofx-trading wget --no-verbose --tries=1 --spider http://localhost:8080/api/health
+          docker exec synapsestrike-trading wget --no-verbose --tries=1 --spider http://localhost:8080/api/health
           echo "✅ Backend healthcheck command works"
 
           # Test frontend healthcheck command
           echo "Testing frontend healthcheck..."
-          docker exec nofx-frontend wget --no-verbose --tries=1 --spider http://127.0.0.1/health
+          docker exec synapsestrike-frontend wget --no-verbose --tries=1 --spider http://127.0.0.1/health
           echo "✅ Frontend healthcheck command works"
 
       - name: Show container status
@@ -140,10 +140,10 @@ jobs:
         if: failure()
         run: |
           echo "📋 Backend logs:"
-          docker logs nofx-trading
+          docker logs synapsestrike-trading
           echo ""
           echo "📋 Frontend logs:"
-          docker logs nofx-frontend
+          docker logs synapsestrike-frontend
 
       - name: Cleanup
         if: always()

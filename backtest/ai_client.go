@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"nofx/mcp"
+	"SynapseStrike/mcp"
 )
 
 // configureMCPClient creates/clones an MCP client based on configuration (returns mcp.AIClient interface).
@@ -71,6 +71,11 @@ func configureMCPClient(cfg BacktestConfig, base mcp.AIClient) (mcp.AIClient, er
 		oaiC := mcp.NewOpenAIClientWithOptions()
 		oaiC.(*mcp.OpenAIClient).SetAPIKey(cfg.AICfg.APIKey, cfg.AICfg.BaseURL, cfg.AICfg.Model)
 		return oaiC, nil
+	case "localai":
+		// LocalAI doesn't require API key (can be empty for local servers)
+		localC := mcp.NewLocalAIClientWithOptions()
+		localC.(*mcp.LocalAIClient).SetAPIKey(cfg.AICfg.APIKey, cfg.AICfg.BaseURL, cfg.AICfg.Model)
+		return localC, nil
 	case "custom":
 		if cfg.AICfg.BaseURL == "" || cfg.AICfg.APIKey == "" || cfg.AICfg.Model == "" {
 			return nil, fmt.Errorf("custom provider requires base_url, api key and model")
@@ -121,6 +126,11 @@ func cloneBaseClient(base mcp.AIClient) *mcp.Client {
 			return &cp
 		}
 	case *mcp.OpenAIClient:
+		if c != nil && c.Client != nil {
+			cp := *c.Client
+			return &cp
+		}
+	case *mcp.LocalAIClient:
 		if c != nil && c.Client != nil {
 			cp := *c.Client
 			return &cp
