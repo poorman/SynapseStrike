@@ -2319,7 +2319,9 @@ func (at *AutoTrader) isVWAPPostEntryTime() bool {
 }
 
 // runVWAPPositionManagement manages existing positions during post-entry phase
-// Only sells on TP hit or 5 minutes before market close (3:55 PM ET)
+// Continuously monitors for:
+// 1. Sell trigger hit (from AI100 API or default 5%)
+// 2. End-of-day exit (5 minutes before market close at 3:55 PM ET)
 func (at *AutoTrader) runVWAPPositionManagement() {
 	// Get current positions
 	positions, err := at.trader.GetPositions()
@@ -2327,8 +2329,32 @@ func (at *AutoTrader) runVWAPPositionManagement() {
 		logger.Infof("📊 [VWAP] Error getting positions: %v", err)
 		return
 	}
-	if len(positions) == 0 {
-		logger.Infof("📊 [VWAP] No positions to manage")
+
+	// Filter to only this trader's positions (if using shared account)
+	var traderPositions []map[string]interface{}
+	for _, pos := range positions {
+		symbol := pos["symbol"].(string)
+		side := pos["side"].(string)
+		quantity := pos["positionAmt"].(float64)
+		if quantity < 0 {
+			quantity = -quantity
+		}
+		// Skip empty positions
+		if quantity == 0 {
+			continue
+		}
+		// Check if this position belongs to current trader
+		if at.store != nil {
+			dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, symbol, side)
+			if err != nil || dbPos == nil {
+				continue // Skip positions that don't belong to this trader
+			}
+		}
+		traderPositions = append(traderPositions, pos)
+	}
+
+	if len(traderPositions) == 0 {
+		logger.Infof("📊 [VWAP] No positions to manage for this trader")
 		return
 	}
 
@@ -2339,8 +2365,12 @@ func (at *AutoTrader) runVWAPPositionManagement() {
 
 	// Check if we're near market close
 	isNearMarketClose := currentMinutes >= marketCloseMinutes
+	timeToClose := (16*60 - currentMinutes)
 
-	for _, pos := range positions {
+	logger.Infof("📊 [VWAP] Position check at %s ET | %d positions | Market closes in %d min",
+		now.Format("15:04"), len(traderPositions), timeToClose)
+
+	for _, pos := range traderPositions {
 		symbol := pos["symbol"].(string)
 		side := pos["side"].(string)
 
@@ -2361,29 +2391,43 @@ func (at *AutoTrader) runVWAPPositionManagement() {
 		// Get TP from AI100 sell_trigger API (falls back to 5% if not found)
 		ai100Client := market.GetAI100Client()
 		tpPct := ai100Client.GetSellTrigger(symbol)
-		logger.Infof("📊 [VWAP] %s: PnL=%.2f%%, AI100 sell_trigger=%.2f%%", symbol, pnlPct, tpPct)
 
-		// Check if TP hit
-		if pnlPct >= tpPct {
-			logger.Infof("📊 [VWAP] Take Profit hit for %s: %.2f%% >= %.2f%% - closing position", symbol, pnlPct, tpPct)
-			at.emergencyClosePosition(symbol, side)
+		logger.Infof("📊 [VWAP] %s %s: Entry=$%.2f, Current=$%.2f, PnL=%.2f%%, Target=%.2f%%",
+			symbol, side, entryPrice, markPrice, pnlPct, tpPct)
+
+		// PRIORITY 1: Check if near market close - MUST sell all positions
+		if isNearMarketClose {
+			logger.Infof("🔔 [VWAP] END-OF-DAY EXIT: Market closing in %d min - selling %s at %.2f%% PnL",
+				timeToClose, symbol, pnlPct)
+			if err := at.emergencyClosePosition(symbol, side); err != nil {
+				logger.Infof("❌ [VWAP] Failed to close %s: %v", symbol, err)
+			} else {
+				logger.Infof("✅ [VWAP] Successfully closed %s before market close", symbol)
+			}
 			continue
 		}
 
-		// Check if near market close - sell all positions
-		if isNearMarketClose {
-			logger.Infof("📊 [VWAP] Market closing soon - closing position %s at %.2f%%", symbol, pnlPct)
-			at.emergencyClosePosition(symbol, side)
+		// PRIORITY 2: Check if TP (sell trigger) hit
+		if pnlPct >= tpPct {
+			logger.Infof("🎯 [VWAP] SELL TRIGGER HIT: %s at %.2f%% (target: %.2f%%) - closing position",
+				symbol, pnlPct, tpPct)
+			if err := at.emergencyClosePosition(symbol, side); err != nil {
+				logger.Infof("❌ [VWAP] Failed to close %s: %v", symbol, err)
+			} else {
+				logger.Infof("✅ [VWAP] Successfully closed %s on sell trigger", symbol)
+			}
 			continue
 		}
 
 		// Otherwise, hold the position
-		logger.Infof("📊 [VWAP] Holding %s: PnL %.2f%% (TP: %.2f%%)", symbol, pnlPct, tpPct)
+		logger.Infof("📊 [VWAP] HOLDING %s: PnL %.2f%% | Need %.2f%% more to hit target",
+			symbol, pnlPct, tpPct-pnlPct)
 	}
 }
 
 // getVWAPAwareInterval returns the appropriate scan interval based on VWAP mode
-// Returns 1 minute during pre-entry phase, otherwise user-configured interval
+// Returns 1 minute during entire trading day when VWAP mode is enabled
+// This ensures sell triggers and market close exits are checked frequently
 func (at *AutoTrader) getVWAPAwareInterval() time.Duration {
 	if at.strategyEngine == nil {
 		return at.config.ScanInterval
@@ -2394,8 +2438,11 @@ func (at *AutoTrader) getVWAPAwareInterval() time.Duration {
 		return at.config.ScanInterval
 	}
 
-	// If in pre-entry phase (9:30 to entry time), use 1-minute intervals
-	if at.isVWAPPreEntryTime() {
+	// When VWAP mode is enabled, ALWAYS use 1-minute intervals during market hours
+	// This ensures:
+	// 1. Continuous sell trigger monitoring throughout the day
+	// 2. Timely exit 5 minutes before market close (3:55 PM ET)
+	if isMarketOpen() {
 		return 1 * time.Minute
 	}
 
