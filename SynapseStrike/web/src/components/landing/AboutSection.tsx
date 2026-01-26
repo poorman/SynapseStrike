@@ -51,16 +51,16 @@ export default function AboutSection({ language }: AboutSectionProps) {
             >
               <Terminal className="w-4 h-4" style={{ color: 'var(--primary)' }} />
               <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
-                {t('aboutNofx', language)}
+                {t('aboutSynapseStrike', language)}
               </span>
             </motion.div>
 
             <h2 className="text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#F9FAFB' }}>
-              {t('whatIsNofx', language)}
+              {t('whatIsSynapseStrike', language)}
             </h2>
 
             <p className="text-lg mb-8 leading-relaxed" style={{ color: '#9CA3AF' }}>
-              {t('nofxNotAnotherBot', language)} {t('nofxDescription1', language)}
+              {t('synapsestrikeNotAnotherBot', language)} {t('synapsestrikeDescription1', language)}
             </p>
 
             {/* Feature Pills */}
@@ -127,8 +127,8 @@ export default function AboutSection({ language }: AboutSectionProps) {
 
               {/* Terminal Content */}
               <div className="p-6 font-mono text-sm space-y-2">
-                <div style={{ color: '#6B7280' }}>$ git clone https://github.com/NoFxAiOS/nofx.git</div>
-                <div style={{ color: '#6B7280' }}>$ cd nofx && chmod +x start.sh</div>
+                <div style={{ color: '#6B7280' }}>$ git clone https://github.com/poorman/SynapseStrike.git</div>
+                <div style={{ color: '#6B7280' }}>$ cd synapsestrike && chmod +x start.sh</div>
                 <div style={{ color: '#6B7280' }}>$ ./start.sh start --build</div>
                 <div className="pt-2" style={{ color: 'var(--primary)' }}>
                   ✓ {t('startupMessages1', language)}

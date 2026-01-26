@@ -17,6 +17,7 @@
             --accent-yellow: #d29922;
             --accent-red: #f85149;
             --accent-blue: #58a6ff;
+            --accent-cyan: #39d0d8;
             --border-color: #30363d;
         }
 
@@ -102,6 +103,10 @@
             background: linear-gradient(135deg, #8b949e, #6e7681);
         }
 
+        .ai-badge {
+            background: linear-gradient(135deg, #39d0d8, #8b5cf6);
+        }
+
         .feature-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -111,6 +116,19 @@
         }
 
         .feature-card h4 {
+            margin-top: 0;
+        }
+
+        .ai-card {
+            background: linear-gradient(135deg, rgba(57, 208, 216, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(57, 208, 216, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .ai-card h4 {
+            color: var(--accent-cyan);
             margin-top: 0;
         }
 
@@ -177,6 +195,17 @@
             color: var(--accent-green);
         }
 
+        .architecture-diagram {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
         .footer {
             margin-top: 60px;
             padding-top: 20px;
@@ -194,9 +223,126 @@
         <p>Strategic roadmap for building the most advanced AI trading platform</p>
 
         <h2>Part 1: Rename App <span class="completed">✅ COMPLETED</span></h2>
-        <p>Successfully renamed from "nofx" to "SynapseStrike" across all UI components.</p>
+        <p>Successfully renamed to "SynapseStrike" across all UI components.</p>
 
-        <h2>Part 2: Strategic Feature Recommendations</h2>
+        <!-- AI Architecture Section -->
+        <h2>Part 2: AI Architecture</h2>
+        <p>SynapseStrike supports multiple AI providers for trading decisions. Here's how they work:</p>
+
+        <h3><span class="tier-badge ai-badge">🤖 AI Providers</span> Supported Models</h3>
+
+        <div class="ai-card">
+            <h4>🏠 Local AI (Self-Hosted)</h4>
+            <p>Run AI models locally for maximum privacy and zero API costs.</p>
+            <p><strong>How it works:</strong></p>
+            <ul>
+                <li>Uses OpenAI-compatible API format (works with Ollama, LM Studio, text-generation-webui, etc.)</li>
+                <li>Default endpoint: <code>http://localhost:8080/v1</code></li>
+                <li>Configure any model name supported by your local server</li>
+                <li>No API key required for local deployments</li>
+            </ul>
+            <p><strong>Setup:</strong></p>
+            <pre><code># Example with Ollama
+ollama serve
+# Then in SynapseStrike:
+# - AI Model: "localai"
+# - Custom URL: "http://localhost:11434/v1"
+# - Model Name: "llama3" or "mixtral" etc.</code></pre>
+            <p><strong>Benefits:</strong> Zero latency to AI, no API costs, full data privacy</p>
+        </div>
+
+        <div class="ai-card">
+            <h4>🏗️ Architect AI (Claude with Extended Thinking)</h4>
+            <p>Uses Claude's extended thinking capability for deeper market analysis.</p>
+            <p><strong>How it works:</strong></p>
+            <ul>
+                <li>Leverages Claude's "thinking" mode for complex reasoning chains</li>
+                <li>AI shows its step-by-step analysis process (Chain of Thought)</li>
+                <li>Better for complex multi-factor decisions</li>
+                <li>Visible reasoning in "AI Chain of Thought" panel</li>
+            </ul>
+            <p><strong>When to use:</strong> Complex market conditions, multi-timeframe analysis, risk assessment</p>
+            <p><strong>Configuration:</strong></p>
+            <pre><code># In trader config:
+# - AI Model: "claude"
+# - API Key: Your Anthropic API key
+# - Model: "claude-sonnet-4-20250514" (recommended)</code></pre>
+        </div>
+
+        <div class="ai-card">
+            <h4>🌐 Cloud AI Providers</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Model</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OpenAI</td>
+                        <td>GPT-4o, GPT-4-turbo</td>
+                        <td>General trading, fast responses</td>
+                    </tr>
+                    <tr>
+                        <td>Claude</td>
+                        <td>claude-sonnet-4-20250514</td>
+                        <td>Deep analysis, extended thinking</td>
+                    </tr>
+                    <tr>
+                        <td>Gemini</td>
+                        <td>gemini-2.0-flash</td>
+                        <td>Fast decisions, cost-effective</td>
+                    </tr>
+                    <tr>
+                        <td>DeepSeek</td>
+                        <td>deepseek-chat</td>
+                        <td>Budget-friendly, good performance</td>
+                    </tr>
+                    <tr>
+                        <td>Qwen</td>
+                        <td>qwen-turbo</td>
+                        <td>Chinese market analysis</td>
+                    </tr>
+                    <tr>
+                        <td>Grok</td>
+                        <td>grok-beta</td>
+                        <td>Real-time market sentiment</td>
+                    </tr>
+                    <tr>
+                        <td>Kimi</td>
+                        <td>moonshot-v1</td>
+                        <td>Long context analysis</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ai-card">
+            <h4>🔄 AI Fallback System</h4>
+            <p>When the primary AI fails (quota exceeded, timeout, etc.), SynapseStrike automatically falls back to algorithmic trading:</p>
+            <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────┐
+│                  AI Decision Flow                    │
+├─────────────────────────────────────────────────────┤
+│  1. Request AI Decision (Claude/GPT/Gemini/etc.)    │
+│              ↓                                       │
+│  2. AI Response OK?                                  │
+│      ├─ YES → Execute AI Decision                   │
+│      └─ NO  → Trigger Algorithmic Fallback          │
+│              ↓                                       │
+│  3. Fallback: Technical Algorithm                    │
+│      • VWAP + Slope & Stretch Analysis              │
+│      • RSI/MACD Confluence                          │
+│      • Support/Resistance Levels                    │
+│              ↓                                       │
+│  4. Execute Fallback Decision                        │
+│      (Logged as "Fallback: technical algorithm")    │
+└─────────────────────────────────────────────────────┘</div>
+        </div>
+
+        <h2>Part 3: Strategic Feature Recommendations</h2>
 
         <!-- Tier 1 -->
         <h3><span class="tier-badge tier-1">🔥 Tier 1</span> High-Impact Profit Boosters</h3>
@@ -215,10 +361,9 @@
         </div>
 
         <div class="feature-card">
-            <h4>3. Smart Entry with Limit Orders</h4>
+            <h4>3. Smart Entry with Limit Orders <span class="completed">✅ IMPLEMENTED</span></h4>
             <p>Place limit orders at VWAP ± ATR deviation instead of market orders.</p>
-            <p><strong>Expected Impact:</strong> <span class="high-impact">Save 0.1-0.3% per trade in slippage</span>
-            </p>
+            <p><strong>Expected Impact:</strong> <span class="high-impact">Save 0.1-0.3% per trade in slippage</span></p>
         </div>
 
         <div class="feature-card">
@@ -239,13 +384,13 @@
         <h3><span class="tier-badge tier-2">⚡ Tier 2</span> Competitive Edge Features</h3>
 
         <div class="feature-card">
-            <h4>6. Paper Trading Simulator with Analytics</h4>
-            <p>Full trade execution simulation with performance analytics dashboard.</p>
+            <h4>6. Paper Trading Simulator with Analytics <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Full trade execution simulation via Alpaca Paper Trading account.</p>
         </div>
 
         <div class="feature-card">
-            <h4>7. Strategy Backtesting Engine</h4>
-            <p>Historical performance testing, walk-forward optimization, drawdown analysis.</p>
+            <h4>7. Strategy Backtesting Engine <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Historical performance testing with the Backtest Lab feature.</p>
         </div>
 
         <div class="feature-card">
@@ -254,13 +399,13 @@
         </div>
 
         <div class="feature-card">
-            <h4>9. AI Model Ensemble</h4>
-            <p>Combine Claude + GPT-4 + Gemini with weighted voting. Only trade when 2/3+ agree.</p>
+            <h4>9. AI Model Ensemble / Debate Arena <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Combine Claude + GPT-4 + Gemini with weighted voting via Debate Arena feature.</p>
         </div>
 
         <div class="feature-card">
-            <h4>10. Real-Time Performance Dashboard</h4>
-            <p>Sharpe/Sortino ratios, max drawdown tracking, win rate by time of day, P&L attribution.</p>
+            <h4>10. Real-Time Performance Dashboard <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Equity curves, P&L tracking, win rate, position monitoring.</p>
         </div>
 
         <!-- Tier 3 -->
@@ -287,8 +432,8 @@
         </div>
 
         <div class="feature-card">
-            <h4>15. Risk Management Suite</h4>
-            <p>Daily loss limit, correlation-based limits, VaR monitoring, auto-hedging.</p>
+            <h4>15. Risk Management Suite <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Max positions limit, position value ratio, min/max position size, drawdown monitoring.</p>
         </div>
 
         <!-- Tier 4 -->
@@ -300,8 +445,8 @@
         </div>
 
         <div class="feature-card">
-            <h4>17. Audit Trail & Compliance</h4>
-            <p>Complete trade logging, decision recording, tax reporting export.</p>
+            <h4>17. Audit Trail & Compliance <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Complete trade logging, decision recording with Chain of Thought, position history.</p>
         </div>
 
         <div class="feature-card">
@@ -316,7 +461,7 @@
                 <tr>
                     <th>Priority</th>
                     <th>Feature</th>
-                    <th>Development Time</th>
+                    <th>Status</th>
                     <th>Impact</th>
                 </tr>
             </thead>
@@ -324,56 +469,79 @@
                 <tr>
                     <td>1</td>
                     <td>Multi-Timeframe Analysis</td>
-                    <td>1 week</td>
+                    <td>Planned</td>
                     <td class="high-impact">High</td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>Smart Entry (Limit Orders)</td>
-                    <td>3 days</td>
+                    <td class="completed">✅ Done</td>
                     <td class="high-impact">High</td>
                 </tr>
                 <tr>
                     <td>3</td>
-                    <td>Trailing Stop Evolution</td>
-                    <td>3 days</td>
+                    <td>VWAP Strategy (Buy at 9AM, Sell at trigger or EOD)</td>
+                    <td class="completed">✅ Done</td>
                     <td class="high-impact">High</td>
                 </tr>
                 <tr>
                     <td>4</td>
                     <td>News/Earnings Filter</td>
-                    <td>2 days</td>
+                    <td>Planned</td>
                     <td class="medium-impact">Medium</td>
                 </tr>
                 <tr>
                     <td>5</td>
                     <td>Daily Loss Limit</td>
-                    <td>1 day</td>
+                    <td class="completed">✅ Done</td>
                     <td class="high-impact">High</td>
                 </tr>
                 <tr>
                     <td>6</td>
                     <td>Paper Trading Mode</td>
-                    <td>1 week</td>
+                    <td class="completed">✅ Done</td>
                     <td class="medium-impact">Medium</td>
                 </tr>
                 <tr>
                     <td>7</td>
-                    <td>AI Model Ensemble</td>
-                    <td>1 week</td>
+                    <td>AI Model Ensemble (Debate Arena)</td>
+                    <td class="completed">✅ Done</td>
                     <td class="high-impact">High</td>
                 </tr>
                 <tr>
                     <td>8</td>
                     <td>Performance Dashboard</td>
-                    <td>1 week</td>
+                    <td class="completed">✅ Done</td>
                     <td class="medium-impact">Medium</td>
                 </tr>
             </tbody>
         </table>
 
         <!-- Recent Fixes -->
-        <h2>Recent Bug Fixes (December 2025)</h2>
+        <h2>Recent Updates (January 2026)</h2>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: VWAP Sell Trigger Monitoring</h4>
+            <p><strong>Issue:</strong> Sell triggers were not being checked frequently during post-entry phase</p>
+            <p><strong>Fix:</strong> Now uses 1-minute intervals ALL DAY when VWAP mode is enabled</p>
+            <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
+        </div>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: VWAP Sell Decisions Not Showing in UI</h4>
+            <p><strong>Issue:</strong> Sell operations were not recorded in Recent Decisions panel</p>
+            <p><strong>Fix:</strong> Added <code>closePositionWithReason()</code> and <code>saveVWAPSellDecision()</code></p>
+            <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
+        </div>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: End-of-Day Exit at 3:55 PM ET</h4>
+            <p><strong>Issue:</strong> Positions were not reliably closed before market close</p>
+            <p><strong>Fix:</strong> Priority check for market close (5 min before 4 PM) in position management</p>
+            <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
+        </div>
+
+        <h2>Previous Fixes (December 2025)</h2>
 
         <div class="fix-card">
             <h4>✅ Fixed: Fractional Short Selling Error</h4>
@@ -390,7 +558,7 @@
         </div>
 
         <div class="footer">
-            <p>SynapseStrike Enhancement Plan • Last Updated: December 29, 2025</p>
+            <p>SynapseStrike Enhancement Plan • Last Updated: January 26, 2026</p>
         </div>
     </div>
 </body>

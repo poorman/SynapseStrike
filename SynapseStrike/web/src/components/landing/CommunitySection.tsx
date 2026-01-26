@@ -136,7 +136,7 @@ export default function CommunitySection(_props: CommunitySectionProps) {
           viewport={{ once: true }}
         >
           <a
-            href="https://twitter.com/nofx_official"
+            href="https://twitter.com/synapsestrike_official"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all hover:scale-105"

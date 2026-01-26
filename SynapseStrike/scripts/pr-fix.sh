@@ -39,14 +39,14 @@ confirm() {
 # Welcome message
 echo ""
 echo "╔═══════════════════════════════════════════╗"
-echo "║  NOFX PR Migration Tool                   ║"
+echo "║  SynapseStrike PR Migration Tool                   ║"
 echo "║  Migrate your PR to the new format        ║"
 echo "╚═══════════════════════════════════════════╝"
 echo ""
 
 # Check if we're in a git repo
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    log_error "Not a git repository. Please run this from your NOFX fork."
+    log_error "Not a git repository. Please run this from your SynapseStrike fork."
     exit 1
 fi
 
@@ -104,7 +104,7 @@ log_info "Step 1: Verifying upstream sync..."
 # Check if upstream remote exists
 if ! git remote | grep -q "^upstream$"; then
     log_warning "Upstream remote not found. Adding it..."
-    git remote add upstream https://github.com/tinkle-community/nofx.git
+    git remote add upstream https://github.com/tinkle-community/synapsestrike.git
     git fetch upstream
     log_success "Added upstream remote"
 fi
@@ -328,8 +328,8 @@ echo "  4. Address any reviewer feedback"
 echo ""
 
 log_info "Need help? Ask in the PR comments or Telegram!"
-log_info "Telegram: https://t.me/nofx_dev_community"
+log_info "Telegram: https://t.me/synapsestrike_dev_community"
 
 echo ""
-log_success "Thank you for contributing to NOFX! 🚀"
+log_success "Thank you for contributing to SynapseStrike! 🚀"
 echo ""

@@ -1,14 +1,14 @@
-# NOFX 架构文档
+# SynapseStrike 架构文档
 
 **语言:** [English](README.md) | [中文](README.zh-CN.md)
 
-为希望了解 NOFX 内部实现的开发者提供的技术文档。
+为希望了解 SynapseStrike 内部实现的开发者提供的技术文档。
 
 ---
 
 ## 概述
 
-NOFX 是一个支持加密货币和美股市场的全栈 AI 交易平台：
+SynapseStrike 是一个支持加密货币和美股市场的全栈 AI 交易平台：
 
 - **后端:** Go (Gin 框架, SQLite)
 - **前端:** React/TypeScript (Vite, TailwindCSS)
@@ -21,7 +21,7 @@ NOFX 是一个支持加密货币和美股市场的全栈 AI 交易平台：
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NOFX 平台                                      │
+│                              SynapseStrike 平台                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐│
@@ -97,7 +97,7 @@ NOFX 是一个支持加密货币和美股市场的全栈 AI 交易平台：
 ## 项目结构
 
 ```
-nofx/
+synapsestrike/
 ├── main.go                    # 程序入口
 ├── api/                       # HTTP API (Gin 框架)
 ├── trader/                    # 交易执行层
@@ -154,10 +154,10 @@ nofx/
 
 **想要贡献？**
 - 阅读上方的模块文档
-- 查看 [Open Issues](https://github.com/NoFxAiOS/nofx/issues)
+- 查看 [Open Issues](https://github.com/poorman/SynapseStrike/issues)
 - 加入我们的社区
 
-**代码仓库:** https://github.com/NoFxAiOS/nofx
+**代码仓库:** https://github.com/poorman/SynapseStrike
 
 ---
 

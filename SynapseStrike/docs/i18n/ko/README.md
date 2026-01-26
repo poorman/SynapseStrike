@@ -1,4 +1,4 @@
-# NOFX - AI 트레이딩 시스템
+# SynapseStrike - AI 트레이딩 시스템
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org/)
@@ -11,7 +11,7 @@
 
 ## AI 기반 암호화폐 거래 플랫폼
 
-**NOFX**는 여러 AI 모델을 실행하여 암호화폐 선물을 자동으로 거래할 수 있는 오픈소스 AI 거래 시스템입니다. 웹 인터페이스를 통해 전략을 구성하고, 실시간으로 성과를 모니터링하며, AI 에이전트들이 최적의 거래 방식을 찾도록 경쟁시킵니다.
+**SynapseStrike**는 여러 AI 모델을 실행하여 암호화폐 선물을 자동으로 거래할 수 있는 오픈소스 AI 거래 시스템입니다. 웹 인터페이스를 통해 전략을 구성하고, 실시간으로 성과를 모니터링하며, AI 에이전트들이 최적의 거래 방식을 찾도록 경쟁시킵니다.
 
 ### 핵심 기능
 
@@ -28,7 +28,7 @@
 
 ## 개발자 커뮤니티
 
-Telegram 개발자 커뮤니티 참여: **[NOFX 개발자 커뮤니티](https://t.me/nofx_dev_community)**
+Telegram 개발자 커뮤니티 참여: **[SynapseStrike 개발자 커뮤니티](https://t.me/synapsestrike_dev_community)**
 
 ---
 
@@ -37,8 +37,8 @@ Telegram 개발자 커뮤니티 참여: **[NOFX 개발자 커뮤니티](https://
 ### 옵션 1: Docker 배포 (권장)
 
 ```bash
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 chmod +x ./start.sh
 ./start.sh start --build
 ```
@@ -54,13 +54,13 @@ chmod +x ./start.sh
 brew install ta-lib
 
 # 클론 및 설정
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 go mod download
 cd web && npm install && cd ..
 
 # 백엔드 시작
-go build -o nofx && ./nofx
+go build -o synapsestrike && ./synapsestrike
 
 # 프론트엔드 시작 (새 터미널)
 cd web && npm run dev
@@ -90,11 +90,11 @@ cd web && npm run dev
 
 ### 빠른 배포 (IP를 통한 HTTP)
 
-기본적으로 전송 암호화가 **비활성화**되어 HTTPS 없이 IP 주소를 통해 NOFX에 액세스할 수 있습니다:
+기본적으로 전송 암호화가 **비활성화**되어 HTTPS 없이 IP 주소를 통해 SynapseStrike에 액세스할 수 있습니다:
 
 ```bash
 # 서버에 배포
-curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash
 ```
 
 `http://YOUR_SERVER_IP:3000`을 통해 액세스 - 즉시 작동합니다.
@@ -119,7 +119,7 @@ TRANSPORT_ENCRYPTION=true
 
 2. **DNS 레코드 생성**
    - 유형: `A`
-   - 이름: `nofx` (또는 서브도메인)
+   - 이름: `synapsestrike` (또는 서브도메인)
    - 콘텐츠: 서버 IP
    - 프록시 상태: **Proxied** (주황색 구름)
 
@@ -137,7 +137,7 @@ TRANSPORT_ENCRYPTION=true
    TRANSPORT_ENCRYPTION=true
    ```
 
-5. **완료!** `https://nofx.yourdomain.com`을 통해 액세스
+5. **완료!** `https://synapsestrike.yourdomain.com`을 통해 액세스
 
 ---
 
@@ -215,9 +215,9 @@ sudo apt-get install libta-lib0-dev
 
 ## 기여자 에어드롭 프로그램
 
-모든 기여는 GitHub에서 추적됩니다. NOFX가 수익을 창출하면 기여자는 기여도에 따라 에어드롭을 받게 됩니다.
+모든 기여는 GitHub에서 추적됩니다. SynapseStrike가 수익을 창출하면 기여자는 기여도에 따라 에어드롭을 받게 됩니다.
 
-**[고정된 Issue](https://github.com/NoFxAiOS/nofx/issues)를 해결하는 PR은 최고 보상을 받습니다!**
+**[고정된 Issue](https://github.com/poorman/SynapseStrike/issues)를 해결하는 PR은 최고 보상을 받습니다!**
 
 | 기여 유형 | 가중치 |
 |------------------|:------:|
@@ -241,11 +241,11 @@ sudo apt-get install libta-lib0-dev
 
 ## 연락처
 
-- **GitHub Issues**: [Issue 제출](https://github.com/NoFxAiOS/nofx/issues)
-- **개발자 커뮤니티**: [Telegram 그룹](https://t.me/nofx_dev_community)
+- **GitHub Issues**: [Issue 제출](https://github.com/poorman/SynapseStrike/issues)
+- **개발자 커뮤니티**: [Telegram 그룹](https://t.me/synapsestrike_dev_community)
 
 ---
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NoFxAiOS/nofx&type=Date)](https://star-history.com/#NoFxAiOS/nofx&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=poorman/SynapseStrike&type=Date)](https://star-history.com/#poorman/SynapseStrike&Date)

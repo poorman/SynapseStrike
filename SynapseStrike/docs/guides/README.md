@@ -1,8 +1,8 @@
-# 📘 NOFX User Guides
+# 📘 SynapseStrike User Guides
 
 **Language:** [English](README.md) | [中文](README.zh-CN.md)
 
-Comprehensive guides to help you use NOFX effectively.
+Comprehensive guides to help you use SynapseStrike effectively.
 
 ---
 
@@ -129,9 +129,9 @@ Run multiple AI models simultaneously:
 ## 🆘 Need Help?
 
 **Can't find what you need?**
-- 💬 [Telegram Community](https://t.me/nofx_dev_community)
-- 🐛 [GitHub Issues](https://github.com/tinkle-community/nofx/issues)
-- 🐦 [Twitter @nofx_official](https://x.com/nofx_official)
+- 💬 [Telegram Community](https://t.me/synapsestrike_dev_community)
+- 🐛 [GitHub Issues](https://github.com/tinkle-community/synapsestrike/issues)
+- 🐦 [Twitter @synapsestrike_official](https://x.com/synapsestrike_official)
 
 ---
 

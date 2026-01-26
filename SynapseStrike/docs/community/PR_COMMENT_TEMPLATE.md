@@ -9,7 +9,7 @@ This template is for maintainers to comment on existing PRs to introduce the new
 ```markdown
 Hi @{username}! 👋
 
-Thank you for your contribution to NOFX!
+Thank you for your contribution to SynapseStrike!
 
 ## 🚀 New PR Management System
 
@@ -23,7 +23,7 @@ We've created a **PR health check tool** that analyzes your PR and gives you sug
 
 ```bash
 # In your local fork, on your PR branch
-cd /path/to/your/nofx-fork
+cd /path/to/your/synapsestrike-fork
 git checkout <your-branch-name>
 
 # Run the health check (reads only, doesn't modify)
@@ -49,8 +49,8 @@ git push origin <your-branch-name>
 
 ### 📖 Learn More
 
-- [Migration Announcement](https://github.com/tinkle-community/nofx/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.md)
-- [Contributing Guidelines](https://github.com/tinkle-community/nofx/blob/dev/CONTRIBUTING.md)
+- [Migration Announcement](https://github.com/tinkle-community/synapsestrike/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.md)
+- [Contributing Guidelines](https://github.com/tinkle-community/synapsestrike/blob/dev/CONTRIBUTING.md)
 
 ### ❓ Questions?
 
@@ -68,7 +68,7 @@ Just ask here! We're happy to help. 🙏
 ```markdown
 嗨 @{username}！👋
 
-感谢你为 NOFX 做出的贡献！
+感谢你为 SynapseStrike 做出的贡献！
 
 ## 🚀 新的 PR 管理系统
 
@@ -82,7 +82,7 @@ Just ask here! We're happy to help. 🙏
 
 ```bash
 # 在你的本地 fork 中，切换到你的 PR 分支
-cd /path/to/your/nofx-fork
+cd /path/to/your/synapsestrike-fork
 git checkout <your-branch-name>
 
 # 运行健康检查（只读，不修改任何内容）
@@ -108,8 +108,8 @@ git push origin <your-branch-name>
 
 ### 📖 了解更多
 
-- [迁移公告](https://github.com/tinkle-community/nofx/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.zh-CN.md)
-- [贡献指南](https://github.com/tinkle-community/nofx/blob/dev/docs/i18n/zh-CN/CONTRIBUTING.md)
+- [迁移公告](https://github.com/tinkle-community/synapsestrike/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.zh-CN.md)
+- [贡献指南](https://github.com/tinkle-community/synapsestrike/blob/dev/docs/i18n/zh-CN/CONTRIBUTING.md)
 
 ### ❓ 问题？
 
@@ -136,7 +136,7 @@ We're introducing a new PR system. Your PR won't be blocked - we'll review it no
 ./scripts/pr-check.sh
 ```
 
-[Learn more](https://github.com/tinkle-community/nofx/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.md) | This is optional!
+[Learn more](https://github.com/tinkle-community/synapsestrike/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.md) | This is optional!
 ```
 
 ---
@@ -159,7 +159,7 @@ We're introducing a new PR system. Your PR won't be blocked - we'll review it no
 ./scripts/pr-check.sh
 \`\`\`
 
-[Learn more](https://github.com/tinkle-community/nofx/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.md) | This is optional!"
+[Learn more](https://github.com/tinkle-community/synapsestrike/blob/dev/docs/community/MIGRATION_ANNOUNCEMENT.md) | This is optional!"
 
   echo "✅ Commented on PR #$pr_number"
   sleep 2  # Be nice to GitHub API

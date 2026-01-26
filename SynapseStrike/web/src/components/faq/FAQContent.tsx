@@ -99,7 +99,7 @@ export function FAQContent({
                       <div className="text-base">
                         {false ? 'link：' : 'Links:'}{' '}
                         <a
-                          href="https://github.com/orgs/NoFxAiOS/projects/3"
+                          href="https://github.com/orgs/poorman/projects/3"
                           target="_blank"
                           rel="noreferrer"
                           style={{ color: 'var(--primary)' }}
@@ -108,7 +108,7 @@ export function FAQContent({
                         </a>
                         {'  |  '}
                         <a
-                          href="https://github.com/orgs/NoFxAiOS/projects/5"
+                          href="https://github.com/orgs/poorman/projects/5"
                           target="_blank"
                           rel="noreferrer"
                           style={{ color: 'var(--primary)' }}
@@ -134,7 +134,7 @@ export function FAQContent({
                               branchandupstreamkeepconsistent：
                               <code className="ml-2">
                                 git remote add upstream
-                                https://github.com/NoFxAiOS/nofx.git
+                                https://github.com/poorman/SynapseStrike.git
                               </code>
                               <br />
                               <code>git fetch upstream</code>
@@ -158,9 +158,9 @@ export function FAQContent({
                               </code>
                             </li>
                             <li>
-                              open PR：base Select <code>NoFxAiOS/nofx:dev</code>{' '}
+                              open PR：base Select <code>poorman/SynapseStrike:dev</code>{' '}
                               ← compare Select{' '}
-                              <code>you'susername/nofx:feat/your-topic</code>。
+                              <code>you'susername/synapsestrike:feat/your-topic</code>。
                             </li>
                             <li>
                               at PR Associate in Issue（Example：
@@ -188,7 +188,7 @@ export function FAQContent({
                               Sync your fork's <code>dev</code> with upstream:
                               <code className="ml-2">
                                 git remote add upstream
-                                https://github.com/NoFxAiOS/nofx.git
+                                https://github.com/poorman/SynapseStrike.git
                               </code>
                               <br />
                               <code>git fetch upstream</code>
@@ -213,9 +213,9 @@ export function FAQContent({
                               </code>
                             </li>
                             <li>
-                              Open a PR: base <code>NoFxAiOS/nofx:dev</code> ←
+                              Open a PR: base <code>poorman/SynapseStrike:dev</code> ←
                               compare{' '}
-                              <code>your-username/nofx:feat/your-topic</code>.
+                              <code>your-username/synapsestrike:feat/your-topic</code>.
                             </li>
                             <li>
                               In PR, reference the Issue (e.g.,{' '}
@@ -241,7 +241,7 @@ export function FAQContent({
                             Bounty/Bonus、Badges and Credits、Priority
                             Review/Merge and Beta Access etc）。 canattaskinPrioritySelectwith
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/labels/bounty"
+                              href="https://github.com/poorman/SynapseStrike/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -250,7 +250,7 @@ export function FAQContent({
                             </a>
                             task items, or done after submit
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
+                              href="https://github.com/poorman/SynapseStrike/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -266,7 +266,7 @@ export function FAQContent({
                             bounties, badges & shout-outs, priority
                             review/merge, beta access). Prefer tasks with
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/labels/bounty"
+                              href="https://github.com/poorman/SynapseStrike/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -275,7 +275,7 @@ export function FAQContent({
                             </a>
                             , or file a
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
+                              href="https://github.com/poorman/SynapseStrike/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -292,7 +292,7 @@ export function FAQContent({
                       <div className="text-base">
                         {false ? 'paramsee docs：' : 'References:'}{' '}
                         <a
-                          href="https://github.com/NoFxAiOS/nofx/blob/dev/CONTRIBUTING.md"
+                          href="https://github.com/poorman/SynapseStrike/blob/dev/CONTRIBUTING.md"
                           target="_blank"
                           rel="noreferrer"
                           style={{ color: 'var(--primary)' }}
@@ -301,7 +301,7 @@ export function FAQContent({
                         </a>
                         {'  |  '}
                         <a
-                          href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/PR_TITLE_GUIDE.md"
+                          href="https://github.com/poorman/SynapseStrike/blob/dev/.github/PR_TITLE_GUIDE.md"
                           target="_blank"
                           rel="noreferrer"
                           style={{ color: 'var(--primary)' }}
@@ -336,7 +336,7 @@ export function FAQContent({
                             <li>
                               at PR Associate in Issue（Example：
                               <code className="ml-1">Closes #123</code>），PR
-                              targetSelect <code>NoFxAiOS/nofx:dev</code>。
+                              targetSelect <code>poorman/SynapseStrike:dev</code>。
                             </li>
                             <li>
                               keepand <code>upstream/dev</code>{' '}
@@ -373,7 +373,7 @@ export function FAQContent({
                             <li>
                               Link the Issue in PR (e.g.,{' '}
                               <code className="ml-1">Closes #123</code>) and
-                              target <code>NoFxAiOS/nofx:dev</code>.
+                              target <code>poorman/SynapseStrike:dev</code>.
                             </li>
                             <li>
                               Keep rebasing onto <code>upstream/dev</code>,
@@ -396,7 +396,7 @@ export function FAQContent({
                             weasincentives for quality contributions（Bounty/Bonus、Badges and Credits、Priority
                             Review/Merge and Beta Access etc）。 details see with
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/labels/bounty"
+                              href="https://github.com/poorman/SynapseStrike/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -405,7 +405,7 @@ export function FAQContent({
                             </a>
                             'stask，orUse
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
+                              href="https://github.com/poorman/SynapseStrike/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -421,7 +421,7 @@ export function FAQContent({
                             shout-outs, priority review/merge, beta access).
                             Look for tasks with
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/labels/bounty"
+                              href="https://github.com/poorman/SynapseStrike/labels/bounty"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}
@@ -430,7 +430,7 @@ export function FAQContent({
                             </a>
                             , or submit a
                             <a
-                              href="https://github.com/NoFxAiOS/nofx/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
+                              href="https://github.com/poorman/SynapseStrike/blob/dev/.github/ISSUE_TEMPLATE/bounty_claim.md"
                               target="_blank"
                               rel="noreferrer"
                               style={{ color: 'var(--primary)' }}

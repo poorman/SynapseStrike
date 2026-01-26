@@ -1,7 +1,7 @@
 # docker/frontend/Dockerfile
 
 # ═══════════════════════════════════════════════════════════════
-# NOFX Frontend Dockerfile (Node Build → Nginx Runtime)
+# SynapseStrike Frontend Dockerfile (Node Build → Nginx Runtime)
 # Versions extracted as ARGs for consistency
 # ═══════════════════════════════════════════════════════════════
 

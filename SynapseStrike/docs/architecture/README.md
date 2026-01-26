@@ -1,14 +1,14 @@
-# NOFX Architecture Documentation
+# SynapseStrike Architecture Documentation
 
 **Language:** [English](README.md) | [中文](README.zh-CN.md)
 
-Technical documentation for developers who want to understand NOFX internals.
+Technical documentation for developers who want to understand SynapseStrike internals.
 
 ---
 
 ## Overview
 
-NOFX is a full-stack AI trading platform for cryptocurrency and US stock markets:
+SynapseStrike is a full-stack AI trading platform for cryptocurrency and US stock markets:
 
 - **Backend:** Go (Gin framework, SQLite)
 - **Frontend:** React/TypeScript (Vite, TailwindCSS)
@@ -21,7 +21,7 @@ NOFX is a full-stack AI trading platform for cryptocurrency and US stock markets
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              NOFX Platform                                  │
+│                              SynapseStrike Platform                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐│
@@ -97,7 +97,7 @@ Multi-AI collaborative decision system:
 ## Project Structure
 
 ```
-nofx/
+synapsestrike/
 ├── main.go                    # Entry point
 ├── api/                       # HTTP API (Gin framework)
 ├── trader/                    # Trading execution layer
@@ -154,10 +154,10 @@ nofx/
 
 **Want to contribute?**
 - Read the module documentation above
-- Check [Open Issues](https://github.com/NoFxAiOS/nofx/issues)
+- Check [Open Issues](https://github.com/poorman/SynapseStrike/issues)
 - Join our community
 
-**Repository:** https://github.com/NoFxAiOS/nofx
+**Repository:** https://github.com/poorman/SynapseStrike
 
 ---
 

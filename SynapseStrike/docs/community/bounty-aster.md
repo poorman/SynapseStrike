@@ -4,7 +4,7 @@
 **To be discussed** - Open to proposals from contributors
 
 ## 📋 Overview
-We're looking for contributors to add Aster exchange support to NOFX AI Trading System. Currently supports Binance Futures, seeking to expand to Aster perpetual contracts.
+We're looking for contributors to add Aster exchange support to SynapseStrike AI Trading System. Currently supports Binance Futures, seeking to expand to Aster perpetual contracts.
 
 ## 🎯 Task Requirements
 
@@ -58,7 +58,7 @@ We're looking for contributors to add Aster exchange support to NOFX AI Trading 
 - API Documentation: [Add Aster API docs URL]
 - SDK/Libraries: [Add if available]
 
-**NOFX Architecture:**
+**SynapseStrike Architecture:**
 - See `trader/binance_futures.go` as reference implementation
 - Main trading logic: `trader/auto_trader.go`
 - Configuration: `config.json` structure
@@ -128,7 +128,7 @@ type ExchangeClient interface {
 ## 🤝 Support & Questions
 
 - Ask questions in this issue's comments
-- Join our Telegram: [NOFX Developer Community](https://t.me/nofx_dev_community)
+- Join our Telegram: [SynapseStrike Developer Community](https://t.me/synapsestrike_dev_community)
 - Reference existing code: `trader/binance_futures.go`
 
 ## ⚠️ Important Notes

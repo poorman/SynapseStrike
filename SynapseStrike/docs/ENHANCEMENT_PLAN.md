@@ -1,6 +1,6 @@
 # SynapseStrike Enhancement Plan
 
-## Part 1: Rename App (nofx → SynapseStrike) ✅ COMPLETED
+## Part 1: Rename App (synapsestrike → SynapseStrike) ✅ COMPLETED
 
 ### Files Updated
 - `index.html` - Title and favicon

@@ -1,8 +1,8 @@
-# 📘 NOFX 使用指南
+# 📘 SynapseStrike 使用指南
 
 **语言:** [English](README.md) | [中文](README.zh-CN.md)
 
-帮助您有效使用 NOFX 的综合指南。
+帮助您有效使用 SynapseStrike 的综合指南。
 
 ---
 
@@ -128,9 +128,9 @@ sudo apt-get install libta-lib0-dev
 ## 🆘 需要帮助？
 
 **找不到您需要的内容？**
-- 💬 [Telegram 社区](https://t.me/nofx_dev_community)
-- 🐛 [GitHub Issues](https://github.com/tinkle-community/nofx/issues)
-- 🐦 [Twitter @nofx_official](https://x.com/nofx_official)
+- 💬 [Telegram 社区](https://t.me/synapsestrike_dev_community)
+- 🐛 [GitHub Issues](https://github.com/tinkle-community/synapsestrike/issues)
+- 🐦 [Twitter @synapsestrike_official](https://x.com/synapsestrike_official)
 
 ---
 

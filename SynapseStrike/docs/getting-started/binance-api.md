@@ -1,6 +1,6 @@
 # Binance API Setup Guide
 
-This guide explains how to create and configure Binance API keys for use with NOFX.
+This guide explains how to create and configure Binance API keys for use with SynapseStrike.
 
 ## Create API Key
 
@@ -9,7 +9,7 @@ This guide explains how to create and configure Binance API keys for use with NO
 3. Click **Create API**
 4. Select **System Generated** API key type
 5. Complete 2FA verification
-6. Name your API key (e.g., "NOFX Trading")
+6. Name your API key (e.g., "SynapseStrike Trading")
 
 ## Configure API Permissions
 
@@ -36,11 +36,11 @@ After creation, you'll see:
 
 ⚠️ **Important**: Save the Secret Key immediately - it's only shown once!
 
-## Configure in NOFX
+## Configure in SynapseStrike
 
-Add your API credentials through the NOFX web interface:
+Add your API credentials through the SynapseStrike web interface:
 
-1. Open NOFX dashboard (http://localhost:3000)
+1. Open SynapseStrike dashboard (http://localhost:3000)
 2. Go to **Exchange Configuration**
 3. Enable **Binance**
 4. Enter your API Key and Secret Key

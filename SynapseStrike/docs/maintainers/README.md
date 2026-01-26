@@ -2,7 +2,7 @@
 
 **Language:** [English](README.md) | [中文](README.zh-CN.md)
 
-This directory contains documentation for NOFX project maintainers and contributors who want to understand our processes.
+This directory contains documentation for SynapseStrike project maintainers and contributors who want to understand our processes.
 
 ---
 
@@ -42,7 +42,7 @@ Everything here is transparent and designed to help you contribute successfully!
 
 ## 📞 Questions?
 
-- **Public questions:** Use [GitHub Discussions](https://github.com/tinkle-community/nofx/discussions)
+- **Public questions:** Use [GitHub Discussions](https://github.com/tinkle-community/synapsestrike/discussions)
 - **Maintainer questions:** Use the maintainer channel
 - **Migration questions:** See [Migration Announcement](../community/MIGRATION_ANNOUNCEMENT.md)
 

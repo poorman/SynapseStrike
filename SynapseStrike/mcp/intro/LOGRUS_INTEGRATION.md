@@ -19,7 +19,7 @@ package main
 
 import (
     "github.com/sirupsen/logrus"
-    "nofx/mcp"
+    "synapsestrike/mcp"
 )
 
 // LogrusLogger Logrus 日志适配器
@@ -60,7 +60,7 @@ package main
 
 import (
     "github.com/sirupsen/logrus"
-    "nofx/mcp"
+    "synapsestrike/mcp"
 )
 
 func main() {
@@ -165,7 +165,7 @@ import (
     "os"
 
     "github.com/sirupsen/logrus"
-    "nofx/mcp"
+    "synapsestrike/mcp"
 )
 
 // LogrusLogger Logrus 适配器

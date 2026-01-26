@@ -13,7 +13,7 @@ export default function HowItWorksSection({ language }: HowItWorksSectionProps) 
       number: '01',
       title: 'One-Click Deploy',
       desc: 'Run a single command on your server to deploy',
-      code: 'curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash',
+      code: 'curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash',
     },
     {
       icon: Rocket,

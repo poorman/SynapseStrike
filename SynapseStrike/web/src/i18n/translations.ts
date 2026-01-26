@@ -699,7 +699,7 @@ export const translations = {
 
     // Features Section
     coreFeatures: 'Core Features',
-    whyChooseNofx: 'Why Choose SynapseStrike?',
+    whyChooseSynapseStrike: 'Why Choose SynapseStrike?',
     openCommunityDriven:
       'Open source, transparent, community-driven AI trading OS',
     openSourceSelfHosted: '100% Open Source & Self-Hosted',
@@ -725,19 +725,19 @@ export const translations = {
     secureFeatures4: 'Trading log auditing',
 
     // About Section
-    aboutNofx: 'About SynapseStrike',
-    whatIsNofx: 'What is SynapseStrike?',
-    nofxNotAnotherBot:
+    aboutSynapseStrike: 'About SynapseStrike',
+    whatIsSynapseStrike: 'What is SynapseStrike?',
+    synapsestrikeNotAnotherBot:
       "SynapseStrike is not another trading bot, but the 'Linux' of AI trading —",
-    nofxDescription1:
+    synapsestrikeDescription1:
       'a transparent, trustworthy open source OS that provides a unified',
-    nofxDescription2:
+    synapsestrikeDescription2:
       "'decision-risk-execution' layer, supporting all asset classes.",
-    nofxDescription3:
+    synapsestrikeDescription3:
       'Starting with crypto markets (24/7, high volatility perfect testing ground), future expansion to stocks, futures, forex. Core: open architecture, AI',
-    nofxDescription4:
+    synapsestrikeDescription4:
       'Darwinism (multi-agent self-competition, strategy evolution), CodeFi',
-    nofxDescription5:
+    synapsestrikeDescription5:
       'flywheel (developers get point rewards for PR contributions).',
     youFullControl: 'You 100% Control',
     fullControlDesc: 'Complete control over AI prompts and funds',
@@ -751,7 +751,7 @@ export const translations = {
       'Four simple steps to start your AI automated trading journey',
     step1Title: 'Clone GitHub Repository',
     step1Desc:
-      'git clone https://github.com/tinkle-community/nofx and switch to dev branch to test new features.',
+      'git clone https://github.com/tinkle-community/synapsestrike and switch to dev branch to test new features.',
     step2Title: 'Configure Environment',
     step2Desc:
       'Frontend setup for brokerage APIs (like Binance, Hyperliquid), AI models and custom prompts.',
@@ -776,7 +776,7 @@ export const translations = {
     strategicInvestment: '(Strategic Investment)',
 
     // Login Modal
-    accessNofxPlatform: 'Access SynapseStrike Platform',
+    accessSynapseStrikePlatform: 'Access SynapseStrike Platform',
     loginRegisterPrompt:
       'Please login or register to access the full AI trading platform',
     registerNewAccount: 'Register New Account',
@@ -845,7 +845,7 @@ export const translations = {
     // ===== INSTALLATION =====
     faqHowToInstall: 'How do I install SynapseStrike?',
     faqHowToInstallAnswer:
-      'Easiest method (Linux/macOS): Run "curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash" - this installs Docker containers automatically. Then open http://127.0.0.1:3000 in your browser. For manual installation or development, clone the repository and follow the README instructions.',
+      'Easiest method (Linux/macOS): Run "curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash" - this installs Docker containers automatically. Then open http://127.0.0.1:3000 in your browser. For manual installation or development, clone the repository and follow the README instructions.',
 
     faqWindowsInstallation: 'How do I install on Windows?',
     faqWindowsInstallationAnswer:
@@ -857,7 +857,7 @@ export const translations = {
 
     faqManualInstallation: 'How do I install manually for development?',
     faqManualInstallationAnswer:
-      'Prerequisites: Go 1.21+, Node.js 18+, TA-Lib. Steps: 1) Clone repo: "git clone https://github.com/NoFxAiOS/nofx.git"; 2) Install backend deps: "go mod download"; 3) Install frontend deps: "cd web && npm install"; 4) Build backend: "go build -o nofx"; 5) Run backend: "./nofx"; 6) Run frontend (new terminal): "cd web && npm run dev". Access at http://127.0.0.1:3000',
+      'Prerequisites: Go 1.21+, Node.js 18+, TA-Lib. Steps: 1) Clone repo: "git clone https://github.com/poorman/SynapseStrike.git"; 2) Install backend deps: "go mod download"; 3) Install frontend deps: "cd web && npm install"; 4) Build backend: "go build -o synapsestrike"; 5) Run backend: "./synapsestrike"; 6) Run frontend (new terminal): "cd web && npm run dev". Access at http://127.0.0.1:3000',
 
     faqServerDeployment: 'How do I deploy to a remote server?',
     faqServerDeploymentAnswer:
@@ -865,7 +865,7 @@ export const translations = {
 
     faqUpdateSynapseStrike: 'How do I update SynapseStrike?',
     faqUpdateSynapseStrikeAnswer:
-      'For Docker: Run "docker compose pull && docker compose up -d" to pull latest images and restart. For manual installation: "git pull && go build -o nofx" for backend, "cd web && npm install && npm run build" for frontend. Your configurations in data.db are preserved during updates.',
+      'For Docker: Run "docker compose pull && docker compose up -d" to pull latest images and restart. For manual installation: "git pull && go build -o synapsestrike" for backend, "cd web && npm install && npm run build" for frontend. Your configurations in data.db are preserved during updates.',
 
     // ===== CONFIGURATION =====
     faqConfigureAIModels: 'How do I configure AI models?',
@@ -932,15 +932,15 @@ export const translations = {
 
     faqFrontendNotLoading: 'Frontend shows "Loading..." forever',
     faqFrontendNotLoadingAnswer:
-      'Backend may not be running or reachable. Check: 1) "curl http://127.0.0.1:8080/api/health" should return {"status":"ok"}; 2) "docker compose ps" to verify containers are running; 3) Check backend logs: "docker compose logs nofx-backend"; 4) Ensure firewall allows port 8080.',
+      'Backend may not be running or reachable. Check: 1) "curl http://127.0.0.1:8080/api/health" should return {"status":"ok"}; 2) "docker compose ps" to verify containers are running; 3) Check backend logs: "docker compose logs synapsestrike-backend"; 4) Ensure firewall allows port 8080.',
 
     faqDatabaseLocked: 'Database locked error',
     faqDatabaseLockedAnswer:
-      'Multiple processes accessing SQLite simultaneously. Solution: 1) Stop all processes: "docker compose down" or "pkill nofx"; 2) Remove lock files if present: "rm -f data/data.db-wal data/data.db-shm"; 3) Restart: "docker compose up -d". Only one backend instance should access the database.',
+      'Multiple processes accessing SQLite simultaneously. Solution: 1) Stop all processes: "docker compose down" or "pkill synapsestrike"; 2) Remove lock files if present: "rm -f data/data.db-wal data/data.db-shm"; 3) Restart: "docker compose up -d". Only one backend instance should access the database.',
 
     faqTALibNotFound: 'TA-Lib not found during build',
     faqTALibNotFoundAnswer:
-      'TA-Lib is required for technical indicators. Install: macOS: "brew install ta-lib"; Ubuntu/Debian: "sudo apt-get install libta-lib0-dev"; CentOS: "yum install ta-lib-devel". After installing, rebuild: "go build -o nofx". Docker images include TA-Lib pre-installed.',
+      'TA-Lib is required for technical indicators. Install: macOS: "brew install ta-lib"; Ubuntu/Debian: "sudo apt-get install libta-lib0-dev"; CentOS: "yum install ta-lib-devel". After installing, rebuild: "go build -o synapsestrike". Docker images include TA-Lib pre-installed.',
 
     faqAIAPITimeout: 'AI API timeout or connection refused',
     faqAIAPITimeoutAnswer:
@@ -1020,7 +1020,7 @@ export const translations = {
 
     faqPRGuidelines: 'What are the PR guidelines?',
     faqPRGuidelinesAnswer:
-      'PR Process: 1) Fork repo to your account; 2) Create feature branch from dev: "git checkout -b feat/your-feature"; 3) Make changes, run lint: "npm --prefix web run lint"; 4) Commit with Conventional Commits format; 5) Push and create PR to NoFxAiOS/nofx:dev; 6) Reference related issue (Closes #123); 7) Wait for review. Keep PRs small and focused.',
+      'PR Process: 1) Fork repo to your account; 2) Create feature branch from dev: "git checkout -b feat/your-feature"; 3) Make changes, run lint: "npm --prefix web run lint"; 4) Commit with Conventional Commits format; 5) Push and create PR to poorman/SynapseStrike:dev; 6) Reference related issue (Closes #123); 7) Wait for review. Keep PRs small and focused.',
 
     faqBountyProgram: 'Is there a bounty program?',
     faqBountyProgramAnswer:

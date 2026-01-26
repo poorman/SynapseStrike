@@ -1,4 +1,4 @@
-# NOFX - AI 交易系统
+# SynapseStrike - AI 交易系统
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org/)
@@ -19,7 +19,7 @@
 
 ## AI 驱动的加密货币交易平台
 
-**NOFX** 是一个开源的 AI 交易系统，让你可以运行多个 AI 模型自动交易加密货币期货。通过 Web 界面配置策略，实时监控表现，让多个 AI 代理竞争找出最佳交易方案。
+**SynapseStrike** 是一个开源的 AI 交易系统，让你可以运行多个 AI 模型自动交易加密货币期货。通过 Web 界面配置策略，实时监控表现，让多个 AI 代理竞争找出最佳交易方案。
 
 ### 核心功能
 
@@ -35,13 +35,13 @@
 ### 核心团队
 
 - **Tinkle** - [@Web3Tinkle](https://x.com/Web3Tinkle)
-- **官方 Twitter** - [@nofx_official](https://x.com/nofx_official)
+- **官方 Twitter** - [@synapsestrike_official](https://x.com/synapsestrike_official)
 
 > **风险提示**: 本系统为实验性质。AI 自动交易存在重大风险。强烈建议仅用于学习/研究目的或小额测试！
 
 ## 开发者社区
 
-加入我们的 Telegram 开发者社区: **[NOFX 开发者社区](https://t.me/nofx_dev_community)**
+加入我们的 Telegram 开发者社区: **[SynapseStrike 开发者社区](https://t.me/synapsestrike_dev_community)**
 
 ---
 
@@ -67,7 +67,7 @@
 
 | 交易所 | 状态 | 注册 (手续费折扣) |
 |----------|--------|-------------------------|
-| **Binance** | ✅ 已支持 | [注册](https://www.binance.com/join?ref=NOFXENG) |
+| **Binance** | ✅ 已支持 | [注册](https://www.binance.com/join?ref=SynapseStrikeENG) |
 | **Bybit** | ✅ 已支持 | [注册](https://partner.bybit.com/b/83856) |
 | **OKX** | ✅ 已支持 | [注册](https://www.okx.com/join/1865360) |
 
@@ -101,7 +101,7 @@
 
 **Linux / macOS:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash
 ```
 
 完成！打开浏览器访问 **http://127.0.0.1:3000**
@@ -110,7 +110,7 @@ curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bas
 
 ```bash
 # 下载并启动
-curl -O https://raw.githubusercontent.com/NoFxAiOS/nofx/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/poorman/SynapseStrike/main/docker-compose.prod.yml
 docker compose -f docker-compose.prod.yml up -d
 ```
 
@@ -145,8 +145,8 @@ sudo apt-get install libta-lib0-dev
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 
 # 2. 安装后端依赖
 go mod download
@@ -157,8 +157,8 @@ npm install
 cd ..
 
 # 4. 构建并启动后端
-go build -o nofx
-./nofx
+go build -o synapsestrike
+./synapsestrike
 
 # 5. 启动前端 (新终端)
 cd web
@@ -178,10 +178,10 @@ npm run dev
    - 运行安装程序并重启电脑
    - 启动 Docker Desktop 并等待就绪
 
-2. **运行 NOFX**
+2. **运行 SynapseStrike**
    ```powershell
    # 打开 PowerShell 运行：
-   curl -o docker-compose.prod.yml https://raw.githubusercontent.com/NoFxAiOS/nofx/main/docker-compose.prod.yml
+   curl -o docker-compose.prod.yml https://raw.githubusercontent.com/poorman/SynapseStrike/main/docker-compose.prod.yml
    docker compose -f docker-compose.prod.yml up -d
    ```
 
@@ -223,13 +223,13 @@ npm run dev
    sudo apt-get install -y git
    ```
 
-4. **克隆并运行 NOFX**
+4. **克隆并运行 SynapseStrike**
    ```bash
-   git clone https://github.com/NoFxAiOS/nofx.git
-   cd nofx
+   git clone https://github.com/poorman/SynapseStrike.git
+   cd synapsestrike
 
    # 构建并运行后端
-   go build -o nofx && ./nofx
+   go build -o synapsestrike && ./synapsestrike
 
    # 在另一个终端运行前端
    cd web && npm install && npm run dev
@@ -245,7 +245,7 @@ npm run dev
 
 2. **在 WSL2 终端运行**
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash
    ```
 
 ---
@@ -254,11 +254,11 @@ npm run dev
 
 ### 快速部署 (HTTP/IP 访问)
 
-默认情况下，传输加密已**禁用**，可直接通过 IP 地址访问 NOFX：
+默认情况下，传输加密已**禁用**，可直接通过 IP 地址访问 SynapseStrike：
 
 ```bash
 # 部署到你的服务器
-curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash
 ```
 
 通过 `http://你的服务器IP:3000` 访问 - 立即可用。
@@ -283,7 +283,7 @@ TRANSPORT_ENCRYPTION=true
 
 2. **创建 DNS 记录**
    - 类型: `A`
-   - 名称: `nofx` (或你的子域名)
+   - 名称: `synapsestrike` (或你的子域名)
    - 内容: 你的服务器 IP
    - 代理状态: **已代理** (橙色云朵)
 
@@ -301,7 +301,7 @@ TRANSPORT_ENCRYPTION=true
    TRANSPORT_ENCRYPTION=true
    ```
 
-5. **完成！** 通过 `https://nofx.你的域名.com` 访问
+5. **完成！** 通过 `https://synapsestrike.你的域名.com` 访问
 
 ---
 
@@ -392,9 +392,9 @@ sudo apt-get install libta-lib0-dev
 
 ## 贡献者空投计划
 
-所有贡献都在 GitHub 上追踪。当 NOFX 产生收入时，贡献者将根据其贡献获得空投。
+所有贡献都在 GitHub 上追踪。当 SynapseStrike 产生收入时，贡献者将根据其贡献获得空投。
 
-**解决 [置顶 Issue](https://github.com/NoFxAiOS/nofx/issues) 的 PR 获得最高奖励！**
+**解决 [置顶 Issue](https://github.com/poorman/SynapseStrike/issues) 的 PR 获得最高奖励！**
 
 | 贡献类型 | 权重 |
 |------------------|:------:|
@@ -409,11 +409,11 @@ sudo apt-get install libta-lib0-dev
 
 ## 联系方式
 
-- **GitHub Issues**: [提交 Issue](https://github.com/NoFxAiOS/nofx/issues)
-- **开发者社区**: [Telegram 群组](https://t.me/nofx_dev_community)
+- **GitHub Issues**: [提交 Issue](https://github.com/poorman/SynapseStrike/issues)
+- **开发者社区**: [Telegram 群组](https://t.me/synapsestrike_dev_community)
 
 ---
 
 ## Star 历史
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NoFxAiOS/nofx&type=Date)](https://star-history.com/#NoFxAiOS/nofx&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=poorman/SynapseStrike&type=Date)](https://star-history.com/#poorman/SynapseStrike&Date)

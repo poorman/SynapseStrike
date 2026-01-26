@@ -78,7 +78,7 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
           viewport={{ once: true }}
         >
           <h2 className="text-4xl lg:text-5xl font-bold mb-4" style={{ color: '#F9FAFB' }}>
-            {t('whyChooseNofx', language)}
+            {t('whyChooseSynapseStrike', language)}
           </h2>
           <p className="text-lg max-w-2xl mx-auto" style={{ color: '#9CA3AF' }}>
             Not just a trading bot, but a complete AI trading operating system

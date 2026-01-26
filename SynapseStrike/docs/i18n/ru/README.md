@@ -1,4 +1,4 @@
-# NOFX - AI Торговая Система
+# SynapseStrike - AI Торговая Система
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org/)
@@ -11,7 +11,7 @@
 
 ## Криптовалютная торговая платформа на базе ИИ
 
-**NOFX** — это open-source AI торговая система, позволяющая запускать несколько AI моделей для автоматической торговли криптовалютными фьючерсами. Настраивайте стратегии через веб-интерфейс, отслеживайте эффективность в реальном времени и позвольте AI агентам конкурировать за лучший торговый подход.
+**SynapseStrike** — это open-source AI торговая система, позволяющая запускать несколько AI моделей для автоматической торговли криптовалютными фьючерсами. Настраивайте стратегии через веб-интерфейс, отслеживайте эффективность в реальном времени и позвольте AI агентам конкурировать за лучший торговый подход.
 
 ### Основные функции
 
@@ -28,7 +28,7 @@
 
 ## Сообщество разработчиков
 
-Присоединяйтесь к Telegram сообществу: **[NOFX Developer Community](https://t.me/nofx_dev_community)**
+Присоединяйтесь к Telegram сообществу: **[SynapseStrike Developer Community](https://t.me/synapsestrike_dev_community)**
 
 ---
 
@@ -37,8 +37,8 @@
 ### Вариант 1: Docker развёртывание (рекомендуется)
 
 ```bash
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 chmod +x ./start.sh
 ./start.sh start --build
 ```
@@ -54,13 +54,13 @@ chmod +x ./start.sh
 brew install ta-lib
 
 # Клонирование и настройка
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 go mod download
 cd web && npm install && cd ..
 
 # Запуск бэкенда
-go build -o nofx && ./nofx
+go build -o synapsestrike && ./synapsestrike
 
 # Запуск фронтенда (новый терминал)
 cd web && npm run dev
@@ -94,5 +94,5 @@ cd web && npm run dev
 
 ## Контакты
 
-- **GitHub Issues**: [Создать Issue](https://github.com/NoFxAiOS/nofx/issues)
-- **Сообщество разработчиков**: [Telegram группа](https://t.me/nofx_dev_community)
+- **GitHub Issues**: [Создать Issue](https://github.com/poorman/SynapseStrike/issues)
+- **Сообщество разработчиков**: [Telegram группа](https://t.me/synapsestrike_dev_community)

@@ -278,7 +278,7 @@ body {
   z-index: 9999;
 }
 
-.nofx-toast {
+.synapsestrike-toast {
   background: var(--panel-bg) !important;
   border: 1px solid var(--panel-border) !important;
   color: var(--text-primary) !important;
@@ -286,57 +286,57 @@ body {
   border-radius: 6px !important;
 }
 
-.nofx-toast .sonner-title {
+.synapsestrike-toast .sonner-title {
   color: var(--text-primary) !important;
   font-weight: 700;
 }
 
-.nofx-toast .sonner-description {
+.synapsestrike-toast .sonner-description {
   color: var(--text-secondary) !important;
 }
 
 /* Success / Error / Warning tint */
-.nofx-toast[data-type='success'] {
+.synapsestrike-toast[data-type='success'] {
   background: var(--panel-bg) !important;
   border-color: var(--binance-green) !important;
   border-left: 3px solid var(--binance-green) !important;
 }
 
-.nofx-toast[data-type='success'] .sonner-title,
-.nofx-toast[data-type='success'] .sonner-description {
+.synapsestrike-toast[data-type='success'] .sonner-title,
+.synapsestrike-toast[data-type='success'] .sonner-description {
   color: var(--binance-green) !important;
 }
 
-.nofx-toast[data-type='error'] {
+.synapsestrike-toast[data-type='error'] {
   background: var(--panel-bg) !important;
   border-color: var(--binance-red) !important;
   border-left: 3px solid var(--binance-red) !important;
 }
 
-.nofx-toast[data-type='error'] .sonner-title,
-.nofx-toast[data-type='error'] .sonner-description {
+.synapsestrike-toast[data-type='error'] .sonner-title,
+.synapsestrike-toast[data-type='error'] .sonner-description {
   color: var(--binance-red) !important;
 }
 
-.nofx-toast[data-type='warning'],
-.nofx-toast[data-type='info'] {
+.synapsestrike-toast[data-type='warning'],
+.synapsestrike-toast[data-type='info'] {
   background: var(--panel-bg) !important;
   border-color: var(--binance-yellow) !important;
   border-left: 3px solid var(--binance-yellow) !important;
 }
 
-.nofx-toast[data-type='warning'] .sonner-title,
-.nofx-toast[data-type='warning'] .sonner-description,
-.nofx-toast[data-type='info'] .sonner-title,
-.nofx-toast[data-type='info'] .sonner-description {
+.synapsestrike-toast[data-type='warning'] .sonner-title,
+.synapsestrike-toast[data-type='warning'] .sonner-description,
+.synapsestrike-toast[data-type='info'] .sonner-title,
+.synapsestrike-toast[data-type='info'] .sonner-description {
   color: var(--binance-yellow) !important;
 }
 
-.nofx-toast .sonner-close-button {
+.synapsestrike-toast .sonner-close-button {
   color: var(--text-secondary) !important;
 }
 
-.nofx-toast .sonner-close-button:hover {
+.synapsestrike-toast .sonner-close-button:hover {
   color: var(--text-primary) !important;
 }
 

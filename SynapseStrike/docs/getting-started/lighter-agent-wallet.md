@@ -40,11 +40,11 @@ After creation, save these immediately:
 
 ⚠️ **Important**: The private key is only shown once! Save it securely.
 
-## Step 4: Configure in NOFX
+## Step 4: Configure in SynapseStrike
 
-Add your agent wallet through the NOFX web interface:
+Add your agent wallet through the SynapseStrike web interface:
 
-1. Open NOFX dashboard (http://localhost:3000)
+1. Open SynapseStrike dashboard (http://localhost:3000)
 2. Go to **Exchange Configuration**
 3. Enable **Lighter**
 4. Enter:

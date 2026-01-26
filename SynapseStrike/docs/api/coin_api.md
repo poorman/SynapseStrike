@@ -15,7 +15,7 @@ GET /api/coin/{symbol}
 ### 完整示例
 
 ```
-http://nofxaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,price&auth=cm_568c67eae410d912c54c
+http://synapsestrikeaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,price&auth=cm_568c67eae410d912c54c
 ```
 
 ### 请求参数
@@ -304,7 +304,7 @@ netflow
 ### cURL
 
 ```bash
-curl -X GET "http://nofxaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,price&auth=cm_568c67eae410d912c54c"
+curl -X GET "http://synapsestrikeaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,price&auth=cm_568c67eae410d912c54c"
 ```
 
 ### Python
@@ -312,7 +312,7 @@ curl -X GET "http://nofxaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,pr
 ```python
 import requests
 
-url = "http://nofxaios.com:30006/api/coin/PIPPINUSDT"
+url = "http://synapsestrikeaios.com:30006/api/coin/PIPPINUSDT"
 params = {
     "include": "netflow,oi,price",
     "auth": "cm_568c67eae410d912c54c"
@@ -329,7 +329,7 @@ print(f"24小时价格涨跌幅: {data['data']['price_change']['24h']}%")
 ### JavaScript
 
 ```javascript
-const url = 'http://nofxaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,price&auth=cm_568c67eae410d912c54c';
+const url = 'http://synapsestrikeaios.com:30006/api/coin/PIPPINUSDT?include=netflow,oi,price&auth=cm_568c67eae410d912c54c';
 
 fetch(url)
   .then(response => response.json())

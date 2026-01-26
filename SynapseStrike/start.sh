@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ═══════════════════════════════════════════════════════════════
-# NOFX AI Trading System - Docker Quick Start Script
+# SynapseStrike AI Trading System - Docker Quick Start Script
 # Usage: ./start.sh [command]
 # ═══════════════════════════════════════════════════════════════
 
@@ -179,17 +179,17 @@ check_encryption() {
 # ------------------------------------------------------------------------
 read_env_vars() {
     if [ -f ".env" ]; then
-        NOFX_FRONTEND_PORT=$(grep "^NOFX_FRONTEND_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "3000")
-        NOFX_BACKEND_PORT=$(grep "^NOFX_BACKEND_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "8080")
+        SS_FRONTEND_PORT=$(grep "^SS_FRONTEND_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "3000")
+        SS_BACKEND_PORT=$(grep "^SS_BACKEND_PORT=" .env 2>/dev/null | cut -d'=' -f2 || echo "8080")
 
-        NOFX_FRONTEND_PORT=$(echo "$NOFX_FRONTEND_PORT" | tr -d '"'"'" | tr -d ' ')
-        NOFX_BACKEND_PORT=$(echo "$NOFX_BACKEND_PORT" | tr -d '"'"'" | tr -d ' ')
+        SS_FRONTEND_PORT=$(echo "$SS_FRONTEND_PORT" | tr -d '"'"'" | tr -d ' ')
+        SS_BACKEND_PORT=$(echo "$SS_BACKEND_PORT" | tr -d '"'"'" | tr -d ' ')
 
-        NOFX_FRONTEND_PORT=${NOFX_FRONTEND_PORT:-3000}
-        NOFX_BACKEND_PORT=${NOFX_BACKEND_PORT:-8080}
+        SS_FRONTEND_PORT=${SS_FRONTEND_PORT:-3000}
+        SS_BACKEND_PORT=${SS_BACKEND_PORT:-8080}
     else
-        NOFX_FRONTEND_PORT=3000
-        NOFX_BACKEND_PORT=8080
+        SS_FRONTEND_PORT=3000
+        SS_BACKEND_PORT=8080
     fi
 }
 
@@ -211,7 +211,7 @@ check_database() {
 # Service Management: Start
 # ------------------------------------------------------------------------
 start() {
-    print_info "正在启动 NOFX AI Trading System..."
+    print_info "正在启动 SynapseStrike AI Trading System..."
 
     read_env_vars
 
@@ -229,8 +229,8 @@ start() {
     fi
 
     print_success "服务已启动！"
-    print_info "Web 界面: http://localhost:${NOFX_FRONTEND_PORT}"
-    print_info "API 端点: http://localhost:${NOFX_BACKEND_PORT}"
+    print_info "Web 界面: http://localhost:${SS_FRONTEND_PORT}"
+    print_info "API 端点: http://localhost:${SS_BACKEND_PORT}"
     print_info ""
     print_info "查看日志: ./start.sh logs"
     print_info "停止服务: ./start.sh stop"
@@ -275,7 +275,7 @@ status() {
     $COMPOSE_CMD ps
     echo ""
     print_info "健康检查:"
-    curl -s "http://localhost:${NOFX_BACKEND_PORT}/api/health" | jq '.' || echo "后端未响应"
+    curl -s "http://localhost:${SS_BACKEND_PORT}/api/health" | jq '.' || echo "后端未响应"
 }
 
 # ------------------------------------------------------------------------
@@ -346,7 +346,7 @@ regenerate_keys() {
 # Help: Usage Information
 # ------------------------------------------------------------------------
 show_help() {
-    echo "NOFX AI Trading System - Docker 管理脚本"
+    echo "SynapseStrike AI Trading System - Docker 管理脚本"
     echo ""
     echo "用法: ./start.sh [command] [options]"
     echo ""

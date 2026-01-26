@@ -1,6 +1,6 @@
-# 👥 NOFX Community
+# 👥 SynapseStrike Community
 
-Welcome to the NOFX community! This section contains everything you need to contribute and participate.
+Welcome to the SynapseStrike community! This section contains everything you need to contribute and participate.
 
 ---
 
@@ -28,14 +28,14 @@ We're introducing a new PR management system to improve code quality and make co
    - [Security Policy](../../SECURITY.md) - Report vulnerabilities
 
 2. **Find Something to Work On**
-   - Browse [GitHub Issues](https://github.com/tinkle-community/nofx/issues)
+   - Browse [GitHub Issues](https://github.com/tinkle-community/synapsestrike/issues)
    - Look for `good first issue` label
    - Check out [bounty tasks](#-bounty-program)
 
 3. **Join the Community**
-   - 💬 [Telegram Developer Community](https://t.me/nofx_dev_community)
-   - 🐦 [Twitter @nofx_official](https://x.com/nofx_official)
-   - 🐙 [GitHub Discussions](https://github.com/tinkle-community/nofx/discussions)
+   - 💬 [Telegram Developer Community](https://t.me/synapsestrike_dev_community)
+   - 🐦 [Twitter @synapsestrike_official](https://x.com/synapsestrike_official)
+   - 🐙 [GitHub Discussions](https://github.com/tinkle-community/synapsestrike/discussions)
 
 ---
 
@@ -43,7 +43,7 @@ We're introducing a new PR management system to improve code quality and make co
 
 ### Active Bounties
 
-NOFX offers bounties for valuable contributions:
+SynapseStrike offers bounties for valuable contributions:
 
 | Category | Reward Range | Examples |
 |----------|--------------|----------|
@@ -138,9 +138,9 @@ NOFX offers bounties for valuable contributions:
 
 | Platform | Purpose | Link |
 |----------|---------|------|
-| 💬 Telegram | Real-time chat, questions | [Join](https://t.me/nofx_dev_community) |
-| 🐙 GitHub | Issues, PRs, discussions | [Visit](https://github.com/tinkle-community/nofx) |
-| 🐦 Twitter | Announcements, updates | [@nofx_official](https://x.com/nofx_official) |
+| 💬 Telegram | Real-time chat, questions | [Join](https://t.me/synapsestrike_dev_community) |
+| 🐙 GitHub | Issues, PRs, discussions | [Visit](https://github.com/tinkle-community/synapsestrike) |
+| 🐦 Twitter | Announcements, updates | [@synapsestrike_official](https://x.com/synapsestrike_official) |
 
 ### Core Team
 
@@ -167,7 +167,7 @@ NOFX offers bounties for valuable contributions:
 **Want to organize an event?**
 - Contact core team on Telegram
 - Propose in GitHub Discussions
-- Tweet and tag @nofx_official
+- Tweet and tag @synapsestrike_official
 
 ---
 
@@ -175,7 +175,7 @@ NOFX offers bounties for valuable contributions:
 
 ### For Contributors
 
-**Understanding NOFX:**
+**Understanding SynapseStrike:**
 - [System Architecture](../architecture/README.md) *(coming soon)*
 - [API Reference](../architecture/api-reference.md) *(coming soon)*
 - [Database Schema](../architecture/database-schema.md) *(coming soon)*
@@ -228,10 +228,10 @@ NOFX offers bounties for valuable contributions:
 
 | Metric | Count |
 |--------|-------|
-| GitHub Stars | Check [repo](https://github.com/tinkle-community/nofx) |
+| GitHub Stars | Check [repo](https://github.com/tinkle-community/synapsestrike) |
 | Contributors | 21+ |
-| Open Issues | Check [issues](https://github.com/tinkle-community/nofx/issues) |
-| Merged PRs | Check [pulls](https://github.com/tinkle-community/nofx/pulls?q=is%3Apr+is%3Amerged) |
+| Open Issues | Check [issues](https://github.com/tinkle-community/synapsestrike/issues) |
+| Merged PRs | Check [pulls](https://github.com/tinkle-community/synapsestrike/pulls?q=is%3Apr+is%3Amerged) |
 
 ---
 
@@ -240,7 +240,7 @@ NOFX offers bounties for valuable contributions:
 - **Want to contribute code?** → [Contributing Guide](../../CONTRIBUTING.md)
 - **Want to claim bounty?** → [Bounty Guide](bounty-guide.md)
 - **Found a security issue?** → [Security Policy](../../SECURITY.md)
-- **Have questions?** → [Telegram Community](https://t.me/nofx_dev_community)
+- **Have questions?** → [Telegram Community](https://t.me/synapsestrike_dev_community)
 
 ---
 

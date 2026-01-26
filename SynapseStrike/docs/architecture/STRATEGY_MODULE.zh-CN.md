@@ -1,10 +1,10 @@
-# NOFX 策略模块技术文档
+# SynapseStrike 策略模块技术文档
 
 **语言:** [English](STRATEGY_MODULE.md) | [中文](STRATEGY_MODULE.zh-CN.md)
 
 ## 概述
 
-本文档详细描述 NOFX 策略模块的完整数据流程，包括币种选择、数据组装、提示词构建、AI 请求、响应解析和决策执行。
+本文档详细描述 SynapseStrike 策略模块的完整数据流程，包括币种选择、数据组装、提示词构建、AI 请求、响应解析和决策执行。
 
 ---
 
@@ -112,7 +112,7 @@ func (e *StrategyEngine) getCoinPoolCoins(limit int) []CandidateCoin {
 }
 ```
 
-- **API:** `config.CoinSource.CoinPoolAPIURL` (默认: `http://nofxaios.com:30006/api/ai500/list`)
+- **API:** `config.CoinSource.CoinPoolAPIURL` (默认: `http://synapsestrikeaios.com:30006/api/ai500/list`)
 - **用途:** 获取 AI 评分最高的 N 个币种
 - **标签:** `["ai500"]`
 

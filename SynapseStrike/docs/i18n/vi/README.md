@@ -1,4 +1,4 @@
-# NOFX - Hệ Thống Giao Dịch AI
+# SynapseStrike - Hệ Thống Giao Dịch AI
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org/)
@@ -11,7 +11,7 @@
 
 ## Nền Tảng Giao Dịch Crypto Sử Dụng AI
 
-**NOFX** là hệ thống giao dịch AI mã nguồn mở cho phép bạn chạy nhiều mô hình AI để tự động giao dịch hợp đồng tương lai crypto. Cấu hình chiến lược qua giao diện web, theo dõi hiệu suất theo thời gian thực, và để các AI agent cạnh tranh tìm ra phương pháp giao dịch tốt nhất.
+**SynapseStrike** là hệ thống giao dịch AI mã nguồn mở cho phép bạn chạy nhiều mô hình AI để tự động giao dịch hợp đồng tương lai crypto. Cấu hình chiến lược qua giao diện web, theo dõi hiệu suất theo thời gian thực, và để các AI agent cạnh tranh tìm ra phương pháp giao dịch tốt nhất.
 
 ### Tính Năng Chính
 
@@ -28,7 +28,7 @@
 
 ## Cộng Đồng Nhà Phát Triển
 
-Tham gia cộng đồng Telegram: **[NOFX Developer Community](https://t.me/nofx_dev_community)**
+Tham gia cộng đồng Telegram: **[SynapseStrike Developer Community](https://t.me/synapsestrike_dev_community)**
 
 ---
 
@@ -37,8 +37,8 @@ Tham gia cộng đồng Telegram: **[NOFX Developer Community](https://t.me/nofx
 ### Tùy chọn 1: Triển khai Docker (Khuyến nghị)
 
 ```bash
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 chmod +x ./start.sh
 ./start.sh start --build
 ```
@@ -54,13 +54,13 @@ Truy cập giao diện Web: **http://localhost:3000**
 brew install ta-lib
 
 # Clone và thiết lập
-git clone https://github.com/NoFxAiOS/nofx.git
-cd nofx
+git clone https://github.com/poorman/SynapseStrike.git
+cd synapsestrike
 go mod download
 cd web && npm install && cd ..
 
 # Khởi động backend
-go build -o nofx && ./nofx
+go build -o synapsestrike && ./synapsestrike
 
 # Khởi động frontend (terminal mới)
 cd web && npm run dev
@@ -94,5 +94,5 @@ cd web && npm run dev
 
 ## Liên Hệ
 
-- **GitHub Issues**: [Gửi Issue](https://github.com/NoFxAiOS/nofx/issues)
-- **Cộng đồng Nhà phát triển**: [Nhóm Telegram](https://t.me/nofx_dev_community)
+- **GitHub Issues**: [Gửi Issue](https://github.com/poorman/SynapseStrike/issues)
+- **Cộng đồng Nhà phát triển**: [Nhóm Telegram](https://t.me/synapsestrike_dev_community)

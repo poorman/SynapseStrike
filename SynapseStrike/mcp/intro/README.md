@@ -18,7 +18,7 @@
 ### 基础用法
 
 ```go
-import "nofx/mcp"
+import "synapsestrike/mcp"
 
 // 创建客户端
 client := mcp.NewClient(

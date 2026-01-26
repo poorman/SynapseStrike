@@ -1,4 +1,4 @@
-NOFX Privacy Policy
+SynapseStrike Privacy Policy
 
 Last Updated: 2025.11.07
 
@@ -7,13 +7,13 @@ I. Introduction and Scope
 
 A. Introduction
 
-This Privacy Policy (hereinafter referred to as the "Policy") is designed to inform you, as a user of our website, how we handle your personal information. This Policy applies to information collected through nofxai.com and any of its subdomains (hereinafter referred to as the "Website") by NOFX (hereinafter referred to as "we" or "us") acting as the data controller.
+This Privacy Policy (hereinafter referred to as the "Policy") is designed to inform you, as a user of our website, how we handle your personal information. This Policy applies to information collected through synapsestrikeai.com and any of its subdomains (hereinafter referred to as the "Website") by SynapseStrike (hereinafter referred to as "we" or "us") acting as the data controller.
 
 B. Core Policy Distinction: Website Data vs. Software Data
 
 The core of this Policy is the distinction between the "Website" and the "Software."
 Website Data: This Policy governs the personal information we collect and process from visitors to our "Website."
-Software Data: This Policy does NOT apply to any data you process in your self-hosted instance of the NOFX AI Trading Operating System (hereinafter referred to as the "Software") that you download, install, and run on your own.
+Software Data: This Policy does NOT apply to any data you process in your self-hosted instance of the SynapseStrike AI Trading Operating System (hereinafter referred to as the "Software") that you download, install, and run on your own.
 For the "Software," you are the sole data controller of all data (including but not limited to API keys, private keys, trading data, etc.) that you input or process. We cannot access, view, collect, or process any information you enter into your local instance of the "Software."
 
 II. Information We Collect (on the Website) and How We Use It
@@ -45,7 +45,7 @@ This section aims to clearly articulate our data isolation stance regarding the 
 
 A. Non-Custodial Statement
 
-We (NOFX) are a non-custodial software provider. This means we never hold, control, or access your funds, assets, or sensitive credentials.
+We (SynapseStrike) are a non-custodial software provider. This means we never hold, control, or access your funds, assets, or sensitive credentials.
 
 B. Explicit Non-Collection List
 
@@ -108,4 +108,4 @@ We reserve the right to modify this Privacy Policy at any time. Any changes will
 VIII. Contact Information
 
 If you have any questions about this Privacy Policy or our data processing practices, please contact us:
-[@nofx_official](https://x.com/nofx_official)
+[@synapsestrike_official](https://x.com/synapsestrike_official)

@@ -408,8 +408,8 @@ func (t *LighterTraderV2) submitOrder(txType int, txInfo string) (map[string]int
 	return result, nil
 }
 
-// normalizeSymbol Convert NOFX symbol format to Lighter format
-// NOFX uses "BTC-PERP", "BTCUSDT", etc. Lighter uses "BTC", "ETH", etc.
+// normalizeSymbol Convert SynapseStrike symbol format to Lighter format
+// SynapseStrike uses "BTC-PERP", "BTCUSDT", etc. Lighter uses "BTC", "ETH", etc.
 func normalizeSymbol(symbol string) string {
 	// Remove common suffixes
 	s := strings.TrimSuffix(symbol, "-PERP")

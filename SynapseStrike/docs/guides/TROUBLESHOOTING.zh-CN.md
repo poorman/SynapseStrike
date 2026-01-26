@@ -8,7 +8,7 @@
 
 提交 bug 前，请检查：
 
-1. ✅ **后端正在运行**: `docker compose ps` 或 `ps aux | grep nofx`
+1. ✅ **后端正在运行**: `docker compose ps` 或 `ps aux | grep synapsestrike`
 2. ✅ **前端可访问**: 在浏览器打开 http://localhost:3000
 3. ✅ **API 正常响应**: `curl http://localhost:8080/api/health`
 4. ✅ **检查日志中的错误**: 参见下方 [如何捕获日志](#如何捕获日志)
@@ -226,7 +226,7 @@ docker info | grep -A 10 "Registry Mirrors"
 # 应该显示你配置的镜像源
 ```
 
-**相关 Issue:** [#168](https://github.com/tinkle-community/nofx/issues/168)
+**相关 Issue:** [#168](https://github.com/tinkle-community/synapsestrike/issues/168)
 
 ---
 
@@ -242,7 +242,7 @@ lsof -i :8080
 netstat -tulpn | grep 8080
 
 # 杀死进程或在 .env 中更改端口
-NOFX_BACKEND_PORT=8081
+SS_BACKEND_PORT=8081
 ```
 
 ---
@@ -307,7 +307,7 @@ date
 
 ```bash
 # 检查容器时间
-docker exec nofx-backend date
+docker exec synapsestrike-backend date
 
 # 如果时间错误，重启 Docker 服务
 sudo systemctl restart docker
@@ -330,7 +330,7 @@ environment:
    - 登录币安 → API 管理
    - 删除旧密钥
    - 创建新密钥
-   - 更新 NOFX 配置
+   - 更新 SynapseStrike 配置
 
 **解决方案 3: 检查速率限制**
 
@@ -340,7 +340,7 @@ environment:
 - 减少交易员数量
 - 增加决策间隔时间（例如从 1 分钟改为 3-5 分钟）
 
-**相关 Issue:** [#60](https://github.com/tinkle-community/nofx/issues/60)
+**相关 Issue:** [#60](https://github.com/tinkle-community/synapsestrike/issues/60)
 
 ---
 
@@ -387,15 +387,15 @@ environment:
 
 **解决方案:**
 ```bash
-# 停止所有 NOFX 进程
+# 停止所有 SynapseStrike 进程
 docker compose down
 # 或
-pkill nofx
+pkill synapsestrike
 
 # 重启
 docker compose up -d
 # 或
-./nofx
+./synapsestrike
 ```
 
 ---
@@ -406,14 +406,14 @@ docker compose up -d
 1. **PostgreSQL 容器状态**
    ```bash
    docker compose ps postgres
-   docker compose exec postgres pg_isready -U nofx -d nofx
+   docker compose exec postgres pg_isready -U synapsestrike -d synapsestrike
    ```
 
 2. **直接检查数据库数据**
    ```bash
    ./scripts/view_pg_data.sh                        # 快速总览
    docker compose exec postgres \
-     psql -U nofx -d nofx -c "SELECT COUNT(*) FROM traders;"
+     psql -U synapsestrike -d synapsestrike -c "SELECT COUNT(*) FROM traders;"
    ```
 
 3. **磁盘空间**
@@ -441,7 +441,7 @@ docker compose logs backend --tail=500 > backend_logs.txt
 
 **手动运行:**
 ```bash
-# 如果不是通过 Docker，而是手动运行 ./nofx，可直接在终端查看日志
+# 如果不是通过 Docker，而是手动运行 ./synapsestrike，可直接在终端查看日志
 ```
 
 ---
@@ -529,15 +529,15 @@ docker compose restart frontend
 ```bash
 # 检查数据库中的交易员
 docker compose exec postgres \
-  psql -U nofx -d nofx -c "SELECT id, name, ai_model_id, exchange_id, is_running FROM traders;"
+  psql -U synapsestrike -d synapsestrike -c "SELECT id, name, ai_model_id, exchange_id, is_running FROM traders;"
 
 # 检查 AI 模型
 docker compose exec postgres \
-  psql -U nofx -d nofx -c "SELECT id, name, provider, enabled FROM ai_models;"
+  psql -U synapsestrike -d synapsestrike -c "SELECT id, name, provider, enabled FROM ai_models;"
 
 # 检查系统配置
 docker compose exec postgres \
-  psql -U nofx -d nofx -c "SELECT key, value FROM system_config;"
+  psql -U synapsestrike -d synapsestrike -c "SELECT key, value FROM system_config;"
 ```
 
 ---
@@ -558,8 +558,8 @@ docker compose exec postgres \
    - 描述您已尝试的方法
 
 3. **加入社区:**
-   - [Telegram 开发者社区](https://t.me/nofx_dev_community)
-   - [GitHub Discussions](https://github.com/tinkle-community/nofx/discussions)
+   - [Telegram 开发者社区](https://t.me/synapsestrike_dev_community)
+   - [GitHub Discussions](https://github.com/tinkle-community/synapsestrike/discussions)
 
 ---
 
@@ -573,7 +573,7 @@ docker compose down
 
 # 可选：备份 PostgreSQL 数据
 docker compose exec postgres \
-  pg_dump -U nofx -d nofx > backup_nofx.sql
+  pg_dump -U synapsestrike -d synapsestrike > backup_synapsestrike.sql
 
 # 删除所有持久化卷（全新开始）
 docker compose down -v

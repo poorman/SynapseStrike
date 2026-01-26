@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# NOFX One-Click Installation Script
-# https://github.com/NoFxAiOS/nofx
+# SynapseStrike One-Click Installation Script
+# https://github.com/poorman/SynapseStrike
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash
 #
 # Or with custom directory:
-#   curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash -s -- /opt/nofx
+#   curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash -s -- /opt/synapsestrike
 #
 
 set -e
@@ -20,13 +20,13 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Default installation directory
-INSTALL_DIR="${1:-$HOME/nofx}"
+INSTALL_DIR="${1:-$HOME/synapsestrike}"
 COMPOSE_FILE="docker-compose.prod.yml"
-GITHUB_RAW="https://raw.githubusercontent.com/NoFxAiOS/nofx/main"
+GITHUB_RAW="https://raw.githubusercontent.com/poorman/SynapseStrike/main"
 
 echo -e "${BLUE}"
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║                    NOFX AI Trading OS                      ║"
+echo "║                    SynapseStrike AI Trading OS                      ║"
 echo "║                   One-Click Installation                   ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
@@ -98,12 +98,12 @@ generate_env() {
 
     # Create .env file
     cat > .env << EOF
-# NOFX Configuration (Auto-generated)
+# SynapseStrike Configuration (Auto-generated)
 # Generated at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Server ports
-NOFX_BACKEND_PORT=8080
-NOFX_FRONTEND_PORT=3000
+SS_BACKEND_PORT=8080
+SS_FRONTEND_PORT=3000
 
 # Timezone
 TZ=Asia/Shanghai
@@ -130,7 +130,7 @@ pull_images() {
 
 # Start services
 start_services() {
-    echo -e "${YELLOW}Starting NOFX services...${NC}"
+    echo -e "${YELLOW}Starting SynapseStrike services...${NC}"
     $COMPOSE_CMD up -d
     echo -e "${GREEN}✓ Services started${NC}"
 }
