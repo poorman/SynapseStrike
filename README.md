@@ -1,450 +1,257 @@
-# SynapseStrike - Agentic Trading OS
+# 🚀 SynapseStrike - AI-Powered Trading Ecosystem
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
-[![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
-[![Backed by Amber.ac](https://img.shields.io/badge/Backed%20by-Amber.ac-orange.svg)](https://amber.ac)
-
-| CONTRIBUTOR AIRDROP PROGRAM |
-|:----------------------------------:|
-| Code · Bug Fixes · Issues → Airdrop |
-| [Learn More](#contributor-airdrop-program) |
-
-**Languages:** [English](README.md) | [中文](docs/i18n/zh-CN/README.md) | [日本語](docs/i18n/ja/README.md) | [한국어](docs/i18n/ko/README.md) | [Русский](docs/i18n/ru/README.md) | [Українська](docs/i18n/uk/README.md) | [Tiếng Việt](docs/i18n/vi/README.md)
+**A complete AI trading platform combining local LLMs, advanced decision engines, and automated trading**
 
 ---
 
-## AI-Powered Crypto Trading Platform
+## 📦 Repository Structure
 
-**SynapseStrike** is an open-source AI trading system that lets you run multiple AI models to trade crypto futures automatically. Configure strategies through a web interface, monitor performance in real-time, and let AI agents compete to find the best trading approach.
-
-### Core Features
-
-- **Multi-AI Support**: Run DeepSeek, Qwen, GPT, Claude, Gemini, Grok, Kimi - switch models anytime
-- **Multi-Exchange**: Trade on Binance, Bybit, OKX, Bitget, Hyperliquid, Aster DEX, Lighter from one platform
-- **Strategy Studio**: Visual strategy builder with coin sources, indicators, and risk controls
-- **AI Debate Arena**: Multiple AI models debate trading decisions with different roles (Bull, Bear, Analyst)
-- **AI Competition Mode**: Multiple AI traders compete in real-time, track performance side by side
-- **Web-Based Config**: No JSON editing - configure everything through the web interface
-- **Real-Time Dashboard**: Live positions, P/L tracking, AI decision logs with Chain of Thought
-
-### Backed by [Amber.ac](https://amber.ac)
-
-### Core Team
-
-- **Tinkle** - [@Web3Tinkle](https://x.com/Web3Tinkle)
-- **Official Twitter** - [@SynapseStrike_official](https://x.com/SynapseStrike_official)
-
-> **Risk Warning**: This system is experimental. AI auto-trading carries significant risks. Strongly recommended for learning/research purposes or testing with small amounts only!
-
-## Developer Community
-
-Join our Telegram developer community: **[SynapseStrike Developer Community](https://t.me/SynapseStrike_dev_community)**
-
----
-
-## Screenshots
-
-### Config Page
-| AI Models & Exchanges | Traders List |
-|:---:|:---:|
-| <img src="screenshots/config-ai-exchanges.png" width="400" alt="Config - AI Models & Exchanges"/> | <img src="screenshots/config-traders-list.png" width="400" alt="Config - Traders List"/> |
-
-### Competition & Backtest
-| Competition Mode | Backtest Lab |
-|:---:|:---:|
-| <img src="screenshots/competition-page.png" width="400" alt="Competition Page"/> | <img src="screenshots/backtest-lab.png" width="400" alt="Backtest Lab"/> |
-
-### Dashboard
-| Overview | Market Chart |
-|:---:|:---:|
-| <img src="screenshots/dashboard-page.png" width="400" alt="Dashboard Overview"/> | <img src="screenshots/dashboard-market-chart.png" width="400" alt="Dashboard Market Chart"/> |
-
-| Positions | Trader Details |
-|:---:|:---:|
-| <img src="screenshots/dashboard-positions.png" width="400" alt="Dashboard Positions"/> | <img src="screenshots/details-page.png" width="400" alt="Trader Details"/> |
-
-### Strategy Studio
-| Strategy Editor | Indicators Config |
-|:---:|:---:|
-| <img src="screenshots/strategy-studio.png" width="400" alt="Strategy Studio"/> | <img src="screenshots/strategy-indicators.png" width="400" alt="Strategy Indicators"/> |
-
-### Debate Arena
-| AI Debate Session | Create Debate |
-|:---:|:---:|
-| <img src="screenshots/debate-arena.png" width="400" alt="Debate Arena"/> | <img src="screenshots/debate-create.png" width="400" alt="Create Debate"/> |
-
----
-
-## Supported Exchanges
-
-### CEX (Centralized Exchanges)
-
-| Exchange | Status | Register (Fee Discount) |
-|----------|--------|-------------------------|
-| **Binance** | ✅ Supported | [Register](https://www.binance.com/join?ref=SynapseStrikeENG) |
-| **Bybit** | ✅ Supported | [Register](https://partner.bybit.com/b/83856) |
-| **OKX** | ✅ Supported | [Register](https://www.okx.com/join/1865360) |
-| **Bitget** | ✅ Supported | [Register](https://www.bitget.com/referral/register?from=referral&clacCode=c8a43172) |
-
-### Perp-DEX (Decentralized Perpetual Exchanges)
-
-| Exchange | Status | Register (Fee Discount) |
-|----------|--------|-------------------------|
-| **Hyperliquid** | ✅ Supported | [Register](https://app.hyperliquid.xyz/join/AITRADING) |
-| **Aster DEX** | ✅ Supported | [Register](https://www.asterdex.com/en/referral/fdfc0e) |
-| **Lighter** | ✅ Supported | [Register](https://app.lighter.xyz/?referral=68151432) |
-
----
-
-## Supported AI Models
-
-| AI Model | Status | Get API Key |
-|----------|--------|-------------|
-| **DeepSeek** | ✅ Supported | [Get API Key](https://platform.deepseek.com) |
-| **Qwen** | ✅ Supported | [Get API Key](https://dashscope.console.aliyun.com) |
-| **OpenAI (GPT)** | ✅ Supported | [Get API Key](https://platform.openai.com) |
-| **Claude** | ✅ Supported | [Get API Key](https://console.anthropic.com) |
-| **Gemini** | ✅ Supported | [Get API Key](https://aistudio.google.com) |
-| **Grok** | ✅ Supported | [Get API Key](https://console.x.ai) |
-| **Kimi** | ✅ Supported | [Get API Key](https://platform.moonshot.cn) |
-
----
-
-## Quick Start
-
-### One-Click Install (Recommended)
-
-**Linux / macOS:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/install.sh | bash
+```
+SynapseStrike/
+├── SynapseStrike/          # Go-based trading platform
+├── LocalAI/                # Self-hosted LLM infrastructure  
+├── AIArchitect/            # Python decision pipeline backend
+├── README.md               # This file
+├── CHANGELOG.md            # Version history
+├── ENHANCEMENT_PLAN.html   # Feature roadmap & integration guide
+├── install.sh              # Interactive installer
+├── LICENSE                 # Apache 2.0 License
+└── .env.example            # Environment configuration template
 ```
 
-That's it! Open **http://127.0.0.1:3000** in your browser.
+## 🎯 Three Pillars
 
-### Docker Compose (Manual)
+### 1. **SynapseStrike Trading Platform**
+- Go-based high-performance trading engine
+- Multi-broker support (Alpaca, Interactive Brokers, etc.)
+- Real-time market data processing
+- Advanced order management
+- **Location**: `SynapseStrike/`
+
+### 2. **LocalAI** 
+- Self-hosted LLM infrastructure
+- 8192 token context size
+- OpenAI-compatible API
+- GPU-accelerated inference
+- **Zero monthly API costs**
+- **Location**: `LocalAI/`
+- **Port**: 8050
+
+### 3. **AIArchitect**
+- 6-step decision pipeline
+- Multi-LLM consensus (Qwen2.5-32B + DeepSeek-R1-14B)
+- Semantic memory with Qdrant vector DB
+- PostgreSQL trade logging
+- FastAPI web interface
+- **Location**: `AIArchitect/`
+- **Port**: 8065
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Docker** with Docker Compose
+- **NVIDIA GPU** with 24GB+ VRAM (recommended) or CPU
+- **50GB** disk space
+- **Linux/macOS** (Windows via WSL2)
+
+### One-Command Install
 
 ```bash
-# Download and start
-curl -O https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/docker-compose.prod.yml
-docker compose -f docker-compose.prod.yml up -d
+./install.sh
 ```
 
-Access Web Interface: **http://127.0.0.1:3000**
+The installer will guide you through:
+1. Checking prerequisites
+2. Selecting components to install
+3. Configuring services
+4. Starting containers
 
+### Manual Installation
+
+#### 1. LocalAI (Self-Hosted LLMs)
 ```bash
-# Management commands
-docker compose -f docker-compose.prod.yml logs -f    # View logs
-docker compose -f docker-compose.prod.yml restart    # Restart
-docker compose -f docker-compose.prod.yml down       # Stop
-docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d  # Update
+cd LocalAI
+docker compose up -d
 ```
 
-### Manual Installation (For Developers)
-
-#### Prerequisites
-
-- **Go 1.21+**
-- **Node.js 18+**
-- **TA-Lib** (technical indicator library)
-
+#### 2. AIArchitect (Decision Engine)
 ```bash
-# Install TA-Lib
-# macOS
-brew install ta-lib
-
-# Ubuntu/Debian
-sudo apt-get install libta-lib0-dev
+cd AIArchitect
+cp .env.example .env  # Edit with your settings
+docker compose up -d
 ```
 
-#### Installation Steps
-
+#### 3. Trading Platform
 ```bash
-# 1. Clone the repository
-git clone https://github.com/SynapseStrike/SynapseStrike.git
 cd SynapseStrike
-
-# 2. Install backend dependencies
-go mod download
-
-# 3. Install frontend dependencies
-cd web
-npm install
-cd ..
-
-# 4. Build and start backend
-go build -o SynapseStrike
-./SynapseStrike
-
-# 5. Start frontend (new terminal)
-cd web
-npm run dev
+./install.sh
 ```
 
-Access Web Interface: **http://127.0.0.1:3000**
+---
+
+## 🌐 Service Endpoints
+
+| Service | Port | URL | Description |
+|---------|------|-----|-------------|
+| LocalAI | 8050 | http://localhost:8050 | LLM API & Chat UI |
+| AIArchitect Backend | 8065 | http://localhost:8065 | Decision Pipeline Web UI |
+| Qdrant Vector DB | 8063 | http://localhost:8063/dashboard | Semantic Memory |
+| PostgreSQL | 8064 | localhost:8064 | Trade Logs Database |
+| Main LLM | 8060 | http://localhost:8060 | Qwen2.5-32B vLLM |
+| Critic LLM | 8061 | http://localhost:8061 | DeepSeek-R1-14B vLLM |
+| Embeddings | 8062 | http://localhost:8062 | BGE-large embeddings |
 
 ---
 
-## Windows Installation
+## 💡 Key Features
 
-### Method 1: Docker Desktop (Recommended)
+### 🤖 AI-Powered Decision Making
+- **Multi-LLM Consensus**: Primary + Critic models validate each other
+- **Semantic Memory**: Learn from historical trades via vector search
+- **Rule-Based Constraints**: Never break risk management rules
+- **Cost Effective**: $200-500/month savings vs cloud APIs
 
-1. **Install Docker Desktop**
-   - Download from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)
-   - Run the installer and restart your computer
-   - Start Docker Desktop and wait for it to be ready
+### 📊 Advanced Trading
+- **Multi-Timeframe Analysis**: Trade when all timeframes align
+- **Adaptive Position Sizing**: Kelly Criterion-based sizing
+- **Smart Entry/Exit**: Limit orders at VWAP ± ATR
+- **Real-Time Metrics**: Sharpe ratio, max drawdown, P&L tracking
 
-2. **Run SynapseStrike**
-   ```powershell
-   # Open PowerShell and run:
-   curl -o docker-compose.prod.yml https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/docker-compose.prod.yml
-   docker compose -f docker-compose.prod.yml up -d
-   ```
-
-3. **Access**: Open **http://127.0.0.1:3000** in your browser
-
-### Method 2: WSL2 (For Development)
-
-1. **Install WSL2**
-   ```powershell
-   # Open PowerShell as Administrator
-   wsl --install
-   ```
-   Restart your computer after installation.
-
-2. **Install Ubuntu from Microsoft Store**
-   - Open Microsoft Store
-   - Search "Ubuntu 22.04" and install
-   - Launch Ubuntu and set up username/password
-
-3. **Install Dependencies in WSL2**
-   ```bash
-   # Update system
-   sudo apt update && sudo apt upgrade -y
-
-   # Install Go
-   wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
-   sudo tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
-   echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-   source ~/.bashrc
-
-   # Install Node.js
-   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-
-   # Install TA-Lib
-   sudo apt-get install -y libta-lib0-dev
-
-   # Install Git
-   sudo apt-get install -y git
-   ```
-
-4. **Clone and Run SynapseStrike**
-   ```bash
-   git clone https://github.com/SynapseStrike/SynapseStrike.git
-   cd SynapseStrike
-
-   # Build and run backend
-   go build -o SynapseStrike && ./SynapseStrike
-
-   # In another terminal, run frontend
-   cd web && npm install && npm run dev
-   ```
-
-5. **Access**: Open **http://127.0.0.1:3000** in Windows browser
-
-### Method 3: Docker in WSL2 (Best of Both Worlds)
-
-1. **Install Docker Desktop with WSL2 backend**
-   - During Docker Desktop installation, enable "Use WSL 2 based engine"
-   - In Docker Desktop Settings → Resources → WSL Integration, enable your Linux distro
-
-2. **Run from WSL2 terminal**
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/install.sh | bash
-   ```
+### 🔒 Privacy & Security
+- **100% Local Execution**: Trading decisions never leave your server
+- **No API Rate Limits**: Unlimited requests to your own LLMs
+- **Complete Audit Trail**: Every decision logged in PostgreSQL
+- **Encrypted Communication**: TLS between services
 
 ---
 
-## Server Deployment
+## 📚 Documentation
 
-### Quick Deploy (HTTP via IP)
+### Getting Started
+1. **Read This**: [ENHANCEMENT_PLAN.html](./ENHANCEMENT_PLAN.html) - Feature roadmap and integration guide
+2. **LocalAI Setup**: [LocalAI/README.md](./LocalAI/README.md)
+3. **AIArchitect Guide**: [AIArchitect/README.md](./AIArchitect/README.md)
+4. **Trading Platform**: [SynapseStrike/README.md](./SynapseStrike/README.md)
 
-By default, transport encryption is **disabled**, allowing you to access SynapseStrike via IP address without HTTPS:
+### Configuration
+- **Environment Variables**: Copy `.env.example` to `.env` in each component directory
+- **Trading Rules**: Add custom rules to `AIArchitect/rules/`
+- **Model Configuration**: Edit `LocalAI/models/*.yaml`
+
+---
+
+## 🔧 Hardware Requirements
+
+### Minimum (CPU-Only)
+- **CPU**: 8+ cores
+- **RAM**: 32GB
+- **Storage**: 50GB SSD
+- **Note**: Much slower inference
+
+### Recommended (GPU)
+- **GPU**: NVIDIA RTX 3090 (24GB VRAM)
+- **CPU**: 16+ cores
+- **RAM**: 64GB
+- **Storage**: 100GB NVMe SSD
+
+### Optimal (Production)
+- **GPU**: NVIDIA RTX 4090 or A6000 (40GB+ VRAM)
+- **CPU**: 32+ cores
+- **RAM**: 128GB
+- **Storage**: 500GB NVMe SSD
+- **Network**: 1Gbps for real-time data
+
+---
+
+## 💰 Cost Analysis
+
+### Cloud AI Costs (Monthly)
+- OpenAI GPT-4: ~$300-500
+- Claude 3 Opus: ~$200-400
+- Embeddings API: ~$50-100
+- **Total**: **$550-1000/month**
+
+### SynapseStrike (One-Time + Hosting)
+- Hardware (RTX 3090): $1200 one-time
+- Electricity: ~$30/month
+- **ROI**: **2-3 months**
+
+---
+
+## 🛣️ Roadmap
+
+See [ENHANCEMENT_PLAN.html](./ENHANCEMENT_PLAN.html) for the complete feature roadmap, including:
+
+**Tier 1** (High Priority)
+- Multi-timeframe analysis engine
+- Adaptive position sizing (Kelly Criterion)
+- Smart limit order entry
+- ATR-based trailing stops
+- News/earnings event filter
+
+**Tier 2** (Competitive Edge)
+- Paper trading simulator
+- Strategy backtesting
+- Multi-strategy portfolio
+- Real-time performance dashboard
+
+**Tier 3** (Cutting Edge)
+- Order flow analysis
+- Social sentiment integration
+- Options flow tracking
+- Advanced ML pattern recognition
+
+---
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+---
+
+## 📝 License
+
+Apache 2.0 - See [LICENSE](./LICENSE)
+
+---
+
+## ⚠️ Disclaimer
+
+**Trading involves substantial risk of loss. This software is for educational and research purposes. Past performance does not guarantee future results. Use at your own risk.**
+
+---
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/poorman/SynapseStrike/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/poorman/SynapseStrike/discussions)
+- **Enhancement Plan**: [ENHANCEMENT_PLAN.html](./ENHANCEMENT_PLAN.html)
+
+---
+
+## 🎯 Quick Commands
 
 ```bash
-# Deploy to your server
-curl -fsSL https://raw.githubusercontent.com/SynapseStrike/SynapseStrike/main/install.sh | bash
+# Start all services
+./install.sh
+
+# Check status
+docker ps
+
+# View logs
+docker compose logs -f
+
+# Stop all services
+docker compose down
+
+# Clean restart
+docker compose down -v && docker compose up -d
 ```
 
-Access via `http://YOUR_SERVER_IP:3000` - works immediately.
-
-### Enhanced Security (HTTPS)
-
-For enhanced security, enable transport encryption in `.env`:
-
-```bash
-TRANSPORT_ENCRYPTION=true
-```
-
-When enabled, browser uses Web Crypto API to encrypt API keys before transmission. This requires:
-- `https://` - Any domain with SSL
-- `http://localhost` - Local development
-
-### Quick HTTPS Setup with Cloudflare
-
-1. **Add your domain to Cloudflare** (free plan works)
-   - Go to [dash.cloudflare.com](https://dash.cloudflare.com)
-   - Add your domain and update nameservers
-
-2. **Create DNS record**
-   - Type: `A`
-   - Name: `SynapseStrike` (or your subdomain)
-   - Content: Your server IP
-   - Proxy status: **Proxied** (orange cloud)
-
-3. **Configure SSL/TLS**
-   - Go to SSL/TLS settings
-   - Set encryption mode to **Flexible**
-
-   ```
-   User ──[HTTPS]──→ Cloudflare ──[HTTP]──→ Your Server:3000
-   ```
-
-4. **Enable transport encryption**
-   ```bash
-   # Edit .env and set
-   TRANSPORT_ENCRYPTION=true
-   ```
-
-5. **Done!** Access via `https://SynapseStrike.yourdomain.com`
-
 ---
 
-## Initial Setup (Web Interface)
+**Built with ❤️ for traders who value privacy, control, and cost efficiency**
 
-After starting the system, configure through the web interface:
-
-1. **Configure AI Models** - Add your AI API keys (DeepSeek, OpenAI, etc.)
-2. **Configure Exchanges** - Set up exchange API credentials
-3. **Create Strategy** - Configure trading strategy in Strategy Studio
-4. **Create Trader** - Combine AI model + Exchange + Strategy
-5. **Start Trading** - Launch your configured traders
-
-All configuration is done through the web interface - no JSON file editing required.
-
----
-
-## Web Interface Features
-
-### Competition Page
-- Real-time ROI leaderboard
-- Multi-AI performance comparison charts
-- Live P/L tracking and rankings
-
-### Dashboard
-- TradingView-style candlestick charts
-- Real-time position management
-- AI decision logs with Chain of Thought reasoning
-- Equity curve tracking
-
-### Strategy Studio
-- Coin source configuration (Static list, AI500 pool, OI Top)
-- Technical indicators (EMA, MACD, RSI, ATR, Volume, OI, Funding Rate)
-- Risk control settings (leverage, position limits, margin usage)
-- AI test with real-time prompt preview
-
-### Debate Arena
-- Multi-AI debate sessions for trading decisions
-- Configurable AI roles (Bull, Bear, Analyst, Contrarian, Risk Manager)
-- Multiple rounds of debate with consensus voting
-- Auto-execute consensus trades
-
-### Backtest Lab
-- 3-step wizard configuration (Model → Parameters → Confirm)
-- Real-time progress visualization with animated ring
-- Equity curve chart with trade markers
-- Trade timeline with card-style display
-- Performance metrics (Return, Max DD, Sharpe, Win Rate)
-- AI decision trail with Chain of Thought
-
----
-
-## Common Issues
-
-### TA-Lib not found
-```bash
-# macOS
-brew install ta-lib
-
-# Ubuntu
-sudo apt-get install libta-lib0-dev
-```
-
-### AI API timeout
-- Check if API key is correct
-- Check network connection
-- System timeout is 120 seconds
-
-### Frontend can't connect to backend
-- Ensure backend is running on http://localhost:8080
-- Check if port is occupied
-
----
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| **[Architecture Overview](docs/architecture/README.md)** | System design and module index |
-| **[Strategy Module](docs/architecture/STRATEGY_MODULE.md)** | Coin selection, data assembly, AI prompts, execution |
-| **[Backtest Module](docs/architecture/BACKTEST_MODULE.md)** | Historical simulation, metrics, checkpoint/resume |
-| **[Debate Module](docs/architecture/DEBATE_MODULE.md)** | Multi-AI debate, voting consensus, auto-execution |
-| **[FAQ](docs/faq/README.md)** | Frequently asked questions |
-| **[Getting Started](docs/getting-started/README.md)** | Deployment guide |
-
----
-
-## License
-
-This project is licensed under **GNU Affero General Public License v3.0 (AGPL-3.0)** - See [LICENSE](LICENSE) file.
-
----
-
-## Contributing
-
-We welcome contributions! See:
-- **[Contributing Guide](CONTRIBUTING.md)** - Development workflow and PR process
-- **[Code of Conduct](CODE_OF_CONDUCT.md)** - Community guidelines
-- **[Security Policy](SECURITY.md)** - Report vulnerabilities
-
----
-
-## Contributor Airdrop Program
-
-All contributions are tracked on GitHub. When SynapseStrike generates revenue, contributors will receive airdrops based on their contributions.
-
-**PRs that resolve [Pinned Issues](https://github.com/SynapseStrike/SynapseStrike/issues) receive the HIGHEST rewards!**
-
-| Contribution Type | Weight |
-|------------------|:------:|
-| **Pinned Issue PRs** | ⭐⭐⭐⭐⭐⭐ |
-| **Code Commits** (Merged PRs) | ⭐⭐⭐⭐⭐ |
-| **Bug Fixes** | ⭐⭐⭐⭐ |
-| **Feature Suggestions** | ⭐⭐⭐ |
-| **Bug Reports** | ⭐⭐ |
-| **Documentation** | ⭐⭐ |
-
----
-
-## Contact
-
-- **GitHub Issues**: [Submit an Issue](https://github.com/SynapseStrike/SynapseStrike/issues)
-- **Developer Community**: [Telegram Group](https://t.me/SynapseStrike_dev_community)
-
----
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=SynapseStrike/SynapseStrike&type=Date)](https://star-history.com/#SynapseStrike/SynapseStrike&Date)
+🚀 **Start Trading Smarter, Not Harder**

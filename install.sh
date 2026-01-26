@@ -1,223 +1,175 @@
 #!/bin/bash
-#
-# NOFX One-Click Installation Script
-# https://github.com/NoFxAiOS/nofx
-#
-# Usage:
-#   curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash
-#
-# Or with custom directory:
-#   curl -fsSL https://raw.githubusercontent.com/NoFxAiOS/nofx/main/install.sh | bash -s -- /opt/nofx
-#
+# SynapseStrike Platform Installer
+# Installs and configures all three components: Trading Platform, LocalAI, and AIArchitect
 
 set -e
+
+echo "=========================================="
+echo "  SynapseStrike Platform Installer"
+echo "=========================================="
+echo ""
 
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Default installation directory
-INSTALL_DIR="${1:-$HOME/nofx}"
-COMPOSE_FILE="docker-compose.prod.yml"
-GITHUB_RAW="https://raw.githubusercontent.com/NoFxAiOS/nofx/main"
-
-echo -e "${BLUE}"
-echo "╔════════════════════════════════════════════════════════════╗"
-echo "║                    NOFX AI Trading OS                      ║"
-echo "║                   One-Click Installation                   ║"
-echo "╚════════════════════════════════════════════════════════════╝"
-echo -e "${NC}"
-
 # Check Docker
-check_docker() {
-    echo -e "${YELLOW}Checking Docker...${NC}"
-    if ! command -v docker &> /dev/null; then
-        echo -e "${RED}Error: Docker is not installed.${NC}"
-        echo "Please install Docker first: https://docs.docker.com/get-docker/"
-        exit 1
-    fi
+echo -e "${YELLOW}Checking prerequisites...${NC}"
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}❌ Docker is not installed. Please install Docker first.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Docker installed${NC}"
 
-    if ! docker info &> /dev/null; then
-        echo -e "${RED}Error: Docker daemon is not running.${NC}"
-        echo "Please start Docker and try again."
-        exit 1
-    fi
+# Check Docker Compose
+if ! command -v docker compose &> /dev/null; then
+    echo -e "${RED}❌ Docker Compose is not installed.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Docker Compose installed${NC}"
 
-    # Check Docker Compose
-    if docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
-    elif command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
+# Check NVIDIA GPU (optional but recommended)
+if command -v nvidia-smi &> /dev/null; then
+    echo -e "${GREEN}✓ NVIDIA GPU detected${NC}"
+    GPU_AVAILABLE=true
+else
+    echo -e "${YELLOW}⚠ No NVIDIA GPU detected. LocalAI will run on CPU (slower).${NC}"
+    GPU_AVAILABLE=false
+fi
+
+echo ""
+echo "Select components to install:"
+echo "1) Full Stack (LocalAI + AIArchitect + Trading Platform)"
+echo "2) LocalAI only"
+echo "3) AIArchitect only"
+echo "4) Trading Platform only"
+echo "5) LocalAI + AIArchitect"
+read -p "Enter choice [1-5]: " choice
+
+case $choice in
+    1)
+        echo -e "${GREEN}Installing Full Stack...${NC}"
+        INSTALL_LOCALAI=true
+        INSTALL_AIARCHITECT=true
+        INSTALL_TRADING=true
+        ;;
+    2)
+        INSTALL_LOCALAI=true
+        INSTALL_AIARCHITECT=false
+        INSTALL_TRADING=false
+        ;;
+    3)
+        INSTALL_LOCALAI=false
+        INSTALL_AIARCHITECT=true
+        INSTALL_TRADING=false
+        ;;
+    4)
+        INSTALL_LOCALAI=false
+        INSTALL_AIARCHITECT=false
+        INSTALL_TRADING=true
+        ;;
+    5)
+        INSTALL_LOCALAI=true
+        INSTALL_AIARCHITECT=true
+        INSTALL_TRADING=false
+        ;;
+    *)
+        echo -e "${RED}Invalid choice${NC}"
+        exit 1
+        ;;
+esac
+
+echo ""
+
+# Install LocalAI
+if [ "$INSTALL_LOCALAI" = true ]; then
+    echo -e "${YELLOW}Installing LocalAI...${NC}"
+    cd LocalAI
+    if [ "$GPU_AVAILABLE" = true ]; then
+        docker compose up -d
     else
-        echo -e "${RED}Error: Docker Compose is not available.${NC}"
-        echo "Please install Docker Compose: https://docs.docker.com/compose/install/"
-        exit 1
+        echo -e "${YELLOW}GPU not available, using CPU version (slower)${NC}"
+        docker compose up -d
     fi
+    cd ..
+    echo -e "${GREEN}✓ LocalAI installed and running on port 8050${NC}"
+    echo "  Access: http://localhost:8050"
+fi
 
-    echo -e "${GREEN}✓ Docker is ready${NC}"
-}
-
-# Create installation directory
-setup_directory() {
-    echo -e "${YELLOW}Setting up installation directory: ${INSTALL_DIR}${NC}"
-    mkdir -p "$INSTALL_DIR"
-    cd "$INSTALL_DIR"
-    echo -e "${GREEN}✓ Directory ready${NC}"
-}
-
-# Download compose file
-download_files() {
-    echo -e "${YELLOW}Downloading configuration files...${NC}"
-
-    curl -fsSL "$GITHUB_RAW/$COMPOSE_FILE" -o docker-compose.yml
-
-    echo -e "${GREEN}✓ Files downloaded${NC}"
-}
-
-# Generate encryption keys and create .env file
-generate_env() {
-    echo -e "${YELLOW}Generating encryption keys...${NC}"
-
-    # Skip if .env already exists
-    if [ -f ".env" ]; then
-        echo -e "${GREEN}✓ .env file already exists, skipping key generation${NC}"
-        return
-    fi
-
-    # Generate JWT secret (32 bytes, base64)
-    JWT_SECRET=$(openssl rand -base64 32)
-
-    # Generate AES data encryption key (32 bytes, base64)
-    DATA_ENCRYPTION_KEY=$(openssl rand -base64 32)
-
-    # Generate RSA private key (2048 bits)
-    RSA_PRIVATE_KEY=$(openssl genrsa 2048 2>/dev/null | tr '\n' '\\' | sed 's/\\/\\n/g' | sed 's/\\n$//')
-
-    # Create .env file
-    cat > .env << EOF
-# NOFX Configuration (Auto-generated)
-# Generated at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-# Server ports
-NOFX_BACKEND_PORT=8080
-NOFX_FRONTEND_PORT=3000
-
-# Timezone
-TZ=Asia/Shanghai
-
-# JWT signing secret
-JWT_SECRET=${JWT_SECRET}
-
-# AES-256 data encryption key (for encrypting API keys in database)
-DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
-
-# RSA private key (for client-server encryption)
-RSA_PRIVATE_KEY=${RSA_PRIVATE_KEY}
-EOF
-
-    echo -e "${GREEN}✓ Encryption keys generated${NC}"
-}
-
-# Pull images
-pull_images() {
-    echo -e "${YELLOW}Pulling Docker images (this may take a few minutes)...${NC}"
-    $COMPOSE_CMD pull
-    echo -e "${GREEN}✓ Images pulled${NC}"
-}
-
-# Start services
-start_services() {
-    echo -e "${YELLOW}Starting NOFX services...${NC}"
-    $COMPOSE_CMD up -d
-    echo -e "${GREEN}✓ Services started${NC}"
-}
-
-# Wait for services
-wait_for_services() {
-    echo -e "${YELLOW}Waiting for services to be ready...${NC}"
-
-    local max_attempts=30
-    local attempt=1
-
-    while [ $attempt -le $max_attempts ]; do
-        if curl -s http://localhost:8080/api/health > /dev/null 2>&1; then
-            echo -e "${GREEN}✓ Backend is ready${NC}"
-            break
-        fi
-        echo "  Waiting for backend... ($attempt/$max_attempts)"
-        sleep 2
-        ((attempt++))
-    done
-
-    if [ $attempt -gt $max_attempts ]; then
-        echo -e "${YELLOW}Backend is still starting, please wait a moment...${NC}"
-    fi
-}
-
-# Get server IP for display
-get_server_ip() {
-    # Try to get public IP first
-    local public_ip=$(curl -s --max-time 3 ifconfig.me 2>/dev/null || curl -s --max-time 3 icanhazip.com 2>/dev/null || echo "")
-
-    # If no public IP, try local IP
-    if [ -z "$public_ip" ]; then
-        if command -v ip &> /dev/null; then
-            public_ip=$(ip route get 1 2>/dev/null | awk '{print $7}' | head -1)
-        elif command -v hostname &> /dev/null; then
-            public_ip=$(hostname -I 2>/dev/null | awk '{print $1}')
+# Install AIArchitect
+if [ "$INSTALL_AIARCHITECT" = true ]; then
+    echo -e "${YELLOW}Installing AIArchitect...${NC}"
+    cd AIArchitect
+    
+    # Check if .env exists, if not create from example
+    if [ ! -f .env ]; then
+        if [ -f .env.example ]; then
+            cp .env.example .env
+            echo -e "${YELLOW}⚠ Created .env from .env.example. Please review and update if needed.${NC}"
         fi
     fi
+    
+    docker compose up -d
+    cd ..
+    echo -e "${GREEN}✓ AIArchitect installed and running${NC}"
+    echo "  Backend: http://localhost:8065"
+    echo "  Qdrant: http://localhost:8063"
+    echo "  PostgreSQL: localhost:8064"
+fi
 
-    echo "${public_ip:-127.0.0.1}"
-}
+# Install Trading Platform
+if [ "$INSTALL_TRADING" = true ]; then
+    echo -e "${YELLOW}Installing SynapseStrike Trading Platform...${NC}"
+    cd SynapseStrike
+    
+    # Check if install script exists
+    if [ -f install.sh ]; then
+        chmod +x install.sh
+        ./install.sh
+    else
+        # Run with Docker Compose if available
+        if [ -f docker-compose.yml ]; then
+            docker compose up -d
+        else
+            echo -e "${YELLOW}⚠ No install script or docker-compose.yml found${NC}"
+        fi
+    fi
+    cd ..
+    echo -e "${GREEN}✓ Trading Platform installed${NC}"
+fi
 
-# Print success message
-print_success() {
-    local SERVER_IP=$(get_server_ip)
+echo ""
+echo "=========================================="
+echo -e "${GREEN}Installation Complete!${NC}"
+echo "=========================================="
+echo ""
 
+if [ "$INSTALL_LOCALAI" = true ]; then
+    echo "LocalAI:"
+    echo "  - API: http://localhost:8050"
+    echo "  - Status: Run 'docker logs localai' to check"
     echo ""
-    echo -e "${GREEN}╔════════════════════════════════════════════════════════════╗"
-    echo -e "║              🎉 Installation Complete! 🎉                   ║"
-    echo -e "╚════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    echo -e "  ${BLUE}Web Interface:${NC}  http://${SERVER_IP}:3000"
-    echo -e "  ${BLUE}API Endpoint:${NC}   http://${SERVER_IP}:8080"
-    echo -e "  ${BLUE}Install Dir:${NC}    $INSTALL_DIR"
-    echo ""
-    echo -e "${YELLOW}Quick Commands:${NC}"
-    echo "  cd $INSTALL_DIR"
-    echo "  $COMPOSE_CMD logs -f       # View logs"
-    echo "  $COMPOSE_CMD restart       # Restart services"
-    echo "  $COMPOSE_CMD down          # Stop services"
-    echo "  $COMPOSE_CMD pull && $COMPOSE_CMD up -d  # Update to latest"
-    echo ""
-    echo -e "${YELLOW}Next Steps:${NC}"
-    echo "  1. Open http://${SERVER_IP}:3000 in your browser"
-    echo "  2. Configure AI Models (DeepSeek, OpenAI, etc.)"
-    echo "  3. Configure Exchanges (Binance, Hyperliquid, etc.)"
-    echo "  4. Create a Strategy in Strategy Studio"
-    echo "  5. Create a Trader and start trading!"
-    echo ""
-    echo -e "${YELLOW}Note:${NC} If accessing from local machine, use http://127.0.0.1:3000"
-    echo ""
-    echo -e "${RED}⚠️  Risk Warning: AI trading carries significant risks.${NC}"
-    echo -e "${RED}   Only use funds you can afford to lose!${NC}"
-    echo ""
-}
+fi
 
-# Main
-main() {
-    check_docker
-    setup_directory
-    download_files
-    generate_env
-    pull_images
-    start_services
-    wait_for_services
-    print_success
-}
+if [ "$INSTALL_AIARCHITECT" = true ]; then
+    echo "AIArchitect:"
+    echo "  - Web UI: http://localhost:8065"
+    echo "  - Qdrant: http://localhost:8063/dashboard"
+    echo ""
+fi
 
-main
+if [ "$INSTALL_TRADING" = true ]; then
+    echo "Trading Platform:"
+    echo "  - Check SynapseStrike/README.md for access details"
+    echo ""
+fi
+
+echo "Next steps:"
+echo "1. Wait 2-3 minutes for all services to start"
+echo "2. Check service status: docker ps"
+echo "3. View logs: docker compose logs -f"
+echo "4. Read ENHANCEMENT_PLAN.html for feature roadmap"
+echo ""
+echo -e "${GREEN}Happy Trading! 🚀${NC}"
