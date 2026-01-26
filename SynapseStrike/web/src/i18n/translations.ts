@@ -1013,7 +1013,24 @@ export const translations = {
     faqCompareAIModelsAnswer:
       'Create multiple traders with different AI models but same strategy/brokerage. Run them simultaneously and compare on Competition page. Metrics to watch: ROI, win rate, Sharpe ratio, max drawdown. Alternatively, use Backtest Lab to test models against same historical data. The Debate Arena also shows how different models reason about the same situation.',
 
+    // ===== AI MODELS =====
+    faqAIModelComparison: 'How do different AI models compare?',
+    faqAIModelComparisonAnswer:
+      'Each AI model has unique strengths: DeepSeek - best cost/performance ratio, recommended for most users; OpenAI GPT - most powerful but expensive; Claude - excellent reasoning, good for complex analysis; Gemini - fast responses, good for real-time trading; Qwen - good for Chinese market analysis; Grok - real-time market sentiment. Test different models to find what works best for your strategy.',
+
+    faqUseLocalAI: 'Can I use local AI models?',
+    faqUseLocalAIAnswer:
+      'Yes! SynapseStrike supports any OpenAI-compatible local AI server like Ollama, LM Studio, or text-generation-webui. Benefits: Zero API costs, full data privacy, no rate limits. Setup: 1) Install Ollama or LM Studio; 2) Download a model (llama3, mixtral, etc.); 3) In SynapseStrike, select "Local AI" as provider; 4) Set Custom URL to your local server (e.g., http://localhost:11434/v1). Performance depends on your hardware.',
+
     // ===== CONTRIBUTING =====
+    faqGitHubProjectsTasks: 'Where can I find tasks to work on?',
+    faqGitHubProjectsTasksAnswer:
+      'Visit GitHub Projects for organized task boards. Filter by labels: "good first issue" for beginners, "help wanted" for priority items, "bounty" for paid tasks. Fork the repo, create a feature branch from dev, and submit PRs targeting poorman/SynapseStrike:dev.',
+
+    faqContributePRGuidelines: 'What are the PR guidelines?',
+    faqContributePRGuidelinesAnswer:
+      'PR Process: 1) Fork repo to your account; 2) Create feature branch from dev: "git checkout -b feat/your-feature"; 3) Make changes, run lint: "npm --prefix web run lint"; 4) Commit with Conventional Commits format; 5) Push and create PR to poorman/SynapseStrike:dev; 6) Reference related issue (Closes #123); 7) Wait for review. Keep PRs small and focused.',
+
     faqHowToContribute: 'How can I contribute to SynapseStrike?',
     faqHowToContributeAnswer:
       'SynapseStrike is open-source and welcomes contributions! Ways to contribute: 1) Code - fix bugs, add features (check GitHub Issues); 2) Documentation - improve guides, translate; 3) Bug Reports - report issues with details; 4) Feature Ideas - suggest improvements. Start with issues labeled "good first issue". All contributors may receive airdrop rewards.',
@@ -1029,6 +1046,12 @@ export const translations = {
     faqReportBugs: 'How do I report bugs?',
     faqReportBugsAnswer:
       'For bugs: Open a GitHub Issue with: 1) Clear description of the problem; 2) Steps to reproduce; 3) Expected vs actual behavior; 4) System info (OS, Docker version, browser); 5) Relevant logs. For SECURITY vulnerabilities: Do NOT open public issues - DM @Web3Tinkle on Twitter instead.',
+
+    // ===== COMMUNITY =====
+    faqCategoryCommunity: 'Community',
+    faqJoinCommunity: 'How do I join the community?',
+    faqJoinCommunityAnswer:
+      'Join our active community: 1) Telegram: @synapsestrike_dev_community for discussions and support; 2) GitHub Discussions for technical questions; 3) Twitter @Web3Tinkle for announcements. Community members help each other with setup, share strategies, and collaborate on improvements.',
 
     // Web Crypto Environment Check
     environmentCheck: {

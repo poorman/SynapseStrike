@@ -32,9 +32,11 @@ Thumbs.db
 config.json
 configbak.json
 
-# 数据目录（数据库、日志等）
-data/
+# Data directory (database, logs, etc.) - only at root level
+/data/
 *.db
+# Don't ignore web/src/data which contains source code
+!web/src/data/
 
 # 决策日志
 decision_logs/
