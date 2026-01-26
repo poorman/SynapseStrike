@@ -6,6 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SynapseStrike Enhancement Plan</title>
     <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-purple: #8b5cf6;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-blue: #58a6ff;
+            --accent-cyan: #39d0d8;
+            --border-color: #30363d;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,165 +28,191 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
             padding: 40px 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: rgba(30, 30, 45, 0.9);
-            border-radius: 20px;
-            padding: 50px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
         h1 {
-            font-size: 3em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
-            text-align: center;
         }
 
         h2 {
-            color: #667eea;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            font-size: 2em;
-            border-bottom: 2px solid #667eea;
+            font-size: 1.5rem;
+            margin: 40px 0 20px;
             padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
         }
 
         h3 {
-            color: #a78bfa;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            font-size: 1.5em;
+            font-size: 1.2rem;
+            margin: 25px 0 10px;
+            color: var(--accent-blue);
         }
 
         h4 {
-            color: #c4b5fd;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-size: 1.2em;
+            font-size: 1rem;
+            margin: 15px 0 8px;
+            color: var(--accent-purple);
         }
 
         p,
-        ul,
-        ol {
-            margin-bottom: 15px;
-            color: #d1d5db;
-        }
-
-        ul,
-        ol {
-            margin-left: 30px;
-        }
-
         li {
-            margin-bottom: 8px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #9ca3af;
-            font-size: 1.2em;
-            margin-bottom: 40px;
+        ul {
+            padding-left: 25px;
         }
 
-        .status-badge {
+        .tier-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 5px 15px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-            margin-left: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
         }
 
-        .new-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-            margin-left: 10px;
+        .tier-1 {
+            background: linear-gradient(135deg, #f85149, #d29922);
         }
 
-        .tier {
-            background: rgba(102, 126, 234, 0.1);
-            border-left: 4px solid #667eea;
+        .tier-2 {
+            background: linear-gradient(135deg, #d29922, #3fb950);
+        }
+
+        .tier-3 {
+            background: linear-gradient(135deg, #58a6ff, #8b5cf6);
+        }
+
+        .tier-4 {
+            background: linear-gradient(135deg, #8b949e, #6e7681);
+        }
+
+        .ai-badge {
+            background: linear-gradient(135deg, #39d0d8, #8b5cf6);
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 20px;
-            margin: 20px 0;
-            border-radius: 10px;
-        }
-
-        .tier-new {
-            background: rgba(245, 158, 11, 0.1);
-            border-left: 4px solid #f59e0b;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 10px;
-        }
-
-        code {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            color: #fbbf24;
-        }
-
-        pre {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 20px;
-            border-radius: 10px;
-            overflow-x: auto;
             margin: 15px 0;
         }
 
-        pre code {
-            background: none;
-            padding: 0;
-            color: #a5f3fc;
+        .feature-card h4 {
+            margin-top: 0;
+        }
+
+        .ai-card {
+            background: linear-gradient(135deg, rgba(57, 208, 216, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(57, 208, 216, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .ai-card h4 {
+            color: var(--accent-cyan);
+            margin-top: 0;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        .completed {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .high-impact {
+            color: var(--accent-green);
+        }
+
+        .medium-impact {
+            color: var(--accent-yellow);
+        }
+
+        .fix-card {
+            background: linear-gradient(135deg, rgba(63, 185, 80, 0.1), rgba(63, 185, 80, 0.05));
+            border: 1px solid rgba(63, 185, 80, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .fix-card h4 {
+            color: var(--accent-green);
+        }
+
+        .architecture-diagram {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            white-space: pre;
+            overflow-x: auto;
         }
 
         .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
             text-align: center;
-            margin-top: 50px;
-            padding-top: 30px;
-            border-top: 1px solid #374151;
-            color: #6b7280;
-        }
-
-        .impact {
-            background: rgba(16, 185, 129, 0.2);
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin: 10px 0;
-            font-style: italic;
-            color: #34d399;
-        }
-
-        .highlight-box {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-            border: 2px solid #667eea;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
-        }
-
-        .emoji {
-            font-size: 1.2em;
-            margin-right: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -179,198 +220,361 @@
 <body>
     <div class="container">
         <h1>🚀 SynapseStrike Enhancement Plan</h1>
-        <p class="subtitle">Strategic roadmap for building the most advanced AI trading platform</p>
+        <p>Strategic roadmap for building the most advanced AI trading platform</p>
 
-        <h2>Part 1: Rename App <span class="status-badge">✅ COMPLETED</span></h2>
-        <p>Successfully renamed from "nofx" to "SynapseStrike" across all UI components.</p>
+        <h2>Part 1: Rename App <span class="completed">✅ COMPLETED</span></h2>
+        <p>Successfully renamed to "SynapseStrike" across all UI components.</p>
 
-        <div class="tier-new">
-            <h2><span class="emoji">🤖</span>NEW: AI Infrastructure Enhancements <span
-                    class="new-badge">INTEGRATED</span></h2>
+        <!-- AI Architecture Section -->
+        <h2>Part 2: AI Architecture</h2>
+        <p>SynapseStrike supports multiple AI providers for trading decisions. Here's how they work:</p>
 
-            <h3>LocalAI - Self-Hosted LLM Platform</h3>
-            <p>LocalAI is now integrated into the SynapseStrike ecosystem, providing a cost-effective alternative to
-                cloud-based AI services.</p>
+        <h3><span class="tier-badge ai-badge">🤖 AI Providers</span> Supported Models</h3>
 
-            <h4>✨ Key Benefits:</h4>
+        <div class="ai-card">
+            <h4>🏠 Local AI (Self-Hosted)</h4>
+            <p>Run AI models locally for maximum privacy and zero API costs.</p>
+            <p><strong>How it works:</strong></p>
             <ul>
-                <li><strong>Cost Reduction:</strong> Eliminate monthly subscription fees for OpenAI, Claude, or other
-                    commercial LLM APIs</li>
-                <li><strong>Privacy & Security:</strong> All trading decisions and market analysis stay on your local
-                    infrastructure</li>
-                <li><strong>No Rate Limits:</strong> Process unlimited requests without worrying about API quotas or
-                    throttling</li>
-                <li><strong>Offline Operation:</strong> Continue trading even without internet connectivity to AI
-                    providers</li>
-                <li><strong>Model Flexibility:</strong> Run multiple open-source models (GPT-OSS-20B, Llama, Mistral,
-                    etc.)</li>
+                <li>Uses OpenAI-compatible API format (works with Ollama, LM Studio, text-generation-webui, etc.)</li>
+                <li>Default endpoint: <code>http://localhost:8080/v1</code></li>
+                <li>Configure any model name supported by your local server</li>
+                <li>No API key required for local deployments</li>
             </ul>
-
-            <div class="impact">
-                <strong>💰 Expected Savings:</strong> $200-500/month in LLM API costs for active traders
-            </div>
-
-            <h4>Current Setup:</h4>
-            <pre><code>Service: LocalAI
-Port: 8050
-GPU: NVIDIA CUDA 12
-Models: GPT-OSS-20B, BGE-large-en-v1.5 (embeddings)
-Status: Running in Docker container</code></pre>
-
-            <h3>AIArchitect - Advanced Trading Decision Engine</h3>
-            <p>A sophisticated 6-step decision pipeline that brings enterprise-level AI reasoning to SynapseStrike.</p>
-
-            <h4>🎯 Architecture Overview:</h4>
-            <ol>
-                <li><strong>Context Embedding:</strong> Convert market conditions into vector representations</li>
-                <li><strong>Semantic Memory Search:</strong> Query Qdrant vector database for similar historical trades
-                </li>
-                <li><strong>Rule Retrieval:</strong> Fetch relevant trading rules and risk parameters</li>
-                <li><strong>Dynamic Prompt Building:</strong> Construct context-aware prompts with historical
-                    performance</li>
-                <li><strong>Multi-LLM Analysis:</strong> Primary LLM (Qwen2.5-32B) + Critic LLM (DeepSeek-R1-14B)</li>
-                <li><strong>Decision Logging:</strong> Store all decisions in PostgreSQL for backtesting and analysis
-                </li>
-            </ol>
-
-            <h4>🔧 Technical Stack:</h4>
-            <ul>
-                <li><strong>Backend:</strong> FastAPI (Port 8065) with WebUI</li>
-                <li><strong>Vector DB:</strong> Qdrant (Port 8063) - semantic similarity search</li>
-                <li><strong>SQL DB:</strong> PostgreSQL (Port 8064) - trade logs & statistics</li>
-                <li><strong>Main LLM:</strong> Qwen2.5-32B-Instruct-AWQ (Port 8060)</li>
-                <li><strong>Critic LLM:</strong> DeepSeek-R1-Distill-14B (Port 8061)</li>
-                <li><strong>Embeddings:</strong> BGE-large-en-v1.5 (Port 8062)</li>
-            </ul>
-
-            <div class="impact">
-                <strong>🎯 Expected Impact:</strong> 25-35% improvement in decision quality through multi-model
-                consensus and historical pattern matching
-            </div>
-
-            <h4>Integration with SynapseStrike:</h4>
-            <ul>
-                <li>Replace single LLM calls with AIArchitect's ensemble decision engine</li>
-                <li>Use semantic memory to avoid repeating past mistakes</li>
-                <li>Leverage rule-based constraints for risk management</li>
-                <li>Track decision performance in real-time via PostgreSQL</li>
-                <li>Run entirely on local infrastructure using LocalAI models</li>
-            </ul>
-
-            <div class="highlight-box">
-                <h4>💡 Combined Power: LocalAI + AIArchitect</h4>
-                <p>By combining LocalAI's cost-effective model hosting with AIArchitect's sophisticated decision
-                    pipeline, SynapseStrike gains:</p>
-                <ul>
-                    <li>Zero ongoing AI subscription costs</li>
-                    <li>Enterprise-grade multi-model reasoning</li>
-                    <li>Complete data privacy and control</li>
-                    <li>Unlimited scalability without API rate limits</li>
-                    <li>Historical pattern recognition via vector search</li>
-                </ul>
-                <p><strong>Bottom Line:</strong> Professional-grade AI trading infrastructure without the enterprise
-                    price tag.</p>
-            </div>
+            <p><strong>Setup:</strong></p>
+            <pre><code># Example with Ollama
+ollama serve
+# Then in SynapseStrike:
+# - AI Model: "localai"
+# - Custom URL: "http://localhost:11434/v1"
+# - Model Name: "llama3" or "mixtral" etc.</code></pre>
+            <p><strong>Benefits:</strong> Zero latency to AI, no API costs, full data privacy</p>
         </div>
 
-        <h2>Part 2: Strategic Feature Recommendations</h2>
+        <div class="ai-card">
+            <h4>🏗️ AIArchitect (Local Multi-Model Pipeline) <span class="completed">✅ INTEGRATED</span></h4>
+            <p>Our flagship local decision engine using a sophisticated 6-step reasoning pipeline with cross-model
+                validation.</p>
+            <p><strong>The 6-Step "Trading Brain" Pipeline:</strong></p>
+            <ol>
+                <li><strong>Context Embedding:</strong> Market data is converted to vectors for semantic search.</li>
+                <li><strong>Semantic Memory Search:</strong> Queries Qdrant for similar historical trades to learn from
+                    the past.</li>
+                <li><strong>Rule Retrieval:</strong> Fetches relevant trading rules and risk constraints.</li>
+                <li><strong>Dynamic Prompt Building:</strong> Combines market data, history, and rules into a master
+                    context.</li>
+                <li><strong>Multi-LLM Analysis:</strong>
+                    <ul>
+                        <li><strong>Primary Model:</strong> Qwen2.5-32B (Optimized for Trading Analysis)</li>
+                        <li><strong>Critic Model:</strong> DeepSeek-R1-14B (Validation & Risk Critique)</li>
+                    </ul>
+                </li>
+                <li><strong>Decision Logging:</strong> Final choices recorded in PostgreSQL and Qdrant for future
+                    learning.</li>
+            </ol>
+            <p><strong>Benefits:</strong> Zero subscription costs, 100% data privacy, learning from history, 25-35%
+                improved decision quality.</p>
+            <p><strong>Configuration:</strong></p>
+            <pre><code># In docker-compose.yml:
+# - Service: "aiarchitect_backend"
+# - Main LLM: Qwen2.5-32B (Port 8060)
+# - Critic LLM: DeepSeek-R1-14B (Port 8061)
+# - Vector DB: Qdrant (Port 8063)</code></pre>
+        </div>
 
-        <div class="tier">
-            <h3><span class="emoji">🔥</span>Tier 1: High-Impact Profit Boosters</h3>
+        <div class="ai-card">
+            <h4>🌐 Cloud AI Providers</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Model</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OpenAI</td>
+                        <td>GPT-4o, GPT-4-turbo</td>
+                        <td>General trading, fast responses</td>
+                    </tr>
+                    <tr>
+                        <td>Claude</td>
+                        <td>claude-sonnet-4-20250514</td>
+                        <td>Deep analysis, extended thinking</td>
+                    </tr>
+                    <tr>
+                        <td>Gemini</td>
+                        <td>gemini-2.0-flash</td>
+                        <td>Fast decisions, cost-effective</td>
+                    </tr>
+                    <tr>
+                        <td>DeepSeek</td>
+                        <td>deepseek-chat</td>
+                        <td>Budget-friendly, good performance</td>
+                    </tr>
+                    <tr>
+                        <td>Qwen</td>
+                        <td>qwen-turbo</td>
+                        <td>Chinese market analysis</td>
+                    </tr>
+                    <tr>
+                        <td>Grok</td>
+                        <td>grok-beta</td>
+                        <td>Real-time market sentiment</td>
+                    </tr>
+                    <tr>
+                        <td>Kimi</td>
+                        <td>moonshot-v1</td>
+                        <td>Long context analysis</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
+        <div class="ai-card">
+            <h4>🔄 AI Fallback System</h4>
+            <p>When the primary AI fails (quota exceeded, timeout, etc.), SynapseStrike automatically falls back to
+                algorithmic trading:</p>
+            <div class="architecture-diagram">
+                ┌─────────────────────────────────────────────────────┐
+                │ AI Decision Flow │
+                ├─────────────────────────────────────────────────────┤
+                │ 1. Request AI Decision (Claude/GPT/Gemini/etc.) │
+                │ ↓ │
+                │ 2. AI Response OK? │
+                │ ├─ YES → Execute AI Decision │
+                │ └─ NO → Trigger Algorithmic Fallback │
+                │ ↓ │
+                │ 3. Fallback: Technical Algorithm │
+                │ • VWAP + Slope & Stretch Analysis │
+                │ • RSI/MACD Confluence │
+                │ • Support/Resistance Levels │
+                │ ↓ │
+                │ 4. Execute Fallback Decision │
+                │ (Logged as "Fallback: technical algorithm") │
+                └─────────────────────────────────────────────────────┘</div>
+        </div>
+
+        <h2>Part 3: Strategic Feature Recommendations</h2>
+
+        <!-- Tier 1 -->
+        <h3><span class="tier-badge tier-1">🔥 Tier 1</span> High-Impact Profit Boosters</h3>
+
+        <div class="feature-card">
             <h4>1. Multi-Timeframe Analysis Engine</h4>
             <p>Currently the AI analyzes a single timeframe. Add 15m + 1H + 4H confluence signals - only trade when all
                 timeframes align.</p>
-            <div class="impact">Expected Impact: 30-40% fewer false signals</div>
+            <p><strong>Expected Impact:</strong> <span class="high-impact">30-40% fewer false signals</span></p>
+        </div>
 
+        <div class="feature-card">
             <h4>2. Adaptive Position Sizing with Kelly Criterion</h4>
             <p>Replace fixed margin with dynamic sizing based on recent performance.</p>
             <pre><code>Position Size = (Win Rate × Avg Win - Loss Rate × Avg Loss) / Avg Loss</code></pre>
+        </div>
 
-            <h4>3. Smart Entry with Limit Orders</h4>
+        <div class="feature-card">
+            <h4>3. Smart Entry with Limit Orders <span class="completed">✅ IMPLEMENTED</span></h4>
             <p>Place limit orders at VWAP ± ATR deviation instead of market orders.</p>
-            <div class="impact">Expected Impact: Save 0.1-0.3% per trade in slippage</div>
+            <p><strong>Expected Impact:</strong> <span class="high-impact">Save 0.1-0.3% per trade in slippage</span>
+            </p>
+        </div>
 
+        <div class="feature-card">
             <h4>4. Trailing Stop Evolution</h4>
             <ul>
                 <li>ATR-based trailing (volatility-aware)</li>
                 <li>Breakeven + 1 ATR after 2R profit</li>
                 <li>Partial profit taking (50% at 2R, rest trails)</li>
             </ul>
+        </div>
 
+        <div class="feature-card">
             <h4>5. News/Earnings Filter</h4>
             <p>Skip trading around high-impact events: earnings releases, Fed announcements, major economic data.</p>
         </div>
 
-        <div class="tier">
-            <h3><span class="emoji">⚡</span>Tier 2: Competitive Edge Features</h3>
+        <!-- Tier 2 -->
+        <h3><span class="tier-badge tier-2">⚡ Tier 2</span> Competitive Edge Features</h3>
 
-            <h4>6. Paper Trading Simulator with Analytics</h4>
-            <p>Full trade execution simulation with performance analytics dashboard.</p>
+        <div class="feature-card">
+            <h4>6. Paper Trading Simulator with Analytics <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Full trade execution simulation via Alpaca Paper Trading account.</p>
+        </div>
 
-            <h4>7. Strategy Backtesting Engine</h4>
-            <p>Historical performance testing, walk-forward optimization, drawdown analysis.</p>
+        <div class="feature-card">
+            <h4>7. Strategy Backtesting Engine <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Historical performance testing with the Backtest Lab feature.</p>
+        </div>
 
+        <div class="feature-card">
             <h4>8. Multi-Strategy Portfolio</h4>
             <p>Run multiple strategies simultaneously: Momentum + Mean Reversion blend, sector rotation.</p>
-
-            <h4>9. AI Model Ensemble</h4>
-            <p>Combine Claude + GPT-4 + Gemini with weighted voting. Only trade when 2/3+ agree.</p>
-            <p><em>Note: Now enhanced with AIArchitect's multi-LLM pipeline (Main + Critic models)</em></p>
-
-            <h4>10. Real-Time Performance Dashboard</h4>
-            <p>Sharpe/Sortino ratios, max drawdown tracking, win rate by time of day, P&L attribution.</p>
         </div>
 
-        <div class="tier">
-            <h3><span class="emoji">🚀</span>Tier 3: Cutting-Edge Features</h3>
+        <div class="feature-card">
+            <h4>9. AI Model Ensemble / Debate Arena <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Combine Claude + GPT-4 + Gemini with weighted voting via Debate Arena feature.</p>
+        </div>
 
+        <div class="feature-card">
+            <h4>10. Real-Time Performance Dashboard <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Equity curves, P&L tracking, win rate, position monitoring.</p>
+        </div>
+
+        <!-- Tier 3 -->
+        <h3><span class="tier-badge tier-3">🚀 Tier 3</span> Cutting-Edge Features</h3>
+
+        <div class="feature-card">
             <h4>11. Order Flow Analysis</h4>
             <p>Large block trade detection, supply/demand zones, dark pool tracking.</p>
-
-            <h4>12. Sentiment Analysis Feed</h4>
-            <p>Real-time sentiment from Twitter/X, Reddit, news headlines, StockTwits.</p>
-
-            <h4>13. Options Flow Integration</h4>
-            <p>Track unusual options activity, large sweeps, smart money tracking.</p>
-
-            <h4>14. Machine Learning Enhancement</h4>
-            <p>Pattern recognition, false signal filtering, market regime detection.</p>
-            <p><em>Note: AIArchitect's vector database enables advanced pattern matching from historical trades</em></p>
-
-            <h4>15. Risk Management Suite</h4>
-            <p>Daily loss limit, correlation-based limits, VaR monitoring, auto-hedging.</p>
         </div>
 
-        <div class="tier">
-            <h3><span class="emoji">🛡️</span>Tier 4: Robustness & Reliability</h3>
+        <div class="feature-card">
+            <h4>12. Sentiment Analysis Feed</h4>
+            <p>Real-time sentiment from Twitter/X, Reddit, news headlines, StockTwits.</p>
+        </div>
 
+        <div class="feature-card">
+            <h4>13. Options Flow Integration</h4>
+            <p>Track unusual options activity, large sweeps, smart money tracking.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>14. Machine Learning Enhancement</h4>
+            <p>Pattern recognition, false signal filtering, market regime detection.</p>
+        </div>
+
+        <div class="feature-card">
+            <h4>15. Risk Management Suite <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Max positions limit, position value ratio, min/max position size, drawdown monitoring.</p>
+        </div>
+
+        <!-- Tier 4 -->
+        <h3><span class="tier-badge tier-4">🛡️ Tier 4</span> Robustness & Reliability</h3>
+
+        <div class="feature-card">
             <h4>16. Failover & High Availability</h4>
             <p>Redundant API connections, automatic broker failover, order recovery.</p>
+        </div>
 
-            <h4>17. Audit Trail & Compliance</h4>
-            <p>Complete trade logging, decision recording, tax reporting export.</p>
-            <p><em>Note: AIArchitect already logs all decisions to PostgreSQL for full audit trail</em></p>
+        <div class="feature-card">
+            <h4>17. Audit Trail & Compliance <span class="completed">✅ IMPLEMENTED</span></h4>
+            <p>Complete trade logging, decision recording with Chain of Thought, position history.</p>
+        </div>
 
+        <div class="feature-card">
             <h4>18. Alert System</h4>
             <p>Telegram/Discord alerts, email, mobile push, voice alerts.</p>
         </div>
 
-        <h2>Recent Bug Fixes (December 2025)</h2>
+        <!-- Priority Table -->
+        <h2>Recommended Priority Order</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Feature</th>
+                    <th>Status</th>
+                    <th>Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Multi-Timeframe Analysis</td>
+                    <td>Planned</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Smart Entry (Limit Orders)</td>
+                    <td class="completed">✅ Done</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>VWAP Strategy (Buy at 9AM, Sell at trigger or EOD)</td>
+                    <td class="completed">✅ Done</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>News/Earnings Filter</td>
+                    <td>Planned</td>
+                    <td class="medium-impact">Medium</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>Daily Loss Limit</td>
+                    <td class="completed">✅ Done</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Paper Trading Mode</td>
+                    <td class="completed">✅ Done</td>
+                    <td class="medium-impact">Medium</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>AI Model Ensemble (Debate Arena)</td>
+                    <td class="completed">✅ Done</td>
+                    <td class="high-impact">High</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Performance Dashboard</td>
+                    <td class="completed">✅ Done</td>
+                    <td class="medium-impact">Medium</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <h4><span class="status-badge">✅ FIXED</span> Fractional Short Selling Error</h4>
-        <p><strong>Issue:</strong> Alpaca doesn't allow fractional shares for short selling</p>
-        <p><strong>Fix:</strong> OpenShort now rounds down to whole shares</p>
-        <p><strong>File:</strong> <code>trader/alpaca_trader.go</code></p>
+        <!-- Recent Fixes -->
+        <h2>Recent Updates (January 2026)</h2>
 
-        <h4><span class="status-badge">✅ FIXED</span> Position Size Exceeds Account Equity</h4>
-        <p><strong>Issue:</strong> AI requested positions larger than account equity were rejected</p>
-        <p><strong>Fix:</strong> Now auto-adjusts to maximum allowed (like leverage)</p>
-        <p><strong>File:</strong> <code>decision/engine.go</code></p>
+        <div class="fix-card">
+            <h4>✅ Fixed: VWAP Sell Trigger Monitoring</h4>
+            <p><strong>Issue:</strong> Sell triggers were not being checked frequently during post-entry phase</p>
+            <p><strong>Fix:</strong> Now uses 1-minute intervals ALL DAY when VWAP mode is enabled</p>
+            <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
+        </div>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: VWAP Sell Decisions Not Showing in UI</h4>
+            <p><strong>Issue:</strong> Sell operations were not recorded in Recent Decisions panel</p>
+            <p><strong>Fix:</strong> Added <code>closePositionWithReason()</code> and
+                <code>saveVWAPSellDecision()</code></p>
+            <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
+        </div>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: End-of-Day Exit at 3:55 PM ET</h4>
+            <p><strong>Issue:</strong> Positions were not reliably closed before market close</p>
+            <p><strong>Fix:</strong> Priority check for market close (5 min before 4 PM) in position management</p>
+            <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
+        </div>
+
+        <h2>Previous Fixes (December 2025)</h2>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: Fractional Short Selling Error</h4>
+            <p><strong>Issue:</strong> Alpaca doesn't allow fractional shares for short selling</p>
+            <p><strong>Fix:</strong> OpenShort now rounds down to whole shares</p>
+            <p><strong>File:</strong> <code>trader/alpaca_trader.go</code></p>
+        </div>
+
+        <div class="fix-card">
+            <h4>✅ Fixed: Position Size Exceeds Account Equity</h4>
+            <p><strong>Issue:</strong> AI requested positions larger than account equity were rejected</p>
+            <p><strong>Fix:</strong> Now auto-adjusts to maximum allowed (like leverage)</p>
+            <p><strong>File:</strong> <code>decision/engine.go</code></p>
+        </div>
 
         <div class="footer">
             <p>SynapseStrike Enhancement Plan • Last Updated: January 26, 2026</p>
-            <p>Powered by LocalAI + AIArchitect + Advanced Decision Engine</p>
         </div>
     </div>
 </body>
