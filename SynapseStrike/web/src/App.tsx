@@ -762,11 +762,11 @@ function TraderDetailsPage({
           {/* CTA Button */}
           <button
             onClick={onNavigateToTraders}
-            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95"
+            className="px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
-              color: '#FFFFFF',
-              boxShadow: '0 4px 12px var(--primary-bg, 0.3)',
+              color: '#000000',
+              boxShadow: '0 4px 12px rgba(204, 255, 0, 0.4)',
             }}
           >
             {t('goToTradersPage', language)}
@@ -818,11 +818,11 @@ function TraderDetailsPage({
           {/* CTA Button */}
           <button
             onClick={onNavigateToTraders}
-            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95"
+            className="px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
-              color: '#FFFFFF',
-              boxShadow: '0 4px 12px var(--primary-bg, 0.3)',
+              color: '#000000',
+              boxShadow: '0 4px 12px rgba(204, 255, 0, 0.4)',
             }}
           >
             {t('goToTradersPage', language)}
