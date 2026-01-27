@@ -584,7 +584,7 @@ async def list_models():
                 "parent": None
             },
             {
-                "id": "Qwen/Qwen2.5-14B-Instruct-AWQ",
+                "id": "Qwen/Qwen2.5-32B-Instruct-AWQ",
                 "object": "model",
                 "created": 1700000000,
                 "owned_by": "local"

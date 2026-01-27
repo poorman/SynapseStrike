@@ -70,15 +70,15 @@ curl http://localhost:8060/v1/chat/completions \
 
 ![AI Architect Dual GPU Architecture](architecture.png)
 
-### Multi-GPU Configuration (Hardware Mix)
+### Dual RTX 3090 Configuration (48GB Total VRAM)
 
-| GPU | Card | VRAM | service | Role |
+| GPU | Card | VRAM | Service | Role |
 |-----|------|------|---------|------|
-| **0** | RTX 3090 | 24 GB | `llm_main` (Part 1), `llm_critic`, `embeddings` | **Master Controller** |
-| **1** | RTX 3080 Ti | 12 GB | `llm_main` (Part 2) + Desktop Display | **Compute Slave** |
+| **0** | RTX 3090 | 24 GB | `llm_main` (Part 1) | **Main Compute** |
+| **1** | RTX 3090 | 24 GB | `llm_main` (Part 2), `llm_critic`, `embeddings` | **Balanced Compute** |
 
 > [!IMPORTANT]
-> The **32B Model** is split across BOTH cards using Tensor Parallelism. This allows **8,192 context tokens**, providing 16x more "vision" for complex trading scenarios than a single card could handle.
+> The **32B Model** is split across BOTH cards using Tensor Parallelism (TP=2). This enables a massive **32,768 (32K) token context**, allowing the agent to analyze vast amounts of market history and complex lore simultaneously.
 
 ### Service Ports
 
