@@ -28,6 +28,12 @@ SynapseStrike/AIArchitect/
 
 ---
 
+## 🖼️ Architecture Overview
+
+![AIArchitect Whiteboard Diagram](whiteboard_architecture.jpg)
+
+---
+
 ## 🔌 Service Architecture
 
 ### Port Allocation
