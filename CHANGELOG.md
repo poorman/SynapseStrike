@@ -32,9 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **End-of-day exit**: Positions now reliably close 5 minutes before market close (3:55 PM ET)
 
 ### Changed
-- Rebranded from NOFX to SynapseStrike across entire codebase
-- Updated all GitHub URLs to poorman/SynapseStrike
-- Removed all Chinese language sections from documentation
+- Removed Chinese language sections from documentation
+- Updated all documentation with current contact information
 
 ---
 
