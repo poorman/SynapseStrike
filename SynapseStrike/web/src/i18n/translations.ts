@@ -607,7 +607,7 @@ export const translations = {
       'Password does not meet the security requirements',
     otpPlaceholder: '000000',
     loginTitle: 'Sign in to your account',
-    registerTitle: 'Create a new account',
+    registerTitle: '',
     loginButton: 'Sign In',
     registerButton: 'Sign Up',
     back: 'Back',
