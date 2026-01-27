@@ -477,6 +477,122 @@ async def health():
     }
 
 
+# =============================================================================
+# OPENAI-COMPATIBLE CHAT COMPLETIONS ENDPOINT
+# =============================================================================
+
+class OpenAIChatMessage(BaseModel):
+    role: str
+    content: str
+
+class OpenAIChatRequest(BaseModel):
+    model: str = "ai-architect"
+    messages: list[OpenAIChatMessage]
+    temperature: float = 0.7
+    max_tokens: int = 1024
+    stream: bool = False
+
+@app.post("/v1/chat/completions")
+async def openai_chat_completions(request: OpenAIChatRequest):
+    """
+    OpenAI-compatible chat completions endpoint.
+    Routes to full pipeline for trading decisions or simple chat.
+    """
+    llm: MainLLMClient = app.state.llm
+    
+    # Extract the last user message
+    user_message = ""
+    for msg in reversed(request.messages):
+        if msg.role == "user":
+            user_message = msg.content
+            break
+    
+    logger.info(f"🔌 OpenAI-compatible request: {user_message[:50]}...")
+    
+    # Check if this looks like a trading decision request
+    trading_keywords = ["trade", "buy", "sell", "position", "entry", "exit", "should i", "take trade"]
+    is_trading_request = any(kw in user_message.lower() for kw in trading_keywords)
+    
+    try:
+        if is_trading_request:
+            # Use full pipeline for trading decisions
+            logger.info("   → Routing to FULL PIPELINE")
+            pipeline: DecisionPipeline = app.state.decision_pipeline
+            
+            # Try to extract symbol from message
+            import re
+            symbol_match = re.search(r'\b([A-Z]{2,5})\b', user_message)
+            symbol = symbol_match.group(1) if symbol_match else "UNKNOWN"
+            
+            result = await pipeline.execute(
+                symbol=symbol,
+                timeframe="1H",
+                market_context={"source": "openai_api", "message": user_message},
+                question=user_message,
+            )
+            response_text = f"**Decision: {result['decision']}** (Confidence: {result['confidence']:.0%})\n\n{result['reason']}"
+        else:
+            # Simple chat response
+            logger.info("   → Routing to simple chat")
+            messages = [{"role": m.role, "content": m.content} for m in request.messages]
+            response_text = await llm.get_text_response(
+                messages=messages,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+            )
+        
+        # Return in OpenAI format
+        return {
+            "id": f"chatcmpl-{uuid.uuid4().hex[:8]}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": request.model,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": response_text
+                    },
+                    "finish_reason": "stop"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": len(user_message.split()),
+                "completion_tokens": len(response_text.split()),
+                "total_tokens": len(user_message.split()) + len(response_text.split())
+            }
+        }
+    except Exception as e:
+        logger.error(f"OpenAI endpoint error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/v1/models")
+async def list_models():
+    """OpenAI-compatible models list endpoint."""
+    return {
+        "object": "list",
+        "data": [
+            {
+                "id": "ai-architect",
+                "object": "model",
+                "created": 1700000000,
+                "owned_by": "local",
+                "permission": [],
+                "root": "ai-architect",
+                "parent": None
+            },
+            {
+                "id": "Qwen/Qwen2.5-14B-Instruct-AWQ",
+                "object": "model",
+                "created": 1700000000,
+                "owned_by": "local"
+            }
+        ]
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8065)
