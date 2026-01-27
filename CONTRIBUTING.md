@@ -1,8 +1,6 @@
-# 🤝 Contributing to NOFX
+# 🤝 Contributing to SynapseStrike
 
-**Language:** [English](CONTRIBUTING.md) | [中文](docs/i18n/zh-CN/CONTRIBUTING.md)
-
-Thank you for your interest in contributing to NOFX! This document provides guidelines and workflows for contributing to the project.
+Thank you for your interest in contributing to SynapseStrike! This document provides guidelines and workflows for contributing to the project.
 
 ---
 
@@ -15,7 +13,6 @@ Thank you for your interest in contributing to NOFX! This document provides guid
 - [Coding Standards](#coding-standards)
 - [Commit Message Guidelines](#commit-message-guidelines)
 - [Review Process](#review-process)
-- [Bounty Program](#bounty-program)
 
 ---
 
@@ -32,13 +29,13 @@ This project adheres to the [Code of Conduct](CODE_OF_CONDUCT.md). By participat
 - Use the [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md)
 - Check if the bug has already been reported
 - Include detailed reproduction steps
-- Provide environment information (OS, Go version, etc.)
+- Provide environment information (OS, Go version, Docker version, etc.)
 
 ### 2. Suggest Features ✨
 
 - Use the [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.md)
 - Explain the use case and benefits
-- Check if it aligns with the [project roadmap](docs/roadmap/README.md)
+- Check if it aligns with the project roadmap
 
 ### 3. Submit Pull Requests 🔧
 
@@ -46,12 +43,12 @@ Before submitting a PR, please check the following:
 
 #### ✅ **Accepted Contributions**
 
-**High Priority** (aligned with roadmap):
+**High Priority**:
 - 🔒 Security enhancements (encryption, authentication, RBAC)
-- 🧠 AI model integrations (GPT-4, Claude, Gemini Pro)
-- 🔗 Exchange integrations (OKX, Bybit, Lighter, EdgeX)
-- 📊 Trading data APIs (AI500, OI analysis, NetFlow)
-- 🎨 UI/UX improvements (mobile responsiveness, charts)
+- 🧠 AI model integrations (GPT-4, Claude, Gemini, Local LLMs)
+- 🔗 Exchange/Brokerage integrations (Interactive Brokers, TD Ameritrade, etc.)
+- 📊 Trading strategy improvements (VWAP, technical indicators)
+- 🎨 UI/UX improvements (mobile responsiveness, charts, accessibility)
 - ⚡ Performance optimizations
 - 🐛 Bug fixes
 - 📝 Documentation improvements
@@ -81,11 +78,11 @@ Before submitting a PR, please check the following:
 ```bash
 # Fork the repository on GitHub
 # Then clone your fork
-git clone https://github.com/YOUR_USERNAME/nofx.git
-cd nofx
+git clone https://github.com/YOUR_USERNAME/SynapseStrike.git
+cd SynapseStrike
 
 # Add upstream remote
-git remote add upstream https://github.com/tinkle-community/nofx.git
+git remote add upstream https://github.com/poorman/SynapseStrike.git
 ```
 
 ### 2. Create a Feature Branch
@@ -114,6 +111,7 @@ git checkout -b fix/your-bug-fix
 
 ```bash
 # Install Go dependencies
+cd SynapseStrike
 go mod download
 
 # Install frontend dependencies
@@ -121,12 +119,9 @@ cd web
 npm install
 cd ..
 
-# Install TA-Lib (required)
-# macOS:
-brew install ta-lib
-
-# Ubuntu/Debian:
-sudo apt-get install libta-lib0-dev
+# Copy environment template
+cp .env.example .env
+# Edit .env with your settings
 ```
 
 ### 4. Make Your Changes
@@ -143,7 +138,7 @@ sudo apt-get install libta-lib0-dev
 go test ./...
 
 # Build backend
-go build -o nofx
+go build -o synapsestrike
 
 # Run frontend in dev mode
 cd web
@@ -159,7 +154,7 @@ Follow the [commit message guidelines](#commit-message-guidelines):
 
 ```bash
 git add .
-git commit -m "feat: add support for OKX exchange integration"
+git commit -m "feat: add support for Interactive Brokers integration"
 ```
 
 ### 7. Push and Create PR
@@ -193,11 +188,11 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) format:
 <type>(<scope>): <subject>
 
 Examples:
-feat(exchange): add OKX exchange integration
-fix(trader): resolve position tracking bug
+feat(trader): add Interactive Brokers integration
+fix(vwap): resolve EOD exit timing issue
 docs(readme): update installation instructions
 perf(ai): optimize prompt generation
-refactor(core): extract common exchange interface
+refactor(core): extract common trading interface
 ```
 
 **Types:**
@@ -239,7 +234,7 @@ Keep PRs focused and reasonably sized:
 
 ```go
 // ✅ Good: Clear naming, proper error handling
-func ConnectToExchange(apiKey, secret string) (*Exchange, error) {
+func ConnectToBrokerage(apiKey, secret string) (*Brokerage, error) {
     if apiKey == "" || secret == "" {
         return nil, fmt.Errorf("API credentials are required")
     }
@@ -249,13 +244,13 @@ func ConnectToExchange(apiKey, secret string) (*Exchange, error) {
         return nil, fmt.Errorf("failed to create client: %w", err)
     }
 
-    return &Exchange{client: client}, nil
+    return &Brokerage{client: client}, nil
 }
 
 // ❌ Bad: Poor naming, no error handling
-func ce(a, s string) *Exchange {
+func cb(a, s string) *Brokerage {
     c := createClient(a, s)
-    return &Exchange{client: c}
+    return &Brokerage{client: c}
 }
 ```
 
@@ -273,7 +268,7 @@ func ce(a, s string) *Exchange {
 // ✅ Good: Type-safe, clear naming
 interface TraderConfig {
   id: string;
-  exchange: 'binance' | 'hyperliquid' | 'aster';
+  brokerage: 'alpaca' | 'ibkr' | 'td';
   aiModel: string;
   enabled: boolean;
 }
@@ -312,22 +307,21 @@ const TC = (props) => {
 ### File Structure
 
 ```
-NOFX/
+SynapseStrike/
 ├── cmd/               # Main applications
-├── internal/          # Private code
-│   ├── exchange/      # Exchange adapters
-│   ├── trader/        # Trading logic
-│   ├── ai/           # AI integrations
-│   └── api/          # API handlers
-├── pkg/              # Public libraries
-├── web/              # Frontend
+├── api/               # API handlers
+├── trader/            # Trading logic
+├── backtest/          # Backtesting engine
+├── market/            # Market data
+├── store/             # Database layer
+├── web/               # Frontend
 │   ├── src/
 │   │   ├── components/
 │   │   ├── pages/
 │   │   ├── hooks/
 │   │   └── utils/
 │   └── public/
-└── docs/             # Documentation
+└── docs/              # Documentation
 ```
 
 ---
@@ -347,19 +341,19 @@ NOFX/
 ### Examples
 
 ```
-feat(exchange): add OKX futures API integration
+feat(trader): add Interactive Brokers integration
 
 - Implement order placement and cancellation
 - Add balance and position retrieval
-- Support leverage configuration
+- Support stock and options trading
 
 Closes #123
 ```
 
 ```
-fix(trader): prevent duplicate position opening
+fix(vwap): prevent duplicate position opening
 
-The trader was opening multiple positions in the same direction
+The VWAP strategy was opening multiple positions in the same direction
 for the same symbol. Added check to prevent this behavior.
 
 Fixes #456
@@ -389,7 +383,6 @@ docs: update Docker deployment guide
 
 - **Initial review:** Within 2-3 business days
 - **Follow-up reviews:** Within 1-2 business days
-- **Bounty PRs:** Priority review within 1 business day
 
 ### Review Criteria
 
@@ -436,30 +429,10 @@ Reviewers will check:
 
 ---
 
-## 💰 Bounty Program
-
-### How It Works
-
-1. Check [open bounty issues](https://github.com/tinkle-community/nofx/labels/bounty)
-2. Comment to claim (first come, first served)
-3. Complete work within deadline
-4. Submit PR with bounty claim section filled
-5. Get paid upon merge
-
-### Guidelines
-
-- Read [Bounty Guide](docs/community/bounty-guide.md)
-- Meet all acceptance criteria
-- Include demo video/screenshots
-- Follow all contribution guidelines
-- Payment details discussed privately
-
----
-
 ## ❓ Questions?
 
-- **General questions:** Join our [Telegram Community](https://t.me/nofx_dev_community)
-- **Technical questions:** Open a [Discussion](https://github.com/tinkle-community/nofx/discussions)
+- **General questions:** Open a [Discussion](https://github.com/poorman/SynapseStrike/discussions)
+- **Technical questions:** Open an [Issue](https://github.com/poorman/SynapseStrike/issues)
 - **Security issues:** See [Security Policy](SECURITY.md)
 - **Bug reports:** Use [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md)
 
@@ -469,12 +442,12 @@ Reviewers will check:
 
 - [Project Roadmap](docs/roadmap/README.md)
 - [Architecture Documentation](docs/architecture/README.md)
-- [Deployment Guide](docs/getting-started/docker-deploy.en.md)
+- [Enhancement Plan](docs/ENHANCEMENT_PLAN.md)
 
 ---
 
 ## 🙏 Thank You!
 
-Your contributions make NOFX better for everyone. We appreciate your time and effort!
+Your contributions make SynapseStrike better for everyone. We appreciate your time and effort!
 
 **Happy coding! 🚀**

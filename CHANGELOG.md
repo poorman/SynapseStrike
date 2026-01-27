@@ -1,36 +1,64 @@
 # Changelog
 
-All notable changes to the NOFX project will be documented in this file.
+All notable changes to the SynapseStrike project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-**Languages:** [English](CHANGELOG.md) | [中文](CHANGELOG.zh-CN.md)
 
 ---
 
 ## [Unreleased]
 
 ### Added
-- Documentation system with multi-language support (EN/CN/RU/UK)
-- Complete getting-started guides (Docker, Custom API)
-- Architecture documentation with system design details
-- User guides with FAQ and troubleshooting
-- Community documentation with bounty programs
+- AIArchitect integration with 6-step decision pipeline
+- LocalAI self-hosted LLM support (Qwen2.5-32B, DeepSeek-R1-14B)
+- Qdrant vector database for semantic memory
+- Multi-LLM consensus decision making
+
+---
+
+## [3.2.0] - 2026-01-26
+
+### Added
+- Glossy glassmorphism UI design for Enhancement Plan page
+- Animated gradient backgrounds with floating effects
+- Modern tier badges with shine animations
+- Responsive card grid layouts
+
+### Fixed
+- **Button text color**: Changed from white to black for better contrast on lime green buttons
+- **VWAP sell trigger monitoring**: Now uses 1-minute intervals throughout entire trading day
+- **VWAP sell decisions**: Now properly recorded in Recent Decisions panel via `closePositionWithReason()` and `saveVWAPSellDecision()`
+- **End-of-day exit**: Positions now reliably close 5 minutes before market close (3:55 PM ET)
 
 ### Changed
-- Reorganized documentation structure into logical categories
-- Updated all README files with proper navigation links
+- Rebranded from NOFX to SynapseStrike across entire codebase
+- Updated all GitHub URLs to poorman/SynapseStrike
+- Removed all Chinese language sections from documentation
+
+---
+
+## [3.1.0] - 2026-01-15
+
+### Added
+- Alpaca Paper Trading integration for stock trading
+- VWAP Slope & Stretch strategy with configurable parameters
+- Stock source editor for strategy configuration
+- Market data editor with stock symbol support
+
+### Fixed
+- Position sync improvements for stock brokerages
+- Fractional share handling for short selling
 
 ---
 
 ## [3.0.0] - 2025-10-30
 
-### Added - Major Architecture Transformation 🚀
+### Added - Major Architecture Transformation
 
 **Complete System Redesign - Web-Based Configuration Platform**
 
-This is a **major breaking update** that completely transforms NOFX from a static config-based system to a modern web-based trading platform.
+This is a **major breaking update** that completely transforms SynapseStrike from a static config-based system to a modern web-based trading platform.
 
 #### Database-Driven Architecture
 - SQLite integration replacing static JSON config
@@ -73,11 +101,11 @@ This is a **major breaking update** that completely transforms NOFX from a stati
 - No more server restarts for configuration changes
 
 ### Why This Matters
-- 🎯 **User Experience**: Much easier to configure and manage
-- 🔧 **Flexibility**: Create any combination of AI models and exchanges
-- 📊 **Scalability**: Support for complex multi-trader setups
-- 🔒 **Reliability**: Database ensures data persistence and consistency
-- 🚀 **Future-Proof**: Foundation for advanced features
+- **User Experience**: Much easier to configure and manage
+- **Flexibility**: Create any combination of AI models and exchanges
+- **Scalability**: Support for complex multi-trader setups
+- **Reliability**: Database ensures data persistence and consistency
+- **Future-Proof**: Foundation for advanced features
 
 ---
 
@@ -196,8 +224,8 @@ When releasing a new version, move [Unreleased] items to a new version section w
 - [Documentation](docs/README.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
-- [GitHub Repository](https://github.com/tinkle-community/nofx)
+- [GitHub Repository](https://github.com/poorman/SynapseStrike)
 
 ---
 
-**Last Updated:** 2025-11-01
+**Last Updated:** January 26, 2026
