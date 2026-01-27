@@ -64,7 +64,7 @@ AIArchitect is NOT a single AI model - it's an **orchestrated pipeline** of 6 AI
         │ Main LLM          │           │ Critic LLM        │
         │ (Port 8060)       │           │ (Port 8061)       │
         │                   │           │                   │
-        │ Qwen2.5-14B       │           │ Qwen2.5-7B        │
+        │ Qwen2.5-32B       │           │ Qwen2.5-7B        │
         │ Makes decision    │           │ Validates it      │
         │ GPU 0: RTX 3090   │           │ GPU 1: RTX 3080Ti │
         └───────────────────┘           └───────────────────┘
@@ -171,7 +171,7 @@ When SynapseStrike sends a trade query, AIArchitect:
 2. **Searches** for similar past trades in Qdrant
 3. **Loads** applicable trading rules
 4. **Builds** a context-aware prompt
-5. **Asks** Main LLM (14B) for decision
+5. **Asks** Main LLM (32B) for decision
 6. **Validates** with Critic LLM (7B)
 7. **Returns** `{action, confidence, reasoning}`
 

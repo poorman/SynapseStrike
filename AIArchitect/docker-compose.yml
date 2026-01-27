@@ -21,21 +21,22 @@
 
 services:
   # ---------------------------------------------------------------------------
-  # MAIN LLM - Qwen2.5-14B-Instruct-AWQ (fits in ~10GB)
+  # MAIN LLM - Qwen2.5-32B-Instruct-AWQ (requires ~18-20GB VRAM)
   # ---------------------------------------------------------------------------
   llm_main:
     image: vllm/vllm-openai:v0.6.3.post1
-    container_name: llm_main_qwen
+    container_name: llm_main_qwen32b
     environment:
       - CUDA_VISIBLE_DEVICES=0
       - CUDA_DEVICE_ORDER=PCI_BUS_ID
     command: >
-      --model Qwen/Qwen2.5-14B-Instruct-AWQ
+      --model Qwen/Qwen2.5-32B-Instruct-AWQ
       --quantization awq_marlin
       --dtype float16
-      --max-model-len 8192
-      --gpu-memory-utilization 0.80
+      --max-model-len 512
+      --gpu-memory-utilization 0.95
       --trust-remote-code
+      --enforce-eager
     ports:
       - "8060:8000"
     volumes:
