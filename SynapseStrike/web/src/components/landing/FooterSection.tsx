@@ -117,21 +117,10 @@ export default function FooterSection({ language }: FooterSectionProps) {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm transition-colors hover:text-[var(--primary)] inline-flex items-center gap-2"
+                    className="text-sm transition-colors hover:text-[var(--primary)]"
                     style={{ color: '#6B7280' }}
                   >
                     {link.name}
-                    {link.badge && (
-                      <span
-                        className="text-xs px-1.5 py-0.5 rounded"
-                        style={{
-                          background: 'var(--primary-bg, 0.1)',
-                          color: 'var(--primary)',
-                        }}
-                      >
-                        {link.badge}
-                      </span>
-                    )}
                   </a>
                 </li>
               ))}
