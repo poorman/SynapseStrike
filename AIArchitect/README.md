@@ -91,44 +91,33 @@ curl http://localhost:8060/v1/chat/completions \
 | PostgreSQL | `8064` | Trade logs database |
 | **Web UI** | **`8065`** | Dashboard & API |
 
-### Pipeline Flow
+### 6-Step Decision Pipeline
 
+```mermaid
+graph TD
+    A[SynapseStrike Query] --> B[Step 1: Context Embedding]
+    B --> C[Step 2: Qdrant Memory Search]
+    C --> D[Step 3: Rule Retrieval]
+    D --> E[Step 4: Dynamic Prompt Builder]
+    E --> F[Step 5: Multi-LLM Decision]
+    F --> G[Step 6: Audit & Logging]
+
+    subgraph "The Brain (Multi-GPU)"
+    F --> F1[Main 32B Decision]
+    F --> F2[Critic 7B Validation]
+    F1 -.->|Consensus| H[Final Execution]
+    F2 -.->|Consensus| H
+    end
 ```
-Step 1: Context Embedding
-         │
-         ├─→ Convert market data to vector (768 dims)
-         │   Model: BGE-large-en-v1.5 (GPU 1)
-         │
-         ▼
-Step 2: Semantic Search
-         │
-         ├─→ Query Qdrant for similar past trades
-         │   Top 5 most relevant decisions
-         │
-         ▼
-Step 3: Rule Retrieval
-         │
-         ├─→ Load applicable trading rules
-         │   Risk limits, constraints, policies
-         │
-         ▼
-Step 4: Dynamic Prompt Building
-         │
-         ├─→ Combine: Market + History + Rules
-         │   Create context-aware prompt
-         │
-         ▼
-Step 5: Multi-LLM Analysis
-         │
-         ├─→ Main LLM: Qwen2.5-14B (GPU 0) - Trading Decision
-         │   Critic LLM: Qwen2.5-7B (GPU 1) - Validation
-         │   Consensus required for execution
-         │
-         ▼
-Step 6: Decision Logging
-         │
-         └─→ Store to PostgreSQL + Qdrant
-             Full audit trail for learning
+
+1. **Context Embedding**: Converts market conditions into 768-dim vectors using `BGE-large`.
+2. **Semantic Search**: Finds top-5 similar historical situations in `Qdrant`.
+3. **Rule Retrieval**: Enforces risk constraints from local YAML files.
+4. **Prompt Building**: Constructs a massive context window (up to 8K) combining current data + history + rules.
+5. **Multi-LLM Analysis**: 
+   - **Main (32B)** makes the trade proposal.
+   - **Critic (7B)** checks for logic errors or risk violations.
+6. **Logging**: Full decision trail saved to `PostgreSQL` and learned into `Qdrant`.
 ```
 
 
@@ -445,7 +434,7 @@ QDRANT_URL=http://localhost:6333
 
 # Model Names
 LLM_MODEL=Qwen/Qwen2.5-32B-Instruct-AWQ
-CRITIC_MODEL=deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+CRITIC_MODEL=Qwen/Qwen2.5-7B-Instruct-AWQ
 EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
 ```
 
