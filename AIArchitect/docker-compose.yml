@@ -33,9 +33,9 @@ services:
       --model Qwen/Qwen2.5-32B-Instruct-AWQ
       --quantization awq_marlin
       --dtype float16
-      --max-model-len 8192
+      --max-model-len 1024
       --tensor-parallel-size 2
-      --gpu-memory-utilization 0.80
+      --gpu-memory-utilization 0.92
       --trust-remote-code
       --enforce-eager
     ports:
