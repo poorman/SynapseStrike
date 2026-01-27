@@ -27,18 +27,20 @@ services:
     image: vllm/vllm-openai:v0.6.3.post1
     container_name: llm_main_qwen32b
     environment:
-      - CUDA_VISIBLE_DEVICES=0
+      - CUDA_VISIBLE_DEVICES=0,1
       - CUDA_DEVICE_ORDER=PCI_BUS_ID
     command: >
       --model Qwen/Qwen2.5-32B-Instruct-AWQ
       --quantization awq_marlin
       --dtype float16
-      --max-model-len 512
-      --gpu-memory-utilization 0.95
+      --max-model-len 8192
+      --tensor-parallel-size 2
+      --gpu-memory-utilization 0.80
       --trust-remote-code
       --enforce-eager
     ports:
       - "8060:8000"
+    shm_size: '2gb'
     volumes:
       - huggingface_cache:/root/.cache/huggingface
     deploy:
@@ -56,7 +58,7 @@ services:
     image: vllm/vllm-openai:v0.6.3.post1
     container_name: llm_critic_qwen
     environment:
-      - CUDA_VISIBLE_DEVICES=1
+      - CUDA_VISIBLE_DEVICES=0
       - CUDA_DEVICE_ORDER=PCI_BUS_ID
     command: >
       --model Qwen/Qwen2.5-7B-Instruct-AWQ
@@ -86,7 +88,7 @@ services:
     restart: unless-stopped
     runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=1
+      - CUDA_VISIBLE_DEVICES=0
     command: v2 --model-id BAAI/bge-large-en-v1.5 --device cuda --port 80
     ports:
       - "8062:80"

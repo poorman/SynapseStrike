@@ -64,9 +64,9 @@ AIArchitect is NOT a single AI model - it's an **orchestrated pipeline** of 6 AI
         │ Main LLM          │           │ Critic LLM        │
         │ (Port 8060)       │           │ (Port 8061)       │
         │                   │           │                   │
-        │ Qwen2.5-32B       │           │ Qwen2.5-7B        │
-        │ Makes decision    │           │ Validates it      │
-        │ GPU 0: RTX 3090   │           │ GPU 1: RTX 3080Ti │
+        │ Qwen2.5-32B (8K Context)│           │ Qwen2.5-7B        │
+        │ Tensor Parallel (TP=2)  │           │ Validates it      │
+        │ GPU 0 + GPU 1          │           │ GPU 0: RTX 3090   │
         └───────────────────┘           └───────────────────┘
                     │                               │
                     └───────────────┬───────────────┘
