@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Play, Github, Zap } from 'lucide-react'
+import { ArrowRight, Play, Github } from 'lucide-react'
 import { t, Language } from '../../i18n/translations'
 import { useGitHubStats } from '../../hooks/useGitHubStats'
-import { useCounterAnimation } from '../../hooks/useCounterAnimation'
 import { OFFICIAL_LINKS } from '../../constants/branding'
 
 interface HeroSectionProps {
@@ -10,12 +9,7 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ language }: HeroSectionProps) {
-  const { stars, daysOld, isLoading } = useGitHubStats('poorman', 'synapsestrike')
-  const animatedStars = useCounterAnimation({
-    start: 0,
-    end: stars,
-    duration: 2000,
-  })
+  const { stars } = useGitHubStats('poorman', 'synapsestrike')
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -58,40 +52,6 @@ export default function HeroSection({ language }: HeroSectionProps) {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
-          style={{
-            background: 'var(--primary-bg, 0.1)',
-            border: '1px solid var(--primary-bg, 0.3)',
-          }}
-        >
-          <Zap className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
-            {isLoading ? (
-              t('githubStarsInDays', language)
-            ) : false ? (
-              <>
-                {daysOld} daysget in{' '}
-                <span className="font-bold tabular-nums">
-                  {(animatedStars / 1000).toFixed(1)}K+
-                </span>{' '}
-                GitHub Stars
-              </>
-            ) : (
-              <>
-                <span className="font-bold tabular-nums">
-                  {(animatedStars / 1000).toFixed(1)}K+
-                </span>{' '}
-                GitHub Stars in {daysOld} days
-              </>
-            )}
-          </span>
-        </motion.div>
-
         {/* Main Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}

@@ -24,6 +24,22 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// maskCredential masks a credential string showing first 4 and last 4 characters
+// e.g., "PKCXODKDOPCALNLNMYBG6QPGO2" -> "PKCX...GO2"
+func maskCredential(s string) string {
+	if s == "" {
+		return ""
+	}
+	// Don't mask if it looks like it's already encrypted
+	if strings.HasPrefix(s, "ENC:") {
+		return "[encrypted]"
+	}
+	if len(s) <= 8 {
+		return "****"
+	}
+	return s[:4] + "..." + s[len(s)-4:]
+}
+
 // Server HTTP API server
 type Server struct {
 	router          *gin.Engine
@@ -473,10 +489,12 @@ type SafeExchangeConfig struct {
 	Type                  string `json:"type"`          // "cex" or "dex"
 	Enabled               bool   `json:"enabled"`
 	Testnet               bool   `json:"testnet,omitempty"`
-	HyperliquidWalletAddr string `json:"hyperliquidWalletAddr"` // Hyperliquid wallet address (not sensitive)
-	AsterUser             string `json:"asterUser"`             // Aster username (not sensitive)
-	AsterSigner           string `json:"asterSigner"`           // Aster signer (not sensitive)
-	LighterWalletAddr     string `json:"lighterWalletAddr"`     // LIGHTER wallet address (not sensitive)
+	MaskedAPIKey          string `json:"masked_api_key,omitempty"`    // Masked API key (e.g., "PKCD...GO2")
+	MaskedSecretKey       string `json:"masked_secret_key,omitempty"` // Masked secret key (e.g., "43WV...Gzag")
+	HyperliquidWalletAddr string `json:"hyperliquidWalletAddr"`       // Hyperliquid wallet address (not sensitive)
+	AsterUser             string `json:"asterUser"`                   // Aster username (not sensitive)
+	AsterSigner           string `json:"asterSigner"`                 // Aster signer (not sensitive)
+	LighterWalletAddr     string `json:"lighterWalletAddr"`           // LIGHTER wallet address (not sensitive)
 }
 
 type UpdateModelConfigRequest struct {
@@ -1522,7 +1540,7 @@ func (s *Server) handleGetExchangeConfigs(c *gin.Context) {
 
 	logger.Infof("✅ Found %d exchange configs", len(exchanges))
 
-	// Convert to safe response structure, remove sensitive information
+	// Convert to safe response structure, remove sensitive information but include masked credentials
 	safeExchanges := make([]SafeExchangeConfig, len(exchanges))
 	for i, exchange := range exchanges {
 		safeExchanges[i] = SafeExchangeConfig{
@@ -1533,6 +1551,8 @@ func (s *Server) handleGetExchangeConfigs(c *gin.Context) {
 			Type:                  exchange.Type,
 			Enabled:               exchange.Enabled,
 			Testnet:               exchange.Testnet,
+			MaskedAPIKey:          maskCredential(exchange.APIKey),
+			MaskedSecretKey:       maskCredential(exchange.SecretKey),
 			HyperliquidWalletAddr: exchange.HyperliquidWalletAddr,
 			AsterUser:             exchange.AsterUser,
 			AsterSigner:           exchange.AsterSigner,

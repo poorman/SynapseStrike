@@ -71,7 +71,13 @@ export function BrokerageConfigModal({
       // Handle both camelCase and snake_case field names from API
       const accountNameValue = selectedBrokerage.account_name || (selectedBrokerage as any).accountName || ''
       setAccountName(accountNameValue)
-      // API doesn't return credentials for security - leave empty for re-entry
+      // API doesn't return actual credentials for security - leave empty for re-entry
+      // but show that credentials are configured if the brokerage is enabled
+      setApiKey('')
+      setSecretKey('')
+    } else {
+      // Reset form when creating new
+      setAccountName('')
       setApiKey('')
       setSecretKey('')
     }
@@ -89,7 +95,9 @@ export function BrokerageConfigModal({
       return
     }
 
-    if (!apiKey.trim()) {
+    // For new brokerages, require API key
+    // For editing, allow empty to keep existing credentials
+    if (!editingBrokerageId && !apiKey.trim()) {
       toast.error('Please enter API Key')
       return
     }
@@ -215,32 +223,52 @@ export function BrokerageConfigModal({
               <div>
                 <label className="block text-sm font-semibold mb-2" style={{ color: '#F9FAFB' }}>
                   API Key *
+                  {editingBrokerageId && selectedBrokerage?.masked_api_key && (
+                    <span className="ml-2 text-xs font-normal" style={{ color: '#22C55E' }}>✓ Configured</span>
+                  )}
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={editingBrokerageId ? "Enter new API Key (required to update)" : "Enter API Key"}
+                  placeholder={editingBrokerageId && selectedBrokerage?.masked_api_key 
+                    ? `Current: ${selectedBrokerage.masked_api_key} (enter new to update)` 
+                    : "Enter API Key"}
                   className="w-full px-3 py-2 rounded"
                   style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                  required
+                  required={!editingBrokerageId}
                 />
+                {editingBrokerageId && selectedBrokerage?.masked_api_key && (
+                  <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
+                    Current key: <span style={{ color: '#22C55E', fontFamily: 'monospace' }}>{selectedBrokerage.masked_api_key}</span> — Leave empty to keep
+                  </p>
+                )}
               </div>
 
               {/* Secret Key */}
               <div>
                 <label className="block text-sm font-semibold mb-2" style={{ color: '#F9FAFB' }}>
                   Secret Key {currentBrokerageType?.includes('alpaca') ? '*' : '(Optional)'}
+                  {editingBrokerageId && selectedBrokerage?.masked_secret_key && (
+                    <span className="ml-2 text-xs font-normal" style={{ color: '#22C55E' }}>✓ Configured</span>
+                  )}
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={secretKey}
                   onChange={(e) => setSecretKey(e.target.value)}
-                  placeholder={editingBrokerageId ? "Enter new Secret Key (required to update)" : "Enter Secret Key"}
+                  placeholder={editingBrokerageId && selectedBrokerage?.masked_secret_key 
+                    ? `Current: ${selectedBrokerage.masked_secret_key} (enter new to update)` 
+                    : "Enter Secret Key"}
                   className="w-full px-3 py-2 rounded"
                   style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                  required={currentBrokerageType?.includes('alpaca')}
+                  required={currentBrokerageType?.includes('alpaca') && !editingBrokerageId}
                 />
+                {editingBrokerageId && selectedBrokerage?.masked_secret_key && (
+                  <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
+                    Current key: <span style={{ color: '#22C55E', fontFamily: 'monospace' }}>{selectedBrokerage.masked_secret_key}</span> — Leave empty to keep
+                  </p>
+                )}
               </div>
 
               {/* Alpaca-specific info */}

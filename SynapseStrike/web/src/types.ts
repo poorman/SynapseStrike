@@ -122,6 +122,8 @@ export interface Brokerage {
   enabled: boolean
   apiKey?: string
   secretKey?: string
+  masked_api_key?: string        // Masked API key (e.g., "PKCX...GO2")
+  masked_secret_key?: string     // Masked secret key (e.g., "43WV...zag")
 }
 
 export interface CreateBrokerageRequest {

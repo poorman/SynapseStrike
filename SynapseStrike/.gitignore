@@ -1,0 +1,21 @@
+# Data directory
+data/
+*.db
+*.db.restore
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

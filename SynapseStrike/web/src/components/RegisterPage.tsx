@@ -114,18 +114,15 @@ export function RegisterPage() {
     >
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <div className="text-center mb-4">
+          <div className="w-40 mx-auto mb-2 flex items-center justify-center">
             <img
-              src="/icons/synapsestrike.svg"
+              src="/images/logo.png"
               alt="SynapseStrike Logo"
-              className="w-16 h-16 object-contain"
+              className="w-40 h-auto object-contain"
             />
           </div>
-          <h1 className="text-2xl font-bold" style={{ color: '#F9FAFB' }}>
-            {t('appTitle', language)}
-          </h1>
-          <p className="text-sm mt-2" style={{ color: '#9CA3AF' }}>
+          <p className="text-sm" style={{ color: '#9CA3AF' }}>
             {step === 'register' && t('registerTitle', language)}
             {step === 'setup-otp' && t('setupTwoFactor', language)}
             {step === 'verify-otp' && t('verifyOTP', language)}
@@ -307,8 +304,8 @@ export function RegisterPage() {
                 }
                 className="w-full px-4 py-2 rounded text-sm font-semibold transition-all hover:scale-105 disabled:opacity-50"
                 style={{
-                  background: 'var(--brand-yellow)',
-                  color: 'var(--brand-black)',
+                  background: 'var(--primary)',
+                  color: '#000000',
                 }}
               >
                 {loading
@@ -526,15 +523,15 @@ export function RegisterPage() {
         {step === 'register' && (
           <div className="text-center mt-6">
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              alreadyhasaccount？{' '}
+              Already have an account?{' '}
               <button
                 onClick={() => {
                   window.location.href = '/login'
                 }}
                 className="font-semibold hover:underline transition-colors"
-                style={{ color: 'var(--brand-yellow)' }}
+                style={{ color: 'var(--primary)' }}
               >
-                nowLogin
+                Login
               </button>
             </p>
           </div>

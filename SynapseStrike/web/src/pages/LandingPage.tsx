@@ -6,7 +6,6 @@ import HeroSection from '../components/landing/HeroSection'
 import AboutSection from '../components/landing/AboutSection'
 import FeaturesSection from '../components/landing/FeaturesSection'
 import HowItWorksSection from '../components/landing/HowItWorksSection'
-import CommunitySection from '../components/landing/CommunitySection'
 import LoginModal from '../components/landing/LoginModal'
 import FooterSection from '../components/landing/FooterSection'
 import { useAuth } from '../contexts/AuthContext'
@@ -51,7 +50,6 @@ export function LandingPage() {
         <AboutSection language={language} />
         <FeaturesSection language={language} />
         <HowItWorksSection language={language} />
-        <CommunitySection language={language} />
 
         {/* Final CTA Section */}
         <section className="py-24 relative overflow-hidden" style={{ background: '#0D1117' }}>
@@ -94,7 +92,7 @@ export function LandingPage() {
                 className="group flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg"
                 style={{
                   background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
-                  color: '#FFFFFF',
+                  color: '#000000',
                   boxShadow: '0 4px 24px var(--primary-bg, 0.3)',
                 }}
                 whileHover={{

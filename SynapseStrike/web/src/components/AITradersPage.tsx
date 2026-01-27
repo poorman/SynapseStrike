@@ -122,7 +122,6 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
   const [allModels, setAllModels] = useState<AIModel[]>([])
   const [allBrokerages, setAllBrokerages] = useState<Brokerage[]>([])
   const [supportedModels, setSupportedModels] = useState<AIModel[]>([])
-  const [supportedBrokerages, setSupportedBrokerages] = useState<Brokerage[]>([])
 
   const { data: traders, mutate: mutateTraders, isLoading: isTradersLoading } = useSWR<TraderInfo[]>(
     user && token ? 'traders' : null,
@@ -145,14 +144,10 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
   useEffect(() => {
     const loadConfigs = async () => {
       if (!user || !token) {
-        // notLoginwhenonlyLoadpublic'ssupportmodelandbrokerage
+        // notLoginwhenonlyLoadpublic'ssupportmodel
         try {
-          const [supportedModels, supportedBrokerages] = await Promise.all([
-            api.getSupportedModels(),
-            api.getSupportedBrokerages(),
-          ])
+          const supportedModels = await api.getSupportedModels()
           setSupportedModels(supportedModels)
-          setSupportedBrokerages(supportedBrokerages)
         } catch (err) {
           console.error('Failed to load supported configs:', err)
         }
@@ -164,17 +159,14 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
           modelConfigs,
           brokerageConfigs,
           supportedModels,
-          supportedBrokerages,
         ] = await Promise.all([
           api.getModelConfigs(),
           api.getBrokerageConfigs(),
           api.getSupportedModels(),
-          api.getSupportedBrokerages(),
         ])
         setAllModels(modelConfigs)
         setAllBrokerages(brokerageConfigs)
         setSupportedModels(supportedModels)
-        setSupportedBrokerages(supportedBrokerages)
       } catch (error) {
         console.error('Failed to load configs:', error)
       }
@@ -1247,7 +1239,7 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
       {
         showBrokerageModal && (
           <BrokerageConfigModal
-            allBrokerages={supportedBrokerages}
+            allBrokerages={allBrokerages}
             editingBrokerageId={editingBrokerage}
             onSave={handleSaveBrokerageConfig}
             onDelete={handleDeleteBrokerageConfig}
