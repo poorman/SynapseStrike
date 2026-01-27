@@ -29,18 +29,24 @@ services:
     environment:
       - CUDA_VISIBLE_DEVICES=0,1
       - CUDA_DEVICE_ORDER=PCI_BUS_ID
+      - NCCL_P2P_DISABLE=1
+      - NCCL_IB_DISABLE=1
+      - NCCL_SOCKET_IFNAME=eth0
+      - VLLM_WORKER_MULTIPROC_METHOD=spawn
     command: >
       --model Qwen/Qwen2.5-32B-Instruct-AWQ
       --quantization awq_marlin
       --dtype float16
       --max-model-len 32768
       --tensor-parallel-size 2
-      --gpu-memory-utilization 0.90
+      --distributed-executor-backend ray
+      --gpu-memory-utilization 0.50
+      --disable-custom-all-reduce
       --trust-remote-code
       --enforce-eager
     ports:
       - "8060:8000"
-    shm_size: '2gb'
+    shm_size: '4gb'
     volumes:
       - huggingface_cache:/root/.cache/huggingface
     deploy:
@@ -58,7 +64,7 @@ services:
     image: vllm/vllm-openai:v0.6.3.post1
     container_name: llm_critic_qwen
     environment:
-      - CUDA_VISIBLE_DEVICES=1
+      - CUDA_VISIBLE_DEVICES=0
       - CUDA_DEVICE_ORDER=PCI_BUS_ID
     command: >
       --model Qwen/Qwen2.5-7B-Instruct-AWQ
