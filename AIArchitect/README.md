@@ -13,17 +13,89 @@ Unlike traditional trading bots that use a single LLM for decisions, AIArchitect
 
 ---
 
+## 🔌 Connect to SynapseStrike
+
+To add AIArchitect as an AI Model in SynapseStrike, use these settings:
+
+### Main LLM (Qwen2.5-14B) - Primary Trading Decisions
+
+| Field | Value |
+|-------|-------|
+| **Select AI Model** | `Local AI (localai)` |
+| **API Key** | `not-needed` (required placeholder) |
+| **Base URL** | `http://localhost:8060/v1` |
+| **Model Name** | `Qwen/Qwen2.5-14B-Instruct-AWQ` |
+
+### Critic LLM (Qwen2.5-7B) - Validation & Second Opinion
+
+| Field | Value |
+|-------|-------|
+| **Select AI Model** | `Local AI (localai)` |
+| **API Key** | `not-needed` (required placeholder) |
+| **Base URL** | `http://localhost:8061/v1` |
+| **Model Name** | `Qwen/Qwen2.5-7B-Instruct-AWQ` |
+
+> **Note**: No API key is actually needed - vLLM accepts any value. Use `not-needed` or `sk-local` as a placeholder.
+
+---
+
+## 🖥️ Test in Browser
+
+### 1. Web UI Dashboard
+Open your browser and go to:
+```
+http://localhost:8065
+```
+
+### 2. API Documentation (Swagger)
+Interactive API testing:
+```
+http://localhost:8065/docs
+```
+
+### 3. Test LLM Directly
+Test the main LLM endpoint:
+```bash
+curl http://localhost:8060/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen2.5-14B-Instruct-AWQ",
+    "messages": [{"role": "user", "content": "Should I buy TSLA at $245?"}],
+    "max_tokens": 200
+  }'
+```
+
+---
+
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    AIArchitect Pipeline                  │
-└─────────────────────────────────────────────────────────┘
+![AI Architect Dual GPU Architecture](architecture.png)
 
+### Dual GPU Configuration
+
+| GPU | Card | VRAM | Service |
+|-----|------|------|---------|
+| **0** | RTX 3090 | 24 GB | Main LLM (Qwen2.5-14B) - ~21 GB |
+| **1** | RTX 3080 Ti | 12 GB | Critic LLM (Qwen2.5-7B) + Embeddings - ~8 GB |
+
+### Service Ports
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Main LLM | `8060` | Qwen2.5-14B for trading decisions |
+| Critic LLM | `8061` | Qwen2.5-7B for validation |
+| Embeddings | `8062` | BGE-large for vector search |
+| Qdrant | `8063` | Vector database |
+| PostgreSQL | `8064` | Trade logs database |
+| **Web UI** | **`8065`** | Dashboard & API |
+
+### Pipeline Flow
+
+```
 Step 1: Context Embedding
          │
          ├─→ Convert market data to vector (768 dims)
-         │   Model: BGE-large-en-v1.5
+         │   Model: BGE-large-en-v1.5 (GPU 1)
          │
          ▼
 Step 2: Semantic Search
@@ -46,8 +118,8 @@ Step 4: Dynamic Prompt Building
          ▼
 Step 5: Multi-LLM Analysis
          │
-         ├─→ Main LLM: Qwen2.5-32B (Trading Decision)
-         │   Critic LLM: DeepSeek-R1-14B (Validation)
+         ├─→ Main LLM: Qwen2.5-14B (GPU 0) - Trading Decision
+         │   Critic LLM: Qwen2.5-7B (GPU 1) - Validation
          │   Consensus required for execution
          │
          ▼
@@ -56,6 +128,7 @@ Step 6: Decision Logging
          └─→ Store to PostgreSQL + Qdrant
              Full audit trail for learning
 ```
+
 
 ---
 
@@ -286,8 +359,10 @@ POST http://localhost:8065/api/decide
 
 ### Prerequisites
 - Docker with Docker Compose
-- NVIDIA GPU (24GB+ VRAM) or CPU
-- 16GB RAM minimum
+- **Dual GPU Setup** (recommended):
+  - GPU 0: RTX 3090 or similar (24GB VRAM) 
+  - GPU 1: RTX 3080 Ti or similar (12GB VRAM)
+- 32GB+ RAM recommended
 
 ### 1. Start Services
 ```bash
@@ -296,12 +371,12 @@ docker compose up -d
 ```
 
 This starts:
-- **Backend (FastAPI)**: Port 8065
+- **Main LLM (Qwen2.5-14B)**: Port 8060 → GPU 0
+- **Critic LLM (Qwen2.5-7B)**: Port 8061 → GPU 1
+- **Embeddings (BGE-large)**: Port 8062 → GPU 1
 - **Qdrant Vector DB**: Port 8063
 - **PostgreSQL**: Port 8064
-- **Main LLM (Qwen2.5-32B)**: Port 8060
-- **Critic LLM (DeepSeek-R1-14B)**: Port 8061
-- **Embeddings (BGE-large)**: Port 8062
+- **Backend (FastAPI + Web UI)**: Port 8065
 
 ### 2. Access Web UI
 ```

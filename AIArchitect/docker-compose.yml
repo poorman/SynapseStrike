@@ -14,27 +14,27 @@
 #   8064 - PostgreSQL (Trade Logs)
 #   8065 - Backend Web UI
 #
-# GPU REQUIREMENTS:
-#   Running all LLMs simultaneously requires ~40GB VRAM
-#   For RTX 3090 (24GB), run one LLM at a time or use LocalAI instead
+# GPU ALLOCATION (Dual GPU Setup):
+#   GPU 0 (RTX 3090 24GB): Main LLM - Qwen 32B (~18GB)
+#   GPU 1 (RTX 3080 Ti 12GB): Critic LLM (~8GB) + Embeddings (~2GB)
 # =============================================================================
 
 services:
   # ---------------------------------------------------------------------------
-  # MAIN LLM - Qwen2.5-32B-Instruct
+  # MAIN LLM - Qwen2.5-14B-Instruct-AWQ (fits in ~10GB)
   # ---------------------------------------------------------------------------
   llm_main:
-    image: vllm/vllm-openai:latest
-    container_name: llm_main_qwen32b
-    runtime: nvidia
+    image: vllm/vllm-openai:v0.6.3.post1
+    container_name: llm_main_qwen
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
+      - CUDA_DEVICE_ORDER=PCI_BUS_ID
     command: >
-      --model Qwen/Qwen2.5-32B-Instruct-AWQ
-      --quantization awq
+      --model Qwen/Qwen2.5-14B-Instruct-AWQ
+      --quantization awq_marlin
       --dtype float16
       --max-model-len 8192
-      --gpu-memory-utilization 0.85
+      --gpu-memory-utilization 0.80
       --trust-remote-code
     ports:
       - "8060:8000"
@@ -45,23 +45,24 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
 
   # ---------------------------------------------------------------------------
-  # CRITIC LLM - DeepSeek-R1-Distill-14B
+  # CRITIC LLM - Qwen2.5-7B-Instruct-AWQ (fits in ~5GB)
   # ---------------------------------------------------------------------------
   llm_critic:
-    image: vllm/vllm-openai:latest
-    container_name: llm_critic_deepseek
-    runtime: nvidia
+    image: vllm/vllm-openai:v0.6.3.post1
+    container_name: llm_critic_qwen
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=1
+      - CUDA_DEVICE_ORDER=PCI_BUS_ID
     command: >
-      --model deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+      --model Qwen/Qwen2.5-7B-Instruct-AWQ
+      --quantization awq_marlin
       --dtype float16
       --max-model-len 4096
-      --gpu-memory-utilization 0.40
+      --gpu-memory-utilization 0.70
       --trust-remote-code
     ports:
       - "8061:8000"
@@ -72,29 +73,30 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
 
   # ---------------------------------------------------------------------------
-  # EMBEDDINGS - BGE-large-en-v1.5
+  # EMBEDDINGS - BGE-large-en-v1.5 (using Infinity server)
   # ---------------------------------------------------------------------------
   embeddings:
-    image: ghcr.io/huggingface/text-embeddings-inference:1.5
+    image: michaelf34/infinity:0.0.51
     container_name: embeddings_bge
+    restart: unless-stopped
     runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-    command: --model-id BAAI/bge-large-en-v1.5
+      - NVIDIA_VISIBLE_DEVICES=1
+    command: v2 --model-id BAAI/bge-large-en-v1.5 --device cuda --port 80
     ports:
       - "8062:80"
     volumes:
-      - huggingface_cache:/data
+      - huggingface_cache:/root/.cache/huggingface
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              device_ids: ['1']
               capabilities: [gpu]
 
   # ---------------------------------------------------------------------------
