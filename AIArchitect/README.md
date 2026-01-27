@@ -17,23 +17,22 @@ Unlike traditional trading bots that use a single LLM for decisions, AIArchitect
 
 To add AIArchitect as an AI Model in SynapseStrike, use these settings:
 
-### Main LLM (Qwen2.5-14B) - Primary Trading Decisions
+### Main LLM (Qwen2.5-32B) - Primary Trading Decisions (Upgraded)
 
 | Field | Value |
 |-------|-------|
-| **Select AI Model** | `Local AI (localai)` |
-| **API Key** | `not-needed` (required placeholder) |
+| **Model** | `Qwen/Qwen2.5-32B-Instruct-AWQ` |
+| **Context** | **8,192 Tokens** (Optimized for Multi-GPU) |
+| **Infrastructure**| **Tensor Parallel (TP=2)** across 3090 + 3080 Ti |
 | **Base URL** | `http://localhost:8060/v1` |
-| **Model Name** | `Qwen/Qwen2.5-14B-Instruct-AWQ` |
 
 ### Critic LLM (Qwen2.5-7B) - Validation & Second Opinion
 
 | Field | Value |
 |-------|-------|
-| **Select AI Model** | `Local AI (localai)` |
-| **API Key** | `not-needed` (required placeholder) |
+| **Model** | `Qwen/Qwen2.5-7B-Instruct-AWQ` |
+| **GPU** | RTX 3090 (GPU 0) |
 | **Base URL** | `http://localhost:8061/v1` |
-| **Model Name** | `Qwen/Qwen2.5-7B-Instruct-AWQ` |
 
 > **Note**: No API key is actually needed - vLLM accepts any value. Use `not-needed` or `sk-local` as a placeholder.
 
@@ -71,12 +70,15 @@ curl http://localhost:8060/v1/chat/completions \
 
 ![AI Architect Dual GPU Architecture](architecture.png)
 
-### Dual GPU Configuration
+### Multi-GPU Configuration (Hardware Mix)
 
-| GPU | Card | VRAM | Service |
-|-----|------|------|---------|
-| **0** | RTX 3090 | 24 GB | Main LLM (Qwen2.5-14B) - ~21 GB |
-| **1** | RTX 3080 Ti | 12 GB | Critic LLM (Qwen2.5-7B) + Embeddings - ~8 GB |
+| GPU | Card | VRAM | service | Role |
+|-----|------|------|---------|------|
+| **0** | RTX 3090 | 24 GB | `llm_main` (Part 1), `llm_critic`, `embeddings` | **Master Controller** |
+| **1** | RTX 3080 Ti | 12 GB | `llm_main` (Part 2) + Desktop Display | **Compute Slave** |
+
+> [!IMPORTANT]
+> The **32B Model** is split across BOTH cards using Tensor Parallelism. This allows **8,192 context tokens**, providing 16x more "vision" for complex trading scenarios than a single card could handle.
 
 ### Service Ports
 
