@@ -38,11 +38,8 @@ export default function FooterSection({ language }: FooterSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <img src="/images/logo.png" alt="SynapseStrike Logo" className="w-8 h-8" />
-              <span className="text-xl font-bold" style={{ color: '#F9FAFB' }}>
-                SynapseStrike
-              </span>
+            <div className="flex items-center mb-4">
+              <img src="/images/logo.png" alt="SynapseStrike Logo" className="h-10 w-auto" />
             </div>
             <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
               {t('futureStandardAI', language)}
