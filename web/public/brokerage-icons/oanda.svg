@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="8" fill="#003366"/>
+  <circle cx="24" cy="24" r="12" stroke="#00AEEF" stroke-width="3" fill="none"/>
+  <circle cx="24" cy="24" r="6" fill="#00AEEF"/>
+  <text x="24" y="44" text-anchor="middle" font-size="5" font-weight="bold" fill="white" font-family="Arial, sans-serif">OANDA</text>
+</svg>

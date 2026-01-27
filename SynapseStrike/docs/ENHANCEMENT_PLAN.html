@@ -5,26 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SynapseStrike Enhancement Plan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0a0f;
-            --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shine: rgba(255, 255, 255, 0.1);
+            --bg-dark: #1a1d29;
+            --bg-darker: #0f1015;
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.7);
             --text-muted: rgba(255, 255, 255, 0.5);
-            --accent-primary: #00d4ff;
-            --accent-secondary: #7c3aed;
-            --accent-gradient: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-            --accent-green: #10b981;
-            --accent-yellow: #f59e0b;
-            --accent-red: #ef4444;
-            --accent-orange: #f97316;
-            --glow-primary: 0 0 40px rgba(0, 212, 255, 0.3);
-            --glow-secondary: 0 0 40px rgba(124, 58, 237, 0.3);
+            --accent-lime: #ccff00;
+            --accent-green: #0ecb81;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -35,72 +27,101 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
+            background: var(--bg-darker);
             color: var(--text-primary);
-            line-height: 1.7;
-            min-height: 100vh;
-            overflow-x: hidden;
+            line-height: 1.6;
         }
 
-        /* Animated background */
-        .bg-animation {
-            position: fixed;
+        /* Header with logo */
+        .header {
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: var(--bg-gradient);
+            background: rgba(26, 29, 41, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 30%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 70%, rgba(124, 58, 237, 0.08) 0%, transparent 50%);
-            animation: bgFloat 20s ease-in-out infinite;
+        .logo {
+            height: 40px;
+            width: auto;
         }
 
-        @keyframes bgFloat {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(2%, 2%) rotate(5deg); }
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
+        .header-title span {
+            color: var(--accent-lime);
+        }
+
+        /* Container */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 60px 24px;
-            position: relative;
         }
 
         /* Hero Section */
         .hero {
             text-align: center;
-            padding: 80px 0;
+            padding: 80px 0 60px;
             margin-bottom: 60px;
         }
 
         .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 800;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-            letter-spacing: -0.02em;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero .highlight {
+            color: var(--accent-lime);
+            text-decoration: underline;
+            text-decoration-color: var(--accent-lime);
+            text-decoration-thickness: 3px;
+            text-underline-offset: 8px;
         }
 
         .hero .subtitle {
             font-size: 1.25rem;
             color: var(--text-secondary);
             font-weight: 400;
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            margin-top: 60px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent-lime);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         /* Section Headers */
@@ -108,134 +129,106 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            margin: 60px 0 32px;
+            margin: 80px 0 32px;
             padding-bottom: 16px;
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 2px solid var(--glass-border);
         }
 
         .section-header h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             color: var(--text-primary);
         }
 
-        .section-header .completed-badge {
+        .completed-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 14px;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 20px;
+            padding: 8px 16px;
+            background: rgba(14, 203, 129, 0.15);
+            border: 1px solid rgba(14, 203, 129, 0.3);
+            border-radius: 8px;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--accent-green);
         }
 
-        /* Tier Badges - Glossy Style */
+        /* Tier Badges */
         .tier-container {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin: 48px 0 24px;
+            gap: 16px;
+            margin: 48px 0 32px;
         }
 
         .tier-badge {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 700;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-        }
-
-        .tier-badge::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .tier-badge:hover::before {
-            left: 100%;
+            border: 2px solid;
         }
 
         .tier-1 {
-            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2));
+            border-color: #f97316;
+            color: #f97316;
         }
 
         .tier-2 {
-            background: linear-gradient(135deg, #f59e0b 0%, #10b981 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(16, 185, 129, 0.2));
+            border-color: #10b981;
+            color: #10b981;
         }
 
         .tier-3 {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-color: #8b5cf6;
+            color: #8b5cf6;
         }
 
         .tier-4 {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(75, 85, 99, 0.2));
+            border-color: #6b7280;
+            color: #9ca3af;
         }
 
         .tier-ai {
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.2), rgba(14, 203, 129, 0.2));
+            border-color: var(--accent-lime);
+            color: var(--accent-lime);
         }
 
         .tier-title {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
-        /* Glass Cards */
-        .glass-card {
+        /* Cards */
+        .card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: 12px;
             padding: 28px;
             margin: 20px 0;
-            position: relative;
-            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--glass-shine), transparent);
-        }
-
-        .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
+        .card:hover {
+            border-color: rgba(204, 255, 0, 0.3);
             transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
-        .glass-card h4 {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .card h4 {
+            font-size: 1.2rem;
+            font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 12px;
             display: flex;
@@ -244,46 +237,42 @@
             flex-wrap: wrap;
         }
 
-        .glass-card p {
+        .card p {
             color: var(--text-secondary);
             margin-bottom: 12px;
             font-size: 0.95rem;
         }
 
-        .glass-card ul, .glass-card ol {
+        .card ul,
+        .card ol {
             padding-left: 24px;
             color: var(--text-secondary);
         }
 
-        .glass-card li {
+        .card li {
             margin-bottom: 8px;
             font-size: 0.95rem;
         }
 
-        /* AI Cards - Special Glow */
-        .ai-card {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(124, 58, 237, 0.05));
-            border: 1px solid rgba(0, 212, 255, 0.2);
+        .card strong {
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
-        .ai-card:hover {
-            border-color: rgba(0, 212, 255, 0.4);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), var(--glow-primary);
+        /* AI Cards */
+        .ai-card {
+            background: linear-gradient(135deg, rgba(204, 255, 0, 0.08), rgba(14, 203, 129, 0.05));
+            border: 1px solid rgba(204, 255, 0, 0.2);
         }
 
         .ai-card h4 {
-            color: var(--accent-primary);
+            color: var(--accent-lime);
         }
 
-        /* Fix Cards - Green Glow */
+        /* Fix Cards */
         .fix-card {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .fix-card:hover {
-            border-color: rgba(16, 185, 129, 0.4);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 40px rgba(16, 185, 129, 0.2);
+            background: linear-gradient(135deg, rgba(14, 203, 129, 0.08), rgba(14, 203, 129, 0.05));
+            border: 1px solid rgba(14, 203, 129, 0.2);
         }
 
         .fix-card h4 {
@@ -298,46 +287,30 @@
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .status-completed {
-            background: rgba(16, 185, 129, 0.15);
+            background: rgba(14, 203, 129, 0.15);
             color: var(--accent-green);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .status-integrated {
-            background: rgba(0, 212, 255, 0.15);
-            color: var(--accent-primary);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-        }
-
-        /* Impact Labels */
-        .impact-high {
-            color: var(--accent-green);
-            font-weight: 600;
-        }
-
-        .impact-medium {
-            color: var(--accent-yellow);
-            font-weight: 600;
+            border: 1px solid rgba(14, 203, 129, 0.3);
         }
 
         /* Code Blocks */
         code {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             padding: 3px 8px;
             border-radius: 6px;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-family: 'Fira Code', monospace;
             font-size: 0.85rem;
-            color: var(--accent-primary);
+            color: var(--accent-lime);
             border: 1px solid var(--glass-border);
         }
 
         pre {
             background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
             padding: 20px;
             border-radius: 12px;
             overflow-x: auto;
@@ -355,9 +328,8 @@
         /* Tables */
         .table-container {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            border-radius: 12px;
             overflow: hidden;
             margin: 24px 0;
         }
@@ -371,7 +343,7 @@
             background: rgba(255, 255, 255, 0.05);
             padding: 16px 20px;
             text-align: left;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-primary);
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -386,31 +358,41 @@
         }
 
         tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(204, 255, 0, 0.05);
         }
 
-        /* Architecture Diagram */
-        .architecture-diagram {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 24px;
-            margin: 16px 0;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            white-space: pre;
-            overflow-x: auto;
-            color: var(--accent-primary);
-        }
-
-        /* Grid Layout for Cards */
+        /* Grid Layout */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
             margin: 24px 0;
+        }
+
+        /* Impact Labels */
+        .impact-high {
+            color: var(--accent-green);
+            font-weight: 700;
+        }
+
+        .impact-medium {
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        /* Architecture Diagram */
+        .architecture-diagram {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            color: var(--accent-lime);
         }
 
         /* Footer */
@@ -426,12 +408,6 @@
             font-size: 0.9rem;
         }
 
-        /* Strong text */
-        strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -440,6 +416,10 @@
 
             .hero {
                 padding: 40px 0;
+            }
+
+            .stats {
+                gap: 40px;
             }
 
             .tier-container {
@@ -451,7 +431,7 @@
                 grid-template-columns: 1fr;
             }
 
-            .glass-card {
+            .card {
                 padding: 20px;
             }
         }
@@ -459,13 +439,36 @@
 </head>
 
 <body>
-    <div class="bg-animation"></div>
-    
+    <!-- Header -->
+    <div class="header">
+        <img src="/images/logo.png" alt="SynapseStrike Logo" class="logo">
+        <div class="header-title">Synapse<span>Strike</span></div>
+    </div>
+
     <div class="container">
         <!-- Hero -->
         <div class="hero">
-            <h1>🚀 SynapseStrike Enhancement Plan</h1>
-            <p class="subtitle">Strategic roadmap for building the most advanced AI trading platform</p>
+            <h1>Enhancement Plan<br><span class="highlight">for real returns.</span></h1>
+            <p class="subtitle">Strategic roadmap for building the most advanced AI trading platform with LLM intelligence, multi-broker support, and autonomous decision making.</p>
+
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value">0.0K+</span>
+                    <span class="stat-label">GitHub Stars</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">5+</span>
+                    <span class="stat-label">Brokerages</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">10+</span>
+                    <span class="stat-label">AI Models</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">100%</span>
+                    <span class="stat-label">Open Source</span>
+                </div>
+            </div>
         </div>
 
         <!-- Part 1 -->
@@ -473,20 +476,20 @@
             <h2>Part 1: Rename App</h2>
             <span class="completed-badge">✅ COMPLETED</span>
         </div>
-        <p style="color: var(--text-secondary);">Successfully renamed to "SynapseStrike" across all UI components.</p>
+        <p style="color: var(--text-secondary); font-size: 1.05rem;">Successfully renamed to "SynapseStrike" across all UI components.</p>
 
         <!-- Part 2: AI Architecture -->
         <div class="section-header">
             <h2>Part 2: AI Architecture</h2>
         </div>
-        <p style="color: var(--text-secondary); margin-bottom: 32px;">SynapseStrike supports multiple AI providers for trading decisions. Here's how they work:</p>
+        <p style="color: var(--text-secondary); margin-bottom: 32px; font-size: 1.05rem;">SynapseStrike supports multiple AI providers for trading decisions. Here's how they work:</p>
 
         <div class="tier-container">
             <span class="tier-badge tier-ai">🤖 AI Providers</span>
             <span class="tier-title">Supported Models</span>
         </div>
 
-        <div class="glass-card ai-card">
+        <div class="card ai-card">
             <h4>🏠 Local AI (Self-Hosted)</h4>
             <p>Run AI models locally for maximum privacy and zero API costs.</p>
             <p><strong>How it works:</strong></p>
@@ -506,10 +509,10 @@ ollama serve
             <p><strong>Benefits:</strong> Zero latency to AI, no API costs, full data privacy</p>
         </div>
 
-        <div class="glass-card ai-card">
+        <div class="card ai-card">
             <h4>
                 🏗️ AIArchitect (Local Multi-Model Pipeline)
-                <span class="status-tag status-integrated">✅ INTEGRATED</span>
+                <span class="status-tag status-completed">✅ INTEGRATED</span>
             </h4>
             <p>Our flagship local decision engine using a sophisticated 6-step reasoning pipeline with cross-model validation.</p>
             <p><strong>The 6-Step "Trading Brain" Pipeline:</strong></p>
@@ -534,7 +537,7 @@ ollama serve
 # - Vector DB: Qdrant (Port 8063)</code></pre>
         </div>
 
-        <div class="glass-card ai-card">
+        <div class="card ai-card">
             <h4>🌐 Cloud AI Providers</h4>
             <div class="table-container" style="margin-top: 16px;">
                 <table>
@@ -586,7 +589,7 @@ ollama serve
             </div>
         </div>
 
-        <div class="glass-card ai-card">
+        <div class="card ai-card">
             <h4>🔄 AI Fallback System</h4>
             <p>When the primary AI fails (quota exceeded, timeout, etc.), SynapseStrike automatically falls back to algorithmic trading:</p>
             <div class="architecture-diagram">┌─────────────────────────────────────────────────────┐
@@ -620,19 +623,19 @@ ollama serve
         </div>
 
         <div class="cards-grid">
-            <div class="glass-card">
+            <div class="card">
                 <h4>1. Multi-Timeframe Analysis Engine</h4>
                 <p>Currently the AI analyzes a single timeframe. Add 15m + 1H + 4H confluence signals - only trade when all timeframes align.</p>
                 <p><strong>Expected Impact:</strong> <span class="impact-high">30-40% fewer false signals</span></p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>2. Adaptive Position Sizing with Kelly Criterion</h4>
                 <p>Replace fixed margin with dynamic sizing based on recent performance.</p>
                 <pre><code>Position Size = (Win Rate × Avg Win - Loss Rate × Avg Loss) / Avg Loss</code></pre>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     3. Smart Entry with Limit Orders
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -641,7 +644,7 @@ ollama serve
                 <p><strong>Expected Impact:</strong> <span class="impact-high">Save 0.1-0.3% per trade in slippage</span></p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>4. Trailing Stop Evolution</h4>
                 <ul>
                     <li>ATR-based trailing (volatility-aware)</li>
@@ -650,7 +653,7 @@ ollama serve
                 </ul>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>5. News/Earnings Filter</h4>
                 <p>Skip trading around high-impact events: earnings releases, Fed announcements, major economic data.</p>
             </div>
@@ -663,7 +666,7 @@ ollama serve
         </div>
 
         <div class="cards-grid">
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     6. Paper Trading Simulator
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -671,7 +674,7 @@ ollama serve
                 <p>Full trade execution simulation via Alpaca Paper Trading account.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     7. Strategy Backtesting Engine
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -679,12 +682,12 @@ ollama serve
                 <p>Historical performance testing with the Backtest Lab feature.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>8. Multi-Strategy Portfolio</h4>
                 <p>Run multiple strategies simultaneously: Momentum + Mean Reversion blend, sector rotation.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     9. AI Model Ensemble / Debate Arena
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -692,7 +695,7 @@ ollama serve
                 <p>Combine Claude + GPT-4 + Gemini with weighted voting via Debate Arena feature.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     10. Real-Time Performance Dashboard
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -708,27 +711,27 @@ ollama serve
         </div>
 
         <div class="cards-grid">
-            <div class="glass-card">
+            <div class="card">
                 <h4>11. Order Flow Analysis</h4>
                 <p>Large block trade detection, supply/demand zones, dark pool tracking.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>12. Sentiment Analysis Feed</h4>
                 <p>Real-time sentiment from Twitter/X, Reddit, news headlines, StockTwits.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>13. Options Flow Integration</h4>
                 <p>Track unusual options activity, large sweeps, smart money tracking.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>14. Machine Learning Enhancement</h4>
                 <p>Pattern recognition, false signal filtering, market regime detection.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     15. Risk Management Suite
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -744,12 +747,12 @@ ollama serve
         </div>
 
         <div class="cards-grid">
-            <div class="glass-card">
+            <div class="card">
                 <h4>16. Failover & High Availability</h4>
                 <p>Redundant API connections, automatic broker failover, order recovery.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>
                     17. Audit Trail & Compliance
                     <span class="status-tag status-completed">✅ IMPLEMENTED</span>
@@ -757,7 +760,7 @@ ollama serve
                 <p>Complete trade logging, decision recording with Chain of Thought, position history.</p>
             </div>
 
-            <div class="glass-card">
+            <div class="card">
                 <h4>18. Alert System</h4>
                 <p>Telegram/Discord alerts, email, mobile push, voice alerts.</p>
             </div>
@@ -837,21 +840,21 @@ ollama serve
         </div>
 
         <div class="cards-grid">
-            <div class="glass-card fix-card">
+            <div class="card fix-card">
                 <h4>✅ Fixed: VWAP Sell Trigger Monitoring</h4>
                 <p><strong>Issue:</strong> Sell triggers were not being checked frequently during post-entry phase</p>
                 <p><strong>Fix:</strong> Now uses 1-minute intervals ALL DAY when VWAP mode is enabled</p>
                 <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
             </div>
 
-            <div class="glass-card fix-card">
+            <div class="card fix-card">
                 <h4>✅ Fixed: VWAP Sell Decisions Not Showing in UI</h4>
                 <p><strong>Issue:</strong> Sell operations were not recorded in Recent Decisions panel</p>
                 <p><strong>Fix:</strong> Added <code>closePositionWithReason()</code> and <code>saveVWAPSellDecision()</code></p>
                 <p><strong>File:</strong> <code>trader/auto_trader.go</code></p>
             </div>
 
-            <div class="glass-card fix-card">
+            <div class="card fix-card">
                 <h4>✅ Fixed: End-of-Day Exit at 3:55 PM ET</h4>
                 <p><strong>Issue:</strong> Positions were not reliably closed before market close</p>
                 <p><strong>Fix:</strong> Priority check for market close (5 min before 4 PM) in position management</p>
@@ -865,14 +868,14 @@ ollama serve
         </div>
 
         <div class="cards-grid">
-            <div class="glass-card fix-card">
+            <div class="card fix-card">
                 <h4>✅ Fixed: Fractional Short Selling Error</h4>
                 <p><strong>Issue:</strong> Alpaca doesn't allow fractional shares for short selling</p>
                 <p><strong>Fix:</strong> OpenShort now rounds down to whole shares</p>
                 <p><strong>File:</strong> <code>trader/alpaca_trader.go</code></p>
             </div>
 
-            <div class="glass-card fix-card">
+            <div class="card fix-card">
                 <h4>✅ Fixed: Position Size Exceeds Account Equity</h4>
                 <p><strong>Issue:</strong> AI requested positions larger than account equity were rejected</p>
                 <p><strong>Fix:</strong> Now auto-adjusts to maximum allowed (like leverage)</p>
@@ -883,6 +886,7 @@ ollama serve
         <!-- Footer -->
         <div class="footer">
             <p>SynapseStrike Enhancement Plan • Last Updated: January 26, 2026</p>
+            <p style="margin-top: 8px;">Powered by Alpaca for trade execution and Polygon for market data</p>
         </div>
     </div>
 </body>
