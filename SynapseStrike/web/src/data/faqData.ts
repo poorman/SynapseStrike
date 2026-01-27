@@ -114,14 +114,14 @@ export const faqCategories: FAQCategory[] = [
         answerKey: 'faqConfigureBrokeragesAnswer',
       },
       {
-        id: 'binance-api-setup',
-        questionKey: 'faqBinanceAPISetup',
-        answerKey: 'faqBinanceAPISetupAnswer',
+        id: 'alpaca-api-setup',
+        questionKey: 'faqAlpacaAPISetup',
+        answerKey: 'faqAlpacaAPISetupAnswer',
       },
       {
-        id: 'hyperliquid-setup',
-        questionKey: 'faqHyperliquidSetup',
-        answerKey: 'faqHyperliquidSetupAnswer',
+        id: 'paper-trading',
+        questionKey: 'faqPaperTrading',
+        answerKey: 'faqPaperTradingAnswer',
       },
       {
         id: 'create-strategy',
@@ -235,9 +235,9 @@ export const faqCategories: FAQCategory[] = [
         answerKey: 'faqAIAPITimeoutAnswer',
       },
       {
-        id: 'binance-position-mode',
-        questionKey: 'faqBinancePositionMode',
-        answerKey: 'faqBinancePositionModeAnswer',
+        id: 'market-data-issues',
+        questionKey: 'faqMarketDataIssues',
+        answerKey: 'faqMarketDataIssuesAnswer',
       },
     ],
   },

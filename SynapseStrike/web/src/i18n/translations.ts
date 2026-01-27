@@ -400,8 +400,8 @@ export const translations = {
     lighterPrivateKeyImported: 'LIGHTER private key imported',
 
     // Brokerage names
-    hyperliquidBrokerageName: 'Hyperliquid',
-    asterBrokerageName: 'Aster DEX',
+    alpacaBrokerageName: 'Alpaca Markets',
+    ibkrBrokerageName: 'Interactive Brokers',
 
     // Secure input
     secureInputButton: 'Secure Input',
@@ -688,12 +688,12 @@ export const translations = {
     heroDescription:
       'Self-hosted and broker-agnostic, LLM Trader integrates with Alpaca for trade execution and Polygon for market data, enabling multiple AI agents to learn from historical and real-time stock market data. The platform allows AI to autonomously analyze markets, generate and evaluate strategies, execute trades, and continuously optimize performance within U.S. equities.',
     poweredBy:
-      'Powered by Aster DEX and Binance, strategically invested by Amber.ac.',
+      'Powered by Alpaca for trade execution and Polygon for real-time market data.',
 
     // Landing Page CTA
     readyToDefine: 'Ready to define the future of AI trading?',
     startWithCrypto:
-      'Starting with crypto markets, expanding to TradFi. SynapseStrike is the infrastructure of AgentFi.',
+      'Focused on U.S. equities with real-time market data. Built for professional traders and AI researchers.',
     getStartedNow: 'Get Started Now',
     viewSourceCode: 'View Source Code',
 
@@ -734,7 +734,7 @@ export const translations = {
     synapsestrikeDescription2:
       "'decision-risk-execution' layer, supporting all asset classes.",
     synapsestrikeDescription3:
-      'Starting with crypto markets (24/7, high volatility perfect testing ground), future expansion to stocks, futures, forex. Core: open architecture, AI',
+      'Focused on U.S. stock markets with real-time data and professional-grade execution. Core: open architecture, multi-model AI',
     synapsestrikeDescription4:
       'Darwinism (multi-agent self-competition, strategy evolution), CodeFi',
     synapsestrikeDescription5:
@@ -754,7 +754,7 @@ export const translations = {
       'git clone https://github.com/tinkle-community/synapsestrike and switch to dev branch to test new features.',
     step2Title: 'Configure Environment',
     step2Desc:
-      'Frontend setup for brokerage APIs (like Binance, Hyperliquid), AI models and custom prompts.',
+      'Configure your stock brokerage APIs (like Alpaca, Interactive Brokers), AI models and trading strategies.',
     step3Title: 'Deploy & Run',
     step3Desc:
       'One-click Docker deployment, start AI agents. Note: High-risk market, only test with money you can afford to lose.',
@@ -832,7 +832,7 @@ export const translations = {
 
     faqSupportedBrokerages: 'Which brokerages are supported?',
     faqSupportedBrokeragesAnswer:
-      'CEX (Centralized): Binance Futures, Bybit, OKX, Bitget. DEX (Decentralized): Hyperliquid, Aster DEX, Lighter. Each brokerage has different features - Binance has the most liquidity, Hyperliquid is fully on-chain with no KYC required. Check the documentation for setup guides for each brokerage.',
+      'Currently supported: Alpaca Markets (stocks, paper trading), with upcoming support for Interactive Brokers, TD Ameritrade, and other major stock brokerages. Alpaca offers commission-free trading and paper trading for testing strategies. Check the documentation for setup guides.',
 
     faqSupportedAIModels: 'Which AI models are supported?',
     faqSupportedAIModelsAnswer:
@@ -874,15 +874,15 @@ export const translations = {
 
     faqConfigureBrokerages: 'How do I configure brokerage connections?',
     faqConfigureBrokeragesAnswer:
-      'Go to Config page → Brokerages section. Click "Add Brokerage", select brokerage type, and enter credentials. For CEX (Binance/Bybit/OKX): Need API Key + Secret Key (+ Passphrase for OKX). For DEX (Hyperliquid/Aster/Lighter): Need wallet address and private key. Always enable only necessary permissions (Futures Trading) and consider IP whitelisting.',
+      'Go to Config page → Brokerages section. Click "Add Brokerage", select Alpaca (or other supported brokerage), and enter your API credentials. For Alpaca: You need API Key + Secret Key from your Alpaca dashboard. Recommended to start with Paper Trading API to test strategies risk-free. Always use API keys with minimal required permissions.',
 
-    faqBinanceAPISetup: 'How do I set up Binance API correctly?',
-    faqBinanceAPISetupAnswer:
-      'Important steps: 1) Create API key in Binance → API Management; 2) Enable ONLY "Enable Futures" permission; 3) Consider adding IP whitelist for security; 4) CRITICAL: Switch to Hedge Mode (双向持仓) in Futures settings → Preferences → Position Mode; 5) Ensure funds are in Futures wallet (not Spot). Common error -4061 means you need Hedge Mode.',
+    faqAlpacaAPISetup: 'How do I set up Alpaca API correctly?',
+    faqAlpacaAPISetupAnswer:
+      'Important steps: 1) Sign up at alpaca.markets and create an account; 2) Go to Paper Trading section to get test API keys; 3) Generate API Key and Secret Key; 4) In SynapseStrike Config page, add Alpaca brokerage with these credentials; 5) For live trading, use your live API keys from the Live Trading section. Always start with paper trading to test your strategies.',
 
-    faqHyperliquidSetup: 'How do I set up Hyperliquid?',
-    faqHyperliquidSetupAnswer:
-      'Hyperliquid is a decentralized brokerage requiring wallet authentication. Steps: 1) Go to app.hyperliquid.xyz; 2) Connect your wallet; 3) Generate an API wallet (recommended) or use your main wallet; 4) Copy the wallet address and private key; 5) In SynapseStrike, add Hyperliquid brokerage with these credentials. No KYC required, fully on-chain.',
+    faqPaperTrading: 'What is Paper Trading?',
+    faqPaperTradingAnswer:
+      'Paper trading is simulated trading with virtual money. Alpaca provides free paper trading accounts with real-time market data and order execution simulation. This allows you to test your AI trading strategies without risking real capital. All features work identically to live trading, making it perfect for strategy development and testing.',
 
     faqCreateStrategy: 'How do I create a trading strategy?',
     faqCreateStrategyAnswer:
@@ -946,9 +946,9 @@ export const translations = {
     faqAIAPITimeoutAnswer:
       'Check: 1) API key is valid (test with curl); 2) Network can reach API endpoint (ping/curl); 3) API provider is not down (check status page); 4) VPN/firewall not blocking; 5) Rate limits not exceeded. Default timeout is 120 seconds.',
 
-    faqBinancePositionMode: 'Binance error code -4061 (Position Mode)',
-    faqBinancePositionModeAnswer:
-      'Error: "Order\'s position side does not match user\'s setting". You\'re in One-way Mode but SynapseStrike requires Hedge Mode. Fix: 1) Close ALL positions first; 2) Binance Futures → Settings (gear icon) → Preferences → Position Mode → Switch to "Hedge Mode" (双向持仓); 3) Restart your trader.',
+    faqMarketDataIssues: 'Market data not loading or delayed',
+    faqMarketDataIssuesAnswer:
+      'Check: 1) Polygon API key is valid and active; 2) Network connection is stable; 3) API rate limits not exceeded (free tier: 5 requests/min); 4) Stock symbol is correct (use uppercase, e.g., AAPL not aapl); 5) Market is open during trading hours (9:30 AM - 4:00 PM ET). For extended hours data, upgrade to paid Polygon plan.',
 
     faqBalanceShowsZero: 'Account balance shows 0',
     faqBalanceShowsZeroAnswer:

@@ -39,8 +39,8 @@ export default function FeaturesSection({ language }: FeaturesSectionProps) {
       icon: Blocks,
       title: false ? 'multibrokeragesupport' : 'Multi-Brokerage Support',
       desc: false
-        ? 'Binance、OKX、Bybit、Hyperliquid、Aster DEX，onesetsystemmanagemultiplebrokerage'
-        : 'Binance, OKX, Bybit, Hyperliquid, Aster DEX - one system, multiple brokerages',
+        ? 'Alpaca、Interactive Brokers、TD Ameritrade，onesetsystemmanagemultiplebrokerage'
+        : 'Alpaca, Interactive Brokers, TD Ameritrade - one system, multiple brokerages',
     },
     {
       icon: BarChart3,

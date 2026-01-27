@@ -20,14 +20,9 @@ export default function FooterSection({ language }: FooterSectionProps) {
       { name: 'Pull Requests', href: 'https://github.com/poorman/SynapseStrike/pulls' },
     ],
     supporters: [
-      { name: 'Aster DEX', href: 'https://www.asterdex.com/en/referral/fdfc0e' },
-      { name: 'Binance', href: 'https://www.maxweb.red/join?ref=SynapseStrikeAI' },
-      { name: 'Hyperliquid', href: 'https://hyperliquid.xyz/' },
-      {
-        name: 'Amber.ac',
-        href: 'https://amber.ac/',
-        badge: false ? 'strategic investment' : 'Strategic',
-      },
+      { name: 'Alpaca Markets', href: 'https://alpaca.markets/' },
+      { name: 'Polygon.io', href: 'https://polygon.io/' },
+      { name: 'Interactive Brokers', href: 'https://www.interactivebrokers.com/' },
     ],
   }
 
