@@ -75,13 +75,13 @@ export function CompetitionPage() {
             <div
               className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center"
               style={{
-                background: 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)',
-                boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+                background: 'var(--primary)',
+                boxShadow: 'var(--shadow-glow)',
               }}
             >
               <Trophy
                 className="w-6 h-6 md:w-7 md:h-7"
-                style={{ color: '#fff' }}
+                style={{ color: '#000' }}
               />
             </div>
             <div>
@@ -94,7 +94,7 @@ export function CompetitionPage() {
                   className="text-xs font-normal px-2 py-1 rounded"
                   style={{
                     background: 'rgba(124, 58, 237, 0.15)',
-                    color: 'rgb(195, 245, 60)',
+                    color: 'var(--primary)',
                   }}
                 >
                   0 {t('traders', language)}
@@ -140,13 +140,13 @@ export function CompetitionPage() {
           <div
             className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)',
-              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+              background: 'var(--primary)',
+              boxShadow: 'var(--shadow-glow)',
             }}
           >
             <Trophy
               className="w-6 h-6 md:w-7 md:h-7"
-              style={{ color: '#fff' }}
+              style={{ color: '#000' }}
             />
           </div>
           <div>
@@ -159,7 +159,7 @@ export function CompetitionPage() {
                 className="text-xs font-normal px-2 py-1 rounded"
                 style={{
                   background: 'rgba(124, 58, 237, 0.15)',
-                  color: 'rgb(195, 245, 60)',
+                  color: 'var(--primary)',
                 }}
               >
                 {competition.count} {t('traders', language)}
@@ -176,7 +176,7 @@ export function CompetitionPage() {
           </div>
           <div
             className="text-base md:text-lg font-bold"
-            style={{ color: 'rgb(195, 245, 60)' }}
+            style={{ color: 'var(--primary)' }}
           >
             {leader?.trader_name}
           </div>
@@ -229,7 +229,7 @@ export function CompetitionPage() {
               className="text-xs px-2 py-1 rounded"
               style={{
                 background: 'rgba(124, 58, 237, 0.1)',
-                color: 'rgb(195, 245, 60)',
+                color: 'var(--primary)',
                 border: '1px solid rgba(124, 58, 237, 0.2)',
               }}
             >
@@ -267,7 +267,7 @@ export function CompetitionPage() {
                         className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
                         style={{
                           background: index === 0
-                            ? 'linear-gradient(135deg, rgb(195, 245, 60) 0%, rgb(195, 245, 60) 100%)'
+                            ? 'var(--primary)'
                             : index === 1
                               ? 'linear-gradient(135deg, #A1A1AA 0%, #D4D4D8 100%)'
                               : index === 2

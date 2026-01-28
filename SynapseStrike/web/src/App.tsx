@@ -1027,7 +1027,7 @@ function TraderDetailsPage({
 
           {/* Current Positions */}
           <div
-            className="binance-card p-6 animate-slide-in"
+            className="glass-card p-6 animate-slide-in"
             style={{ animationDelay: '0.15s' }}
           >
             <div className="flex items-center justify-between mb-5">
@@ -1243,7 +1243,7 @@ function TraderDetailsPage({
 
         {/* right：Recent Decisions - cardcontentmanager */}
         <div
-          className="binance-card p-6 animate-slide-in h-fit lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)]"
+          className="glass-card p-6 animate-slide-in h-fit lg:sticky lg:top-24 lg:max-h-[calc(100vh-120px)]"
           style={{ animationDelay: '0.2s' }}
         >
           {/* title */}

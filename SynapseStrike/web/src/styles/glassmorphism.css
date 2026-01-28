@@ -30,16 +30,16 @@
     --border-glass-active: oklch(0.3261 0.0597 282.5832 / 0.6);
     --border-accent: oklch(0.7162 0.1597 290.3962 / 0.5);
 
-    /* === Trading Colors - Updated Brand Colors === */
-    --color-long: rgb(0, 200, 5);
-    --color-long-muted: rgb(0, 140, 5);
-    --color-long-bg: rgba(0, 200, 5, 0.10);
-    --color-long-border: rgba(0, 200, 5, 0.25);
+    /* === Trading Colors - Professional Palette === */
+    --color-up: rgb(0, 200, 5);
+    --color-up-muted: rgb(0, 140, 5);
+    --color-up-bg: rgba(0, 200, 5, 0.10);
+    --color-up-border: rgba(0, 200, 5, 0.25);
 
-    --color-short: rgb(255, 80, 0);
-    --color-short-muted: rgb(180, 50, 0);
-    --color-short-bg: rgba(255, 80, 0, 0.10);
-    --color-short-border: rgba(255, 80, 0, 0.25);
+    --color-down: rgb(255, 80, 0);
+    --color-down-muted: rgb(180, 50, 0);
+    --color-down-bg: rgba(255, 80, 0, 0.10);
+    --color-down-border: rgba(255, 80, 0, 0.25);
 
     /* Action button color */
     --color-action: rgb(204, 255, 0);
@@ -68,8 +68,8 @@
         0 2px 8px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.03);
     --shadow-glow-accent: 0 0 16px oklch(0.7162 0.1597 290.3962 / 0.15);
-    --shadow-glow-long: 0 0 16px rgba(0, 200, 5, 0.20);
-    --shadow-glow-short: 0 0 16px rgba(255, 80, 0, 0.20);
+    --shadow-glow-up: 0 0 16px rgba(0, 200, 5, 0.20);
+    --shadow-glow-down: 0 0 16px rgba(255, 80, 0, 0.20);
 
     /* === Typography - Updated to Capsule Sans Text === */
     --font-sans: "Capsule Sans Text", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -166,7 +166,7 @@
 
 /* Buy Button */
 .btn-buy {
-    background: linear-gradient(135deg, var(--color-long) 0%, #16A34A 100%);
+    background: linear-gradient(135deg, var(--color-up) 0%, #16A34A 100%);
     color: white;
     font-weight: 600;
     border: none;
@@ -187,7 +187,7 @@
 
 /* Sell Button */
 .btn-sell {
-    background: linear-gradient(135deg, var(--color-short) 0%, #DC2626 100%);
+    background: linear-gradient(135deg, var(--color-down) 0%, #DC2626 100%);
     color: white;
     font-weight: 600;
     border: none;
@@ -283,12 +283,12 @@
     background: rgba(255, 255, 255, 0.03);
 }
 
-.glass-table .text-long {
-    color: var(--color-long);
+.glass-table .text-up {
+    color: var(--color-up);
 }
 
-.glass-table .text-short {
-    color: var(--color-short);
+.glass-table .text-down {
+    color: var(--color-down);
 }
 
 /* Price Flash Animations */
@@ -361,11 +361,11 @@
 }
 
 .glass-notification.success {
-    border-left: 3px solid var(--color-long);
+    border-left: 3px solid var(--color-up);
 }
 
 .glass-notification.error {
-    border-left: 3px solid var(--color-short);
+    border-left: 3px solid var(--color-down);
 }
 
 .glass-notification.info {
@@ -433,12 +433,12 @@
     color: var(--text-muted);
 }
 
-.text-long {
-    color: var(--color-long);
+.text-up {
+    color: var(--color-up);
 }
 
-.text-short {
-    color: var(--color-short);
+.text-down {
+    color: var(--color-down);
 }
 
 .text-alert {
@@ -458,12 +458,12 @@
     background: var(--glass-bg-elevated);
 }
 
-.bg-long {
-    background: var(--color-long-bg);
+.bg-up {
+    background: var(--color-up-bg);
 }
 
-.bg-short {
-    background: var(--color-short-bg);
+.bg-down {
+    background: var(--color-down-bg);
 }
 
 .bg-alert {

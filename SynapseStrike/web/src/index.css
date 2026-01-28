@@ -94,14 +94,14 @@ html {
   --text-tertiary: oklch(0.5382 0.1047 274.9117);
   --text-disabled: oklch(0.3261 0.0597 282.5832);
 
-  /* Trading Colors - Updated brand colors */
-  --binance-green: rgb(0, 200, 5);
-  --binance-green-bg: rgba(0, 200, 5, 0.10);
-  --binance-green-border: rgba(0, 200, 5, 0.25);
-  --binance-red: rgb(255, 80, 0);
-  --binance-red-bg: rgba(255, 80, 0, 0.10);
-  --binance-red-border: rgba(255, 80, 0, 0.25);
-  --binance-yellow: oklch(0.7162 0.1597 290.3962);
+  /* Trading Colors - Professional Palette */
+  --trading-up: rgb(0, 200, 5);
+  --trading-up-bg: rgba(0, 200, 5, 0.10);
+  --trading-up-border: rgba(0, 200, 5, 0.25);
+  --trading-down: rgb(255, 80, 0);
+  --trading-down-bg: rgba(255, 80, 0, 0.10);
+  --trading-down-border: rgba(255, 80, 0, 0.25);
+  --market-accent: oklch(0.7162 0.1597 290.3962);
   --action-button: rgb(204, 255, 0);
 
   /* Shadows - Minimal */
@@ -298,38 +298,38 @@ body {
 /* Success / Error / Warning tint */
 .synapsestrike-toast[data-type='success'] {
   background: var(--panel-bg) !important;
-  border-color: var(--binance-green) !important;
-  border-left: 3px solid var(--binance-green) !important;
+  border-color: var(--trading-up) !important;
+  border-left: 3px solid var(--trading-up) !important;
 }
 
 .synapsestrike-toast[data-type='success'] .sonner-title,
 .synapsestrike-toast[data-type='success'] .sonner-description {
-  color: var(--binance-green) !important;
+  color: var(--trading-up) !important;
 }
 
 .synapsestrike-toast[data-type='error'] {
   background: var(--panel-bg) !important;
-  border-color: var(--binance-red) !important;
-  border-left: 3px solid var(--binance-red) !important;
+  border-color: var(--trading-down) !important;
+  border-left: 3px solid var(--trading-down) !important;
 }
 
 .synapsestrike-toast[data-type='error'] .sonner-title,
 .synapsestrike-toast[data-type='error'] .sonner-description {
-  color: var(--binance-red) !important;
+  color: var(--trading-down) !important;
 }
 
 .synapsestrike-toast[data-type='warning'],
 .synapsestrike-toast[data-type='info'] {
   background: var(--panel-bg) !important;
-  border-color: var(--binance-yellow) !important;
-  border-left: 3px solid var(--binance-yellow) !important;
+  border-color: var(--market-accent) !important;
+  border-left: 3px solid var(--market-accent) !important;
 }
 
 .synapsestrike-toast[data-type='warning'] .sonner-title,
 .synapsestrike-toast[data-type='warning'] .sonner-description,
 .synapsestrike-toast[data-type='info'] .sonner-title,
 .synapsestrike-toast[data-type='info'] .sonner-description {
-  color: var(--binance-yellow) !important;
+  color: var(--market-accent) !important;
 }
 
 .synapsestrike-toast .sonner-close-button {
@@ -458,19 +458,19 @@ textarea:focus {
   outline: none;
 }
 
-/* Card - Glassmorphism 2.0 Dark */
-.binance-card {
+/* Card - Premium Glassmorphism */
+.glass-card {
   background: var(--glass-bg);
-  /* Glassmorphism 2.0 - dark transparent */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
-  /* Modern radius */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-glass);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   overflow: hidden;
-  /* Ensure rounded corners contain content */
 }
 
 .dev-toast-controller {
@@ -546,9 +546,9 @@ textarea:focus {
 }
 
 .dev-toast-controller__actions button:first-child {
-  background: rgba(240, 185, 11, 0.15);
-  color: var(--binance-yellow);
-  border: 1px solid rgba(240, 185, 11, 0.4);
+  background: rgba(124, 58, 237, 0.15);
+  color: var(--market-accent);
+  border: 1px solid rgba(124, 58, 237, 0.4);
 }
 
 .dev-toast-controller__actions button:last-child {
@@ -580,14 +580,14 @@ textarea:focus {
   opacity: 0.8;
 }
 
-.binance-card:hover {
+.glass-card:hover {
   border-color: var(--panel-border-hover);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
   background: var(--panel-bg-hover);
 }
 
-.binance-card-no-hover {
+.glass-card-no-hover {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 4px;
@@ -595,44 +595,38 @@ textarea:focus {
 }
 
 /* Binance gradient backgrounds */
-.binance-gradient {
+.brand-gradient {
   background: linear-gradient(135deg,
-      var(--binance-yellow) 0%,
-      var(--binance-yellow-light) 100%);
+      var(--market-accent) 0%,
+      var(--primary) 100%);
 }
 
-.binance-gradient-subtle {
-  background: linear-gradient(135deg,
-      rgba(240, 185, 11, 0.15) 0%,
-      rgba(252, 213, 53, 0.05) 100%);
-  border: 1px solid rgba(240, 185, 11, 0.2);
-}
 
-.binance-glow {
-  box-shadow: 0 0 20px var(--binance-yellow-glow);
+.brand-glow {
+  box-shadow: 0 0 20px var(--shadow-glow);
 }
 
 /* Status colors */
 .text-profit {
-  color: var(--binance-green);
+  color: var(--trading-up);
   font-weight: 700;
 }
 
 .text-loss {
-  color: var(--binance-red);
+  color: var(--trading-down);
   font-weight: 700;
 }
 
 .bg-profit {
-  background-color: var(--binance-green-bg);
-  color: var(--binance-green);
-  border: 1px solid var(--binance-green-border);
+  background-color: var(--trading-up-bg);
+  color: var(--trading-up);
+  border: 1px solid var(--trading-up-border);
 }
 
 .bg-loss {
-  background-color: var(--binance-red-bg);
-  color: var(--binance-red);
-  border: 1px solid var(--binance-red-border);
+  background-color: var(--trading-down-bg);
+  color: var(--trading-down);
+  border: 1px solid var(--trading-down-border);
 }
 
 /* Skeleton loading */
@@ -647,9 +641,9 @@ textarea:focus {
   border-radius: 4px;
 }
 
-/* Binance button variants */
-.btn-binance {
-  background: var(--binance-yellow);
+/* Professional button variants */
+.btn-brand {
+  background: var(--market-accent);
   color: #000;
   font-weight: 700;
   border: none;
@@ -657,24 +651,23 @@ textarea:focus {
   padding: 0.625rem 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(240, 185, 11, 0.3);
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
 }
 
-.btn-binance:hover {
-  background: var(--binance-yellow-light);
-  box-shadow: 0 4px 8px rgba(240, 185, 11, 0.4);
+.btn-brand:hover {
+  background: var(--primary);
+  box-shadow: 0 4px 8px rgba(124, 58, 237, 0.4);
   transform: translateY(-2px);
 }
 
-.btn-binance:active {
-  background: var(--binance-yellow-dark);
+.btn-brand:active {
   transform: translateY(0);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--binance-yellow);
-  border: 1.5px solid var(--binance-yellow);
+  color: var(--market-accent);
+  border: 1.5px solid var(--market-accent);
   border-radius: 4px;
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -683,8 +676,8 @@ textarea:focus {
 }
 
 .btn-outline:hover {
-  background: rgba(240, 185, 11, 0.1);
-  border-color: var(--binance-yellow-light);
+  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--primary);
 }
 
 /* Table styles - Binance */
@@ -732,31 +725,31 @@ tr:hover {
   transition: all 0.2s ease;
 }
 
-.badge-yellow {
-  background: rgba(240, 185, 11, 0.1);
-  border-color: rgba(240, 185, 11, 0.3);
-  color: var(--binance-yellow);
+.badge-accent {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: rgba(124, 58, 237, 0.3);
+  color: var(--market-accent);
 }
 
 .badge-green {
-  background: var(--binance-green-bg);
-  border-color: var(--binance-green-border);
-  color: var(--binance-green);
+  background: var(--trading-up-bg);
+  border-color: var(--trading-up-border);
+  color: var(--trading-up);
 }
 
 .badge-red {
-  background: var(--binance-red-bg);
-  border-color: var(--binance-red-border);
-  color: var(--binance-red);
+  background: var(--trading-down-bg);
+  border-color: var(--trading-down-border);
+  color: var(--trading-down);
 }
 
 /* Number formatting */
 .number-up {
-  color: var(--binance-green);
+  color: var(--trading-up);
 }
 
 .number-down {
-  color: var(--binance-red);
+  color: var(--trading-down);
 }
 
 .number-neutral {
@@ -789,7 +782,7 @@ tr:hover {
 
 .spinner {
   border: 2px solid var(--panel-border);
-  border-top-color: var(--binance-yellow);
+  border-top-color: var(--market-accent);
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -816,7 +809,7 @@ tr:hover {
   height: 2px;
   background: linear-gradient(90deg,
       transparent,
-      var(--binance-yellow),
+      var(--market-accent),
       transparent);
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -843,7 +836,7 @@ tr:hover {
 
 /* Responsive utilities */
 @media (max-width: 768px) {
-  .binance-card {
+  .glass-card {
     padding: 1rem;
   }
 
