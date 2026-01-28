@@ -2149,11 +2149,20 @@ func GetAlgorithmicDecision(ctx *Context, engine *StrategyEngine) (*FullDecision
 
 	config := engine.GetConfig()
 	var decisions []Decision
+	var cotBuilder strings.Builder
+
+	cotBuilder.WriteString("## 🤖 Algorithmic Decision Engine (Non-AI Fallback)\n\n")
+	cotBuilder.WriteString(fmt.Sprintf("**Timestamp:** %s\n\n", time.Now().Format("2006-01-02 15:04:05 MST")))
+	cotBuilder.WriteString(fmt.Sprintf("### Account Status\n- Equity: $%.2f\n- Available: $%.2f\n- Open Positions: %d\n\n",
+		ctx.Account.TotalEquity, ctx.Account.AvailableBalance, ctx.Account.PositionCount))
 
 	// 1. Check VWAP Slope & Stretch Algorithm (if enabled)
 	if config.Indicators.EnableVWAPSlopeStretch {
+		cotBuilder.WriteString("### 📊 VWAP Slope & Stretch Analysis\n\n")
 		for _, stock := range ctx.CandidateStocks {
-			if decision, ok := calculateVWAPSlopeStretch(ctx, stock.Symbol, config); ok {
+			decision, analysis, passed := calculateVWAPSlopeStretchWithAnalysis(ctx, stock.Symbol, config)
+			cotBuilder.WriteString(analysis)
+			if passed && decision != nil {
 				decisions = append(decisions, *decision)
 			}
 		}
@@ -2161,40 +2170,60 @@ func GetAlgorithmicDecision(ctx *Context, engine *StrategyEngine) (*FullDecision
 
 	// 2. Handle position safekeeping (manage open positions if no algorithmic signal)
 	safekeepingDecisions := HandlePositionSafekeeping(ctx, engine)
+	if len(safekeepingDecisions) > 0 {
+		cotBuilder.WriteString("### 📈 Position Management\n\n")
+		for _, d := range safekeepingDecisions {
+			cotBuilder.WriteString(fmt.Sprintf("- **%s**: %s - %s\n", d.Symbol, d.Action, d.Reasoning))
+		}
+		cotBuilder.WriteString("\n")
+	}
 	decisions = append(decisions, safekeepingDecisions...)
 
 	// If no decisions, just wait/hold
 	if len(decisions) == 0 {
+		cotBuilder.WriteString("### ⏳ Final Decision\nNo algorithmic signals found across all candidates. Entering **WAIT** mode.\n")
 		decisions = append(decisions, Decision{
 			Symbol:    "ALL",
 			Action:    "wait",
 			Reasoning: "No algorithmic signals found, entering wait mode (Non-AI Fallback)",
 		})
+	} else {
+		cotBuilder.WriteString("### ✅ Final Decisions\n")
+		for _, d := range decisions {
+			if d.Action == "open_long" || d.Action == "open_short" {
+				cotBuilder.WriteString(fmt.Sprintf("- **%s** → %s (Confidence: %d%%, Size: $%.2f, TP: $%.2f, SL: $%.2f)\n",
+					d.Symbol, strings.ToUpper(d.Action), d.Confidence, d.PositionSizeUSD, d.TakeProfit, d.StopLoss))
+			} else {
+				cotBuilder.WriteString(fmt.Sprintf("- **%s** → %s\n", d.Symbol, d.Action))
+			}
+		}
 	}
 
 	return &FullDecision{
-		CoTTrace:  "Algorithmic decision-making (Non-AI Fallback triggered)",
+		CoTTrace:  cotBuilder.String(),
 		Decisions: decisions,
 		Timestamp: time.Now(),
 	}, nil
 }
 
-// calculateVWAPSlopeStretch translates technical VWAP rules into a Decision
-func calculateVWAPSlopeStretch(ctx *Context, symbol string, config *store.StrategyConfig) (*Decision, bool) {
+// calculateVWAPSlopeStretchWithAnalysis returns detailed analysis string for Chain of Thought
+func calculateVWAPSlopeStretchWithAnalysis(ctx *Context, symbol string, config *store.StrategyConfig) (*Decision, string, bool) {
+	var analysis strings.Builder
+	analysis.WriteString(fmt.Sprintf("#### %s Analysis\n\n", symbol))
+
 	marketData, ok := ctx.MarketDataMap[symbol]
 	if !ok || marketData.TimeframeData == nil {
-		return nil, false
+		analysis.WriteString("❌ No market data available\n\n")
+		return nil, analysis.String(), false
 	}
 
-	// Use 5m timeframe for algorithmic evaluation (matches stock market increments)
 	tfData, ok := marketData.TimeframeData["5m"]
 	if !ok || len(tfData.Klines) < 20 {
-		return nil, false
+		analysis.WriteString("❌ Insufficient 5m K-line data\n\n")
+		return nil, analysis.String(), false
 	}
 
-	// Determine ET time for specific benchmarks (9:40, 10:00)
 	loc, _ := time.LoadLocation("America/New_York")
-
 	indicatorCfg := &config.Indicators
 	entryTime := indicatorCfg.VWAPEntryTime
 	if entryTime == "" {
@@ -2204,14 +2233,11 @@ func calculateVWAPSlopeStretch(ctx *Context, symbol string, config *store.Strate
 	var entryHour, entryMin int
 	fmt.Sscanf(entryTime, "%d:%d", &entryHour, &entryMin)
 
-	// Findings for calculation
-	var foundEntry bool
+	// Calculate Opening Range
 	var orHigh, orLow float64 = 0, 1e12
-
+	var foundEntry bool
 	for _, k := range tfData.Klines {
 		t := time.Unix(k.Time/1000, 0).In(loc)
-
-		// 9:30 - EntryTime: Opening Range
 		if (t.Hour() == 9 && t.Minute() >= 30) || (t.Hour() < entryHour || (t.Hour() == entryHour && t.Minute() < entryMin)) {
 			if k.High > orHigh {
 				orHigh = k.High
@@ -2220,32 +2246,49 @@ func calculateVWAPSlopeStretch(ctx *Context, symbol string, config *store.Strate
 				orLow = k.Low
 			}
 		}
-
 		if t.Hour() == entryHour && t.Minute() == entryMin {
 			foundEntry = true
 		}
 	}
 
-	// Rule 1: Must be at or after entry time
-	now := time.Now().In(loc)
-	if now.Hour() < entryHour || (now.Hour() == entryHour && now.Minute() < entryMin) {
-		return nil, false
-	}
-
-	if !foundEntry {
-		return nil, false
-	}
-
-	// Rule 2: Price > VWAP (MOMENTUM UP)
+	// Market Snapshot
 	currentPrice := marketData.CurrentPrice
 	currentVWAP := tfData.CurrentVWAP
-	if currentPrice <= currentVWAP {
-		return nil, false
+	dayOpen := tfData.Klines[0].Open
+	priceChange := ((currentPrice - dayOpen) / dayOpen) * 100
+
+	analysis.WriteString(fmt.Sprintf("**📊 Market Snapshot at %s**\n", entryTime))
+	analysis.WriteString(fmt.Sprintf("- Day Open: $%.2f\n", dayOpen))
+	analysis.WriteString(fmt.Sprintf("- Current Price: $%.2f (%+.2f%% from open)\n", currentPrice, priceChange))
+	analysis.WriteString(fmt.Sprintf("- VWAP: $%.2f\n", currentVWAP))
+	analysis.WriteString(fmt.Sprintf("- Opening Range: $%.2f - $%.2f\n\n", orLow, orHigh))
+
+	// Entry Conditions
+	analysis.WriteString("**✅ Entry Conditions Checked (ALL MUST PASS)**\n\n")
+
+	now := time.Now().In(loc)
+	allPassed := true
+
+	// Condition 1: Time Check
+	timeOK := now.Hour() > entryHour || (now.Hour() == entryHour && now.Minute() >= entryMin)
+	if timeOK && foundEntry {
+		analysis.WriteString(fmt.Sprintf("✓ **Time Check**: After %s entry time\n", entryTime))
+	} else {
+		analysis.WriteString(fmt.Sprintf("✗ **Time Check**: Before %s entry time - SKIPPED\n\n", entryTime))
+		return nil, analysis.String(), false
 	}
 
-	// Rule 3: VWAP Slope Positive (VWAP @ Entry > VWAP @ 9:40)
-	var vwap940, vwapEntry float64
-	vwapEntry = tfData.CurrentVWAP
+	// Condition 2: Price > VWAP
+	priceAboveVWAP := currentPrice > currentVWAP
+	if priceAboveVWAP {
+		analysis.WriteString(fmt.Sprintf("✓ **Price > VWAP**: $%.2f > $%.2f — Stock trading ABOVE average price (bullish)\n", currentPrice, currentVWAP))
+	} else {
+		analysis.WriteString(fmt.Sprintf("✗ **Price > VWAP**: $%.2f <= $%.2f — FAILED\n", currentPrice, currentVWAP))
+		allPassed = false
+	}
+
+	// Condition 3: VWAP Slope Positive
+	var vwap940, vwapEntry float64 = 0, currentVWAP
 	if len(tfData.VWAPValues) > 0 {
 		for i, k := range tfData.Klines {
 			t := time.Unix(k.Time/1000, 0).In(loc)
@@ -2256,47 +2299,77 @@ func calculateVWAPSlopeStretch(ctx *Context, symbol string, config *store.Strate
 		}
 	}
 
-	if vwap940 > 0 && vwapEntry <= vwap940 {
-		return nil, false // Negative or flat slope
+	slopePositive := vwap940 == 0 || vwapEntry > vwap940
+	if slopePositive {
+		if vwap940 > 0 {
+			analysis.WriteString(fmt.Sprintf("✓ **VWAP Trending Up (Slope > 0)**: VWAP@%s $%.2f > VWAP@9:40 $%.2f — Buyers in control\n", entryTime, vwapEntry, vwap940))
+		} else {
+			analysis.WriteString("✓ **VWAP Trending Up**: Slope assumed positive (no 9:40 data)\n")
+		}
+	} else {
+		analysis.WriteString(fmt.Sprintf("✗ **VWAP Trending Up**: VWAP@%s $%.2f <= VWAP@9:40 $%.2f — FAILED\n", entryTime, vwapEntry, vwap940))
+		allPassed = false
 	}
 
-	// Rule 4: OR Volatility & Stretch & Momentum
+	// Condition 4: Stretch (Not Overextended)
 	orVolatility := (orHigh - orLow) / vwapEntry
 	stretch := (currentPrice - vwapEntry) / vwapEntry
+	stretchThreshold := 0.5 * orVolatility
 
-	// Momentum from day open
-	dayOpen := tfData.Klines[0].Open
+	stretchOK := stretch < stretchThreshold
+	if stretchOK {
+		analysis.WriteString(fmt.Sprintf("✓ **Price Not Overextended (Stretch < 0.5×Vol)**: %.4f < %.4f — Safe entry point\n", stretch, stretchThreshold))
+	} else {
+		analysis.WriteString(fmt.Sprintf("✗ **Price Not Overextended**: Stretch %.4f >= %.4f — FAILED (price too far from VWAP)\n", stretch, stretchThreshold))
+		allPassed = false
+	}
+
+	// Condition 5: Momentum
 	momentum := (currentPrice - dayOpen) / dayOpen
+	momentumThreshold := 0.25 * orVolatility
 
-	// Stretch Filter: Price not overextended (Stretch < 0.5 × OR_Volatility)
-	if stretch >= 0.5*orVolatility {
-		return nil, false
+	momentumOK := momentum > momentumThreshold
+	if momentumOK {
+		analysis.WriteString(fmt.Sprintf("✓ **Enough Momentum (Mom > 0.25×Vol)**: %.4f > %.4f — Solid upward momentum\n", momentum, momentumThreshold))
+	} else {
+		analysis.WriteString(fmt.Sprintf("✗ **Enough Momentum**: %.4f <= %.4f — FAILED (weak momentum)\n", momentum, momentumThreshold))
+		allPassed = false
 	}
 
-	// Momentum Filter: Sufficient momentum (Momentum > 0.25 × OR_Volatility)
-	if momentum <= 0.25*orVolatility {
-		return nil, false
+	analysis.WriteString("\n")
+
+	if !allPassed || !priceAboveVWAP || !slopePositive || !stretchOK || !momentumOK {
+		analysis.WriteString("❌ **CONDITIONS NOT MET** → SKIP this stock\n\n")
+		return nil, analysis.String(), false
 	}
 
-	// All conditions met -> OPEN LONG
+	// All conditions passed - calculate position
+	analysis.WriteString("✅ **ALL CONDITIONS PASSED** → BUY SIGNAL\n\n")
+
 	posRatio := config.RiskControl.SmallCapMaxPositionValueRatio
-	if symbol == "AAPL" || symbol == "MSFT" || symbol == "TSLA" {
+	if symbol == "AAPL" || symbol == "MSFT" || symbol == "TSLA" || symbol == "NVDA" || symbol == "GOOGL" || symbol == "META" || symbol == "AMZN" {
 		posRatio = config.RiskControl.LargeCapMaxPositionValueRatio
 	}
 	if posRatio <= 0 {
 		posRatio = 1.0
 	}
 
-	positionSize := ctx.Account.TotalEquity * posRatio * 0.8 // Use 80% of max for safety
-
-	// Exit Rules from AI100 optimization
+	positionSize := ctx.Account.TotalEquity * posRatio * 0.8
 	ai100Client := market.GetAI100Client()
 	tpPct := ai100Client.GetSellTrigger(symbol)
+	if tpPct <= 0 {
+		tpPct = 12.0 // Default 12%
+	}
 
-	stopLoss := dayOpen // Stop Loss @ Day's Open price
+	stopLoss := dayOpen
 	takeProfit := currentPrice * (1 + tpPct/100)
 
-	return &Decision{
+	analysis.WriteString("**📋 Exit Plan:**\n")
+	analysis.WriteString(fmt.Sprintf("- **Take Profit (TP)**: Sell at $%.2f (+%.2f%% profit)\n", takeProfit, tpPct))
+	analysis.WriteString(fmt.Sprintf("- **Stop Loss (SL)**: Sell at $%.2f (day's open price — protection)\n", stopLoss))
+	analysis.WriteString(fmt.Sprintf("- **Position Size**: $%.2f\n\n", positionSize))
+
+	decision := &Decision{
 		Symbol:          symbol,
 		Action:          "open_long",
 		Leverage:        config.RiskControl.SmallCapMaxMargin,
@@ -2304,8 +2377,16 @@ func calculateVWAPSlopeStretch(ctx *Context, symbol string, config *store.Strate
 		StopLoss:        stopLoss,
 		TakeProfit:      takeProfit,
 		Confidence:      90,
-		Reasoning:       fmt.Sprintf("VWAP Slope & Stretch Algorithm: Signal detected (Non-AI Fallback). Slope Positive, Stretch %.4f < %.4f, Momentum %.4f > %.4f", stretch, 0.5*orVolatility, momentum, 0.25*orVolatility),
-	}, true
+		Reasoning:       fmt.Sprintf("VWAP Algorithm: All 4 conditions passed. Price $%.2f > VWAP $%.2f, Slope Positive, Stretch %.4f < %.4f, Momentum %.4f > %.4f", currentPrice, currentVWAP, stretch, stretchThreshold, momentum, momentumThreshold),
+	}
+
+	return decision, analysis.String(), true
+}
+
+// calculateVWAPSlopeStretch translates technical VWAP rules into a Decision (legacy, kept for compatibility)
+func calculateVWAPSlopeStretch(ctx *Context, symbol string, config *store.StrategyConfig) (*Decision, bool) {
+	decision, _, passed := calculateVWAPSlopeStretchWithAnalysis(ctx, symbol, config)
+	return decision, passed
 }
 
 // HandlePositionSafekeeping manages TP/SL for open positions without AI
