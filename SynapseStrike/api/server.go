@@ -1967,6 +1967,7 @@ func (s *Server) handlePositions(c *gin.Context) {
 				"unrealized_pnl_pct": 0.0,
 				"liquidation_price":  0.0,
 				"margin":             float64(dbPos.Leverage),
+				"entry_time":         dbPos.EntryTime.Format("2006-01-02 15:04"),
 			}
 
 			// Merge with live data if available

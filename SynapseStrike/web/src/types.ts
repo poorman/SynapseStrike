@@ -38,6 +38,7 @@ export interface Position {
   unrealized_pnl_pct: number
   liquidation_price: number
   margin_used: number
+  entry_time?: string  // When position was opened (YYYY-MM-DD HH:MM)
 }
 
 export interface DecisionAction {

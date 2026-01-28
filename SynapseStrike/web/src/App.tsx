@@ -1058,6 +1058,9 @@ function TraderDetailsPage({
                       <th className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-left">
                         {t('symbol', language)}
                       </th>
+                      <th className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-center" title="Position open date">
+                        Opened
+                      </th>
                       <th className="px-1 pb-3 font-semibold text-gray-400 whitespace-nowrap text-center">
                         {t('side', language)}
                       </th>
@@ -1127,6 +1130,9 @@ function TraderDetailsPage({
                       >
                         <td className="px-1 py-3 font-mono font-semibold whitespace-nowrap text-left">
                           {pos.symbol}
+                        </td>
+                        <td className="px-1 py-3 font-mono text-[10px] whitespace-nowrap text-center" style={{ color: '#9CA3AF' }}>
+                          {pos.entry_time || '-'}
                         </td>
                         <td className="px-1 py-3 whitespace-nowrap text-center">
                           <span
