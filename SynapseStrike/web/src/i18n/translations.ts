@@ -686,9 +686,9 @@ export const translations = {
     heroTitle1: 'LLM intelligence',
     heroTitle2: 'for real returns.',
     heroDescription:
-      'Self-hosted and broker-agnostic, LLM Trader integrates with Alpaca for trade execution and Polygon for market data, enabling multiple AI agents to learn from historical and real-time stock market data. The platform allows AI to autonomously analyze markets, generate and evaluate strategies, execute trades, and continuously optimize performance within U.S. equities.',
+      'SynapseStrike is powered by Architect AI, a local, self-learning model that continuously adapts to market conditions. By integrating Alpaca for precision execution and Polygon for high-fidelity market data, Architect AI autonomously analyzes historical and real-time data to optimize trading strategies within U.S. equities.',
     poweredBy:
-      'Powered by Alpaca for trade execution and Polygon for real-time market data.',
+      'Orchestrated by Architect AI. Execution: Alpaca. Market Data: Polygon.',
 
     // Landing Page CTA
     readyToDefine: 'Ready to define the future of AI trading?',
@@ -734,16 +734,16 @@ export const translations = {
     synapsestrikeDescription2:
       "'decision-risk-execution' layer, supporting all asset classes.",
     synapsestrikeDescription3:
-      'Focused on U.S. stock markets with real-time data and professional-grade execution. Core: open architecture, multi-model AI',
+      'Driven by Architect AI, a local self-learning model that provides professional-grade execution for U.S. stock markets. Core: modular AI architecture, local learning from market data, and real-time intelligence scaling.',
     synapsestrikeDescription4:
-      'Darwinism (multi-agent self-competition, strategy evolution), CodeFi',
+      'Architect AI (multi-model decision engine), Darwinism (strategy evolution via competition),',
     synapsestrikeDescription5:
-      'flywheel (developers get point rewards for PR contributions).',
+      'and CodeFi (developer-first reward system for framework contributions).',
     youFullControl: 'You 100% Control',
     fullControlDesc: 'Complete control over AI prompts and funds',
-    startupMessages1: 'Starting automated trading system...',
-    startupMessages2: 'API server started on port 8080',
-    startupMessages3: 'Web console http://127.0.0.1:3000',
+    startupMessages1: 'Initializing Architect AI Engine...',
+    startupMessages2: 'API server started on port 8080 (MCP Enabled)',
+    startupMessages3: 'Web console: http://127.0.0.1:3000',
 
     // How It Works Section
     howToStart: 'How to Get Started with SynapseStrike',
@@ -820,11 +820,11 @@ export const translations = {
     // ===== GETTING STARTED =====
     faqWhatIsSynapseStrike: 'What is SynapseStrike?',
     faqWhatIsSynapseStrikeAnswer:
-      'SynapseStrike is an open-source AI-powered trading operating system for US stock markets. It uses large language models (LLMs) like DeepSeek, GPT, Claude, Gemini to analyze market data and make autonomous trading decisions. Key features include: multi-AI model support, multi-brokerage trading, visual strategy builder, backtesting, and AI debate arena for consensus decisions.',
+      'SynapseStrike is an open-source AI Trading OS powered by Architect AI—a local, self-learning model. It serves as a unified intelligence layer for U.S. equities, translating complex market signals into actionable trading decisions. Architect AI runs locally on your infrastructure, learning from market data to orchestrate multiple LLMs for high-conviction decision making and risk management.',
 
     faqHowDoesItWork: 'How does SynapseStrike work?',
     faqHowDoesItWorkAnswer:
-      'SynapseStrike works in 5 steps: 1) Configure AI models and brokerage API credentials; 2) Create a trading strategy (stock selection, indicators, risk controls); 3) Create a "Trader" combining AI model + Brokerage + Strategy; 4) Start the trader - it will analyze market data at regular intervals and make buy/sell/hold decisions; 5) Monitor performance on the dashboard. The AI uses Chain of Thought reasoning to explain each decision.',
+      'Architect AI operates through a 5-stage pipeline: 1) Data Ingestion: Streams real-time Polygon market data and Alpaca account states; 2) Context Construction: Builds a high-dimensional trading context with technical indicators and risk limits; 3) Multi-Agent Reasoning: Conducts modular CoT (Chain of Thought) analysis across chosen LLMs; 4) Consensus Validation: Debates decisions in the Arena to maximize confidence; 5) Execution: Sends validated orders via Alpaca with automated stop-loss/take-profit tracking.',
 
     faqIsProfitable: 'Is SynapseStrike profitable?',
     faqIsProfitableAnswer:
@@ -837,6 +837,15 @@ export const translations = {
     faqSupportedAIModels: 'Which AI models are supported?',
     faqSupportedAIModelsAnswer:
       'SynapseStrike supports 7+ AI models: DeepSeek (recommended for cost/performance), Alibaba Qwen, OpenAI (GPT-5.2), Anthropic Claude, Google Gemini, xAI Grok, and Kimi (Moonshot). You can also use any OpenAI-compatible API endpoint. Each model has different strengths - DeepSeek is cost-effective, OpenAI models are powerful but expensive, Claude excels at reasoning.',
+
+    // Architect AI Specific
+    faqWhatIsArchitectAI: 'What is Architect AI?',
+    faqWhatIsArchitectAIAnswer:
+      'Architect AI is a local, self-learning model developed for the SynapseStrike ecosystem. Unlike standard cloud-based LLMs, Architect AI runs on your own hardware and continuously learns from historical and real-time stock market data. It acts as the "Master Model" that orchestrates other AI agents, handles data cleaning, and ensures execution precision without leaking sensitive strategy data to the cloud.',
+
+    faqArchitectVsStandard: 'How is Architect AI different from standard LLMs?',
+    faqArchitectVsStandardAnswer:
+      'While standard LLMs provide general reasoning, Architect AI is specifically trained for the stock market. Key differences: 1) Local Learning: It adapts to your specific trading patterns and local market data; 2) Privacy: Your core strategy logic stays local; 3) Tool-Integration: It is natively built to handle MCP (Model Context Protocol) for direct backend orchestration; 4) Continuous Optimization: It updates its internal context based on trade outcomes.',
 
     faqSystemRequirements: 'What are the system requirements?',
     faqSystemRequirementsAnswer:

@@ -34,6 +34,16 @@ export const faqCategories: FAQCategory[] = [
         answerKey: 'faqWhatIsSynapseStrikeAnswer',
       },
       {
+        id: 'what-is-architect-ai',
+        questionKey: 'faqWhatIsArchitectAI',
+        answerKey: 'faqWhatIsArchitectAIAnswer',
+      },
+      {
+        id: 'architect-vs-standard',
+        questionKey: 'faqArchitectVsStandard',
+        answerKey: 'faqArchitectVsStandardAnswer',
+      },
+      {
         id: 'how-does-it-work',
         questionKey: 'faqHowDoesItWork',
         answerKey: 'faqHowDoesItWorkAnswer',
