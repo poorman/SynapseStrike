@@ -7,7 +7,7 @@ interface HeaderProps {
 }
 
 export function Header({ simple = false }: HeaderProps) {
-  const { language, setLanguage } = useLanguage()
+  const { language } = useLanguage()
 
   return (
     <header className="glass sticky top-0 z-50 backdrop-blur-xl">
@@ -26,37 +26,8 @@ export function Header({ simple = false }: HeaderProps) {
               )}
             </div>
           </div>
-
-          {/* Right - Language Toggle (always show) */}
-          <div
-            className="flex gap-1 rounded p-1"
-            style={{ background: 'rgba(22, 27, 34, 0.88)' }}
-          >
-            <button
-              onClick={() => setLanguage('en')}
-              className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
-              style={
-                false
-                  ? { background: 'var(--primary)', color: '#000' }
-                  : { background: 'transparent', color: '#9CA3AF' }
-              }
-            >
-              Chinese
-            </button>
-            <button
-              onClick={() => setLanguage('en')}
-              className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
-              style={
-                language === 'en'
-                  ? { background: 'var(--primary)', color: '#000' }
-                  : { background: 'transparent', color: '#9CA3AF' }
-              }
-            >
-              EN
-            </button>
-          </div>
         </div>
       </Container>
-    </header >
+    </header>
   )
 }

@@ -17,7 +17,7 @@ import { OFFICIAL_LINKS } from '../constants/branding'
 export function LandingPage() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const { user, logout } = useAuth()
-  const { language, setLanguage } = useLanguage()
+  const { language } = useLanguage()
   const isLoggedIn = !!user
 
   return (
@@ -27,7 +27,6 @@ export function LandingPage() {
         isLoggedIn={isLoggedIn}
         isHomePage={true}
         language={language}
-        onLanguageChange={setLanguage}
         user={user}
         onLogout={logout}
         onPageChange={(page) => {

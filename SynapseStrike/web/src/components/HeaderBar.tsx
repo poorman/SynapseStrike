@@ -25,7 +25,6 @@ interface HeaderBarProps {
   isHomePage?: boolean
   currentPage?: Page
   language?: Language
-  onLanguageChange?: (lang: Language) => void
   user?: { email: string } | null
   onLogout?: () => void
   onPageChange?: (page: Page) => void
@@ -36,17 +35,14 @@ export default function HeaderBar({
   isHomePage = false,
   currentPage,
   language = 'en' as Language,
-  onLanguageChange,
   user,
   onLogout,
   onPageChange,
 }: HeaderBarProps) {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const [strategyDropdownOpen, setStrategyDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const strategyDropdownRef = useRef<HTMLDivElement>(null)
   const { config: systemConfig } = useSystemConfig()
@@ -55,12 +51,6 @@ export default function HeaderBar({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setLanguageDropdownOpen(false)
-      }
       if (
         userDropdownRef.current &&
         !userDropdownRef.current.contains(event.target as Node)
@@ -703,74 +693,6 @@ export default function HeaderBar({
                 </div>
               )
             )}
-
-            {/* Language Toggle - Always at the rightmost */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded transition-colors"
-                style={{ color: 'var(--brand-light-gray)' }}
-                onMouseEnter={(e) =>
-                (e.currentTarget.style.background =
-                  'rgba(255, 255, 255, 0.05)')
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = 'transparent')
-                }
-              >
-                <span className="text-lg">
-                  {false ? '🇨🇳' : '🇺🇸'}
-                </span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-
-              {languageDropdownOpen && (
-                <div
-                  className="absolute right-0 top-full mt-2 w-32 rounded-lg shadow-lg overflow-hidden z-50"
-                  style={{
-                    background: '#1a1d23',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                  }}
-                >
-                  <button
-                    onClick={() => {
-                      onLanguageChange?.('pl')
-                      setLanguageDropdownOpen(false)
-                    }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 transition-colors ${false ? '' : 'hover:opacity-80'
-                      }`}
-                    style={{
-                      color: 'var(--brand-light-gray)',
-                      background:
-                        false
-                          ? 'var(--primary-bg, 0.1)'
-                          : 'transparent',
-                    }}
-                  >
-                    <span className="text-base">🇵🇱</span>
-                    <span className="text-sm">Polish</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      onLanguageChange?.('en')
-                      setLanguageDropdownOpen(false)
-                    }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 transition-colors ${language === 'en' ? '' : 'hover:opacity-80'
-                      }`}
-                    style={{
-                      color: 'var(--brand-light-gray)',
-                      background:
-                        language === 'en'
-                          ? 'var(--primary-bg, 0.1)'
-                          : 'transparent',
-                    }}
-                  >
-                    <span className="text-base">🇺🇸</span>
-                    <span className="text-sm">English</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 
@@ -1097,46 +1019,6 @@ export default function HeaderBar({
             ))}
 
 
-
-          {/* Language Toggle */}
-          <div className="py-2">
-            <div className="flex items-center gap-2 mb-2">
-              <span
-                className="text-xs"
-                style={{ color: 'var(--brand-light-gray)' }}
-              >
-                {t('language', language)}:
-              </span>
-            </div>
-            <div className="space-y-1">
-              <button
-                onClick={() => {
-                  onLanguageChange?.('en')
-                  setMobileMenuOpen(false)
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-colors ${false
-                  ? 'bg-yellow-500 text-black'
-                  : 'text-gray-400 hover:text-white'
-                  }`}
-              >
-                <span className="text-lg">🇨🇳</span>
-                <span className="text-sm">Chinese</span>
-              </button>
-              <button
-                onClick={() => {
-                  onLanguageChange?.('en')
-                  setMobileMenuOpen(false)
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-colors ${language === 'en'
-                  ? 'bg-yellow-500 text-black'
-                  : 'text-gray-400 hover:text-white'
-                  }`}
-              >
-                <span className="text-lg">🇺🇸</span>
-                <span className="text-sm">English</span>
-              </button>
-            </div>
-          </div>
 
           {/* User info and logout for mobile when logged in */}
           {isLoggedIn && user && (
