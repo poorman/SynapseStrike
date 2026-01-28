@@ -387,6 +387,13 @@ func (at *AutoTrader) Run() error {
 	// Start drawdown monitoring
 	at.startDrawdownMonitor()
 
+	// VWAP: Clean up any stale positions from previous days at startup
+	// This handles positions that should have been sold at 3:55 PM but weren't
+	if vwapEnabled && isMarketOpen() {
+		logger.Infof("🧹 [VWAP] Running stale position cleanup at startup...")
+		at.cleanupStaleVWAPPositions()
+	}
+
 	// Determine initial scan interval (VWAP pre-entry uses 1-min)
 	currentInterval := at.getVWAPAwareInterval()
 	ticker := time.NewTicker(currentInterval)
@@ -445,6 +452,13 @@ func (at *AutoTrader) Run() error {
 
 				// During VWAP pre-entry phase (9:30-10:00), only collect data, don't trade
 				if at.isVWAPPreEntryTime() {
+					// At market open (9:30-9:31 AM), run stale position cleanup
+					loc, _ := time.LoadLocation("America/New_York")
+					now := time.Now().In(loc)
+					if now.Hour() == 9 && now.Minute() >= 30 && now.Minute() <= 31 {
+						at.cleanupStaleVWAPPositions()
+					}
+
 					logger.Infof("📊 [VWAP] Pre-entry phase - collecting data, skipping trading until entry time")
 					// Get candidate symbols from strategy engine
 					if at.strategyEngine != nil {
@@ -2522,6 +2536,76 @@ func (at *AutoTrader) runVWAPPositionManagement() {
 		// Otherwise, hold the position
 		logger.Infof("📊 [VWAP] HOLDING %s: PnL %.2f%% | Need %.2f%% more to hit target",
 			symbol, pnlPct, tpPct-pnlPct)
+	}
+}
+
+// cleanupStaleVWAPPositions sells any positions that should have been sold yesterday
+// This handles cases where EOD exit at 3:55 PM didn't execute (bot offline, errors, etc.)
+// Called at market open to ensure no stale positions from previous days
+func (at *AutoTrader) cleanupStaleVWAPPositions() {
+	positions, err := at.trader.GetPositions()
+	if err != nil {
+		logger.Infof("📊 [VWAP] Error getting positions for stale cleanup: %v", err)
+		return
+	}
+
+	loc, _ := time.LoadLocation("America/New_York")
+	now := time.Now().In(loc)
+	today := now.Format("2006-01-02")
+
+	logger.Infof("🧹 [VWAP] Checking for stale positions from previous days (today: %s)", today)
+
+	var staleCount int
+	for _, pos := range positions {
+		symbol := pos["symbol"].(string)
+		side := pos["side"].(string)
+		quantity := pos["positionAmt"].(float64)
+		if quantity < 0 {
+			quantity = -quantity
+		}
+		if quantity == 0 {
+			continue
+		}
+
+		// Check if this position belongs to current trader and get open date
+		if at.store != nil {
+			dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, symbol, side)
+			if err != nil || dbPos == nil {
+				continue // Skip positions that don't belong to this trader
+			}
+
+			// Check if position was opened on a previous day
+			posOpenDate := dbPos.EntryTime.In(loc).Format("2006-01-02")
+			if posOpenDate < today {
+				staleCount++
+				entryPrice := pos["entryPrice"].(float64)
+				markPrice := pos["markPrice"].(float64)
+				pnlPct := 0.0
+				if entryPrice > 0 && markPrice > 0 {
+					if side == "long" || side == "buy" {
+						pnlPct = ((markPrice - entryPrice) / entryPrice) * 100
+					} else {
+						pnlPct = ((entryPrice - markPrice) / entryPrice) * 100
+					}
+				}
+
+				logger.Infof("🚨 [VWAP] STALE POSITION DETECTED: %s %s opened on %s - SELLING NOW at %.2f%% PnL",
+					symbol, side, posOpenDate, pnlPct)
+
+				reasoning := fmt.Sprintf("Overnight cleanup: Position opened %s should have been sold at 3:55 PM | Current PnL: %.2f%%", posOpenDate, pnlPct)
+				if err := at.closePositionWithReason(symbol, side, "overnight_cleanup", reasoning); err != nil {
+					logger.Infof("❌ [VWAP] Failed to close stale position %s: %v", symbol, err)
+				} else {
+					logger.Infof("✅ [VWAP] Successfully closed stale position %s", symbol)
+				}
+			}
+		}
+	}
+
+	if staleCount == 0 {
+		logger.Infof("✅ [VWAP] No stale positions found - all positions are from today")
+	} else {
+		logger.Infof("🧹 [VWAP] Cleaned up %d stale position(s) from previous days", staleCount)
 	}
 }
 
