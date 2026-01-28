@@ -35,8 +35,9 @@ type Request struct {
 	Stop             []string `json:"stop,omitempty"`              // Stop sequences
 
 	// Advanced features
-	Tools      []Tool `json:"tools,omitempty"`       // Available tools list
-	ToolChoice string `json:"tool_choice,omitempty"` // Tool choice strategy ("auto", "none", {"type": "function", "function": {"name": "xxx"}})
+	Tools      []Tool         `json:"tools,omitempty"`       // Available tools list
+	ToolChoice string         `json:"tool_choice,omitempty"` // Tool choice strategy ("auto", "none", {"type": "function", "function": {"name": "xxx"}})
+	Metadata   map[string]any `json:"metadata,omitempty"`    // Custom metadata for specialized APIs
 }
 
 // NewMessage creates a message

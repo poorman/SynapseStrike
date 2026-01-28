@@ -163,7 +163,7 @@ function TradingViewChartComponent({
 
   return (
     <div
-      className={`${embedded ? '' : 'binance-card'} overflow-hidden ${embedded ? '' : 'animate-fade-in'} ${isFullscreen
+      className={`${embedded ? '' : 'glass-card'} overflow-hidden ${embedded ? '' : 'animate-fade-in'} ${isFullscreen
         ? 'fixed inset-0 z-50 rounded-none flex flex-col'
         : ''
         }`}

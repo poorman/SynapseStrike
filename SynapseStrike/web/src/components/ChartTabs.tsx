@@ -32,7 +32,7 @@ export function ChartTabs({ traderId, selectedSymbol, updateKey, brokerageId }: 
   console.log('[ChartTabs] rendering, activeTab:', activeTab)
 
   return (
-    <div className="binance-card">
+    <div className="glass-card">
       {/* Tab Headers - this isTabtoggle button area */}
       <div
         className="flex items-center gap-2 p-3"

@@ -7,12 +7,17 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
 
 // Private/Reserved IP ranges that should be blocked to prevent SSRF
 var privateIPBlocks []*net.IPNet
+
+// allowPrivateIPs controls whether private IP addresses are allowed
+// Set ALLOW_PRIVATE_IPS=true environment variable to enable
+var allowPrivateIPs = os.Getenv("ALLOW_PRIVATE_IPS") == "true"
 
 func init() {
 	// Initialize private IP blocks
@@ -51,6 +56,11 @@ func (e *SSRFError) Error() string {
 
 // isPrivateIP checks if an IP address is in a private/reserved range
 func isPrivateIP(ip net.IP) bool {
+	// If private IPs are allowed, skip all checks
+	if allowPrivateIPs {
+		return false
+	}
+
 	if ip == nil {
 		return true // Invalid IP, treat as private
 	}

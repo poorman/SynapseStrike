@@ -64,7 +64,7 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
   // Loading state - show skeleton
   if (isLoading) {
     return (
-      <div className={embedded ? 'p-6' : 'binance-card p-6'}>
+      <div className={embedded ? 'p-6' : 'glass-card p-6'}>
         {!embedded && (
           <h3 className="text-lg font-semibold mb-6" style={{ color: '#F9FAFB' }}>
             {t('accountEquityCurve', language)}
@@ -79,7 +79,7 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
 
   if (error) {
     return (
-      <div className={embedded ? 'p-6' : 'binance-card p-6'}>
+      <div className={embedded ? 'p-6' : 'glass-card p-6'}>
         <div
           className="flex items-center gap-3 p-4 rounded"
           style={{
@@ -106,7 +106,7 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
 
   if (!validHistory || validHistory.length === 0) {
     return (
-      <div className={embedded ? 'p-6' : 'binance-card p-6'}>
+      <div className={embedded ? 'p-6' : 'glass-card p-6'}>
         {!embedded && (
           <h3 className="text-lg font-semibold mb-6" style={{ color: '#F9FAFB' }}>
             {t('accountEquityCurve', language)}
@@ -182,7 +182,7 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
     }
   }
 
-  // customTooltip - Binance Style
+  // customTooltip - Glass Style
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
@@ -212,7 +212,7 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
   }
 
   return (
-    <div className={embedded ? 'p-3 sm:p-5' : 'binance-card p-3 sm:p-5 animate-fade-in'}>
+    <div className={embedded ? 'p-3 sm:p-5' : 'glass-card p-3 sm:p-5 animate-fade-in'}>
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <div className="flex-1">
@@ -246,8 +246,8 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
                     ? 'rgba(14, 203, 129, 0.1)'
                     : 'rgba(246, 70, 93, 0.1)',
                   border: `1px solid ${isProfit
-                      ? 'rgba(14, 203, 129, 0.2)'
-                      : 'rgba(246, 70, 93, 0.2)'
+                    ? 'rgba(14, 203, 129, 0.2)'
+                    : 'rgba(246, 70, 93, 0.2)'
                     }`,
                 }}
               >

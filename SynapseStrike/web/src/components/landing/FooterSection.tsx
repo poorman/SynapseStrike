@@ -1,6 +1,5 @@
-import { Github, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { t, Language } from '../../i18n/translations'
-import { OFFICIAL_LINKS } from '../../constants/branding'
 
 interface FooterSectionProps {
   language: Language
@@ -8,16 +7,12 @@ interface FooterSectionProps {
 
 export default function FooterSection({ language }: FooterSectionProps) {
   const links = {
-    social: [
-      { name: 'GitHub', href: OFFICIAL_LINKS.github, icon: Github },
-    ],
+    social: [],
     resources: [
       {
         name: false ? 'docs' : 'Documentation',
-        href: 'https://github.com/poorman/SynapseStrike/blob/main/README.md',
+        href: '#',
       },
-      { name: 'Issues', href: 'https://github.com/poorman/SynapseStrike/issues' },
-      { name: 'Pull Requests', href: 'https://github.com/poorman/SynapseStrike/pulls' },
     ],
     supporters: [
       { name: 'Alpaca Markets', href: 'https://alpaca.markets/' },
@@ -39,47 +34,14 @@ export default function FooterSection({ language }: FooterSectionProps) {
             <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
               {t('futureStandardAI', language)}
             </p>
-            {/* Social Icons */}
+            {/* Social Icons - Hidden as requested to remove GitHub */}
             <div className="flex items-center gap-3">
-              {links.social.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-110"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    color: '#9CA3AF',
-                  }}
-                  title={link.name}
-                >
-                  <link.icon className="w-4 h-4" />
-                </a>
-              ))}
+              {/* Social icons removed */}
             </div>
           </div>
 
-          {/* Links */}
+          {/* Links Section Removed as it only contained social */}
           <div>
-            <h4 className="text-sm font-semibold mb-4" style={{ color: '#F9FAFB' }}>
-              {t('links', language)}
-            </h4>
-            <ul className="space-y-3">
-              {links.social.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm transition-colors hover:text-[var(--primary)]"
-                    style={{ color: '#6B7280' }}
-                  >
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
 
           {/* Resources */}

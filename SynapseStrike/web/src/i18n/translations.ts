@@ -1,4 +1,4 @@
-export type Language = 'en' | 'pl'
+export type Language = 'en'
 
 export const translations = {
   en: {
@@ -558,10 +558,10 @@ export const translations = {
       '• After deleting configuration, related traders will not be able to trade',
     edit: 'Edit',
     viewGuide: 'View Guide',
-    binanceSetupGuide: 'Binance Setup Guide',
+    alpacaSetupGuide: 'Brokerage Setup Guide',
     closeGuide: 'Close',
     whitelistIP: 'Whitelist IP',
-    whitelistIPDesc: 'Binance requires adding server IP to API whitelist',
+    whitelistIPDesc: 'Some brokerages require adding server IP to API whitelist',
     serverIPAddresses: 'Server IP Addresses',
     copyIP: 'Copy',
     ipCopied: 'IP Copied',
@@ -682,7 +682,7 @@ export const translations = {
       'User registration is currently disabled. Please contact the administrator for access.',
 
     // Hero Section
-    githubStarsInDays: '2.5K+ GitHub Stars in 3 days',
+    githubStarsInDays: 'Professional Stock Trading Platform',
     heroTitle1: 'LLM intelligence',
     heroTitle2: 'for real returns.',
     heroDescription:
@@ -749,9 +749,9 @@ export const translations = {
     howToStart: 'How to Get Started with SynapseStrike',
     fourSimpleSteps:
       'Four simple steps to start your AI automated trading journey',
-    step1Title: 'Clone GitHub Repository',
+    step1Title: 'Download Application',
     step1Desc:
-      'git clone https://github.com/tinkle-community/synapsestrike and switch to dev branch to test new features.',
+      'Download the SynapseStrike package and prepare your server environment for deployment.',
     step2Title: 'Configure Environment',
     step2Desc:
       'Configure your stock brokerage APIs (like Alpaca, Interactive Brokers), AI models and trading strategies.',
@@ -804,7 +804,7 @@ export const translations = {
     faqTitle: 'Frequently Asked Questions',
     faqSubtitle: 'Find answers to common questions about SynapseStrike',
     faqStillHaveQuestions: 'Still Have Questions?',
-    faqContactUs: 'Join our community or check our GitHub for more help',
+    faqContactUs: 'Join our community for more help and updates',
 
     // FAQ Categories
     faqCategoryGettingStarted: 'Getting Started',
@@ -820,7 +820,7 @@ export const translations = {
     // ===== GETTING STARTED =====
     faqWhatIsSynapseStrike: 'What is SynapseStrike?',
     faqWhatIsSynapseStrikeAnswer:
-      'SynapseStrike is an open-source AI-powered trading operating system for cryptocurrency and US stock markets. It uses large language models (LLMs) like DeepSeek, GPT, Claude, Gemini to analyze market data and make autonomous trading decisions. Key features include: multi-AI model support, multi-brokerage trading, visual strategy builder, backtesting, and AI debate arena for consensus decisions.',
+      'SynapseStrike is an open-source AI-powered trading operating system for US stock markets. It uses large language models (LLMs) like DeepSeek, GPT, Claude, Gemini to analyze market data and make autonomous trading decisions. Key features include: multi-AI model support, multi-brokerage trading, visual strategy builder, backtesting, and AI debate arena for consensus decisions.',
 
     faqHowDoesItWork: 'How does SynapseStrike work?',
     faqHowDoesItWorkAnswer:
@@ -828,7 +828,7 @@ export const translations = {
 
     faqIsProfitable: 'Is SynapseStrike profitable?',
     faqIsProfitableAnswer:
-      'AI trading is experimental and NOT guaranteed to be profitable. Cryptocurrency futures are highly volatile and risky. SynapseStrike is designed for educational and research purposes. We strongly recommend: starting with small amounts (10-50 ), never investing more than you can afford to lose, thoroughly testing with backtests before live trading, and understanding that past performance does not guarantee future results.',
+      'AI trading is experimental and NOT guaranteed to be profitable. Stock markets are volatile and risky. SynapseStrike is designed for educational and research purposes. We strongly recommend: starting with small amounts (10-50 USD), never investing more than you can afford to lose, thoroughly testing with backtests before live trading, and understanding that past performance does not guarantee future results.',
 
     faqSupportedBrokerages: 'Which brokerages are supported?',
     faqSupportedBrokeragesAnswer:
@@ -845,7 +845,7 @@ export const translations = {
     // ===== INSTALLATION =====
     faqHowToInstall: 'How do I install SynapseStrike?',
     faqHowToInstallAnswer:
-      'Easiest method (Linux/macOS): Run "curl -fsSL https://raw.githubusercontent.com/poorman/SynapseStrike/main/install.sh | bash" - this installs Docker containers automatically. Then open http://127.0.0.1:3000 in your browser. For manual installation or development, clone the repository and follow the README instructions.',
+      'Easiest method (Linux/macOS): Run the provided installation script on your server - this installs Docker containers automatically. Then open http://127.0.0.1:3000 in your browser. For development, follow the local setup instructions.',
 
     faqWindowsInstallation: 'How do I install on Windows?',
     faqWindowsInstallationAnswer:
@@ -857,7 +857,7 @@ export const translations = {
 
     faqManualInstallation: 'How do I install manually for development?',
     faqManualInstallationAnswer:
-      'Prerequisites: Go 1.21+, Node.js 18+, TA-Lib. Steps: 1) Clone repo: "git clone https://github.com/poorman/SynapseStrike.git"; 2) Install backend deps: "go mod download"; 3) Install frontend deps: "cd web && npm install"; 4) Build backend: "go build -o synapsestrike"; 5) Run backend: "./synapsestrike"; 6) Run frontend (new terminal): "cd web && npm run dev". Access at http://127.0.0.1:3000',
+      'Prerequisites: Go 1.21+, Node.js 18+, TA-Lib. Steps: 1) Download source code; 2) Install backend deps: "go mod download"; 3) Install frontend deps: "cd web && npm install"; 4) Build backend: "go build -o synapsestrike"; 5) Run backend: "./synapsestrike"; 6) Run frontend (new terminal): "cd web && npm run dev". Access at http://127.0.0.1:3000',
 
     faqServerDeployment: 'How do I deploy to a remote server?',
     faqServerDeploymentAnswer:
@@ -907,11 +907,11 @@ export const translations = {
 
     faqOnlyShortPositions: 'Why is the AI only opening short positions?',
     faqOnlyShortPositionsAnswer:
-      'This is usually due to Binance Position Mode. Solution: Switch to Hedge Mode (双向持仓) in Binance Futures → Preferences → Position Mode. You must close all positions first. After switching, the AI can open both long and short positions independently.',
+      'This is usually due to brokerage position settings. Ensure your account is approved for margin and short selling. You must have sufficient collateral. After configuration, the AI can open both long and short positions independently.',
 
     faqMarginSettings: 'How do margin settings work?',
     faqMarginSettingsAnswer:
-      'Margin is set in Strategy → Risk Controls: Large Cap margin (typically 5-10x) and Small Cap margin (typically 3-5x). Higher margin = higher risk and potential returns. Subaccounts may have restrictions (e.g., Binance subaccounts limited to 5x). The AI respects these limits when placing orders.',
+      'Margin is set in Strategy → Risk Controls: Large Cap margin (typically up to 4x for stocks) and Small Cap margin (typically up to 2x). Higher margin = higher risk. Subaccounts may have specific regulatory restrictions. The AI respects these limits when placing orders.',
 
     faqStopLossTakeProfit: 'Does SynapseStrike support stop-loss and take-profit?',
     faqStopLossTakeProfitAnswer:
@@ -952,7 +952,7 @@ export const translations = {
 
     faqBalanceShowsZero: 'Account balance shows 0',
     faqBalanceShowsZeroAnswer:
-      'Funds are likely in Spot wallet, not Futures wallet. Solution: 1) In Binance, go to Wallet → Futures → Transfer; 2) Transfer  from Spot to Futures; 3) Refresh SynapseStrike dashboard. Also check: funds not locked in savings/staking products.',
+      'Funds may not be in the correct trading account. Solution: 1) Ensure you have deposited USD into your brokerage account; 2) Verify API keys have balance viewing permissions; 3) Refresh SynapseStrike dashboard. Also check if funds are locked in pending orders.',
 
     faqDockerPullFailed: 'Docker image pull failed or slow',
     faqDockerPullFailedAnswer:
@@ -978,7 +978,7 @@ export const translations = {
     // ===== FEATURES =====
     faqStrategyStudio: 'What is Strategy Studio?',
     faqStrategyStudioAnswer:
-      'Strategy Studio is a visual strategy builder where you configure: 1) Stock Sources - which cryptocurrencies to trade (static list, AI500 top stocks, OI ranking); 2) Technical Indicators - EMA, MACD, RSI, ATR, Volume, Open Interest, Funding Rate; 3) Risk Controls - margin limits, position sizing, margin caps; 4) Custom Prompts - specific instructions for AI. No coding required.',
+      'Strategy Studio is a visual strategy builder where you configure: 1) Stock Sources - which stocks to trade (static list, AI500 top stocks); 2) Technical Indicators - EMA, MACD, RSI, ATR, Volume; 3) Risk Controls - margin limits, position sizing; 4) Custom Prompts - specific instructions for AI. No coding required.',
 
     faqBacktestLab: 'What is Backtest Lab?',
     faqBacktestLabAnswer:
@@ -1126,7 +1126,7 @@ export const translations = {
       createDebate: 'Create Debate',
       creating: 'Creating...',
       debateName: 'Debate Name',
-      debateNamePlaceholder: 'e.g., BTC Bull or Bear?',
+      debateNamePlaceholder: 'e.g., AAPL Bull or Bear?',
       tradingPair: 'Trading Pair',
       strategy: 'Strategy',
       selectStrategy: 'Select a strategy',

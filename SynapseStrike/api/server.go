@@ -2536,6 +2536,7 @@ func (s *Server) handleGetSupportedModels(c *gin.Context) {
 		{"id": "grok", "name": "Grok AI", "provider": "grok", "defaultModel": "grok-3-latest"},
 		{"id": "kimi", "name": "Kimi AI", "provider": "kimi", "defaultModel": "moonshot-v1-auto"},
 		{"id": "localai", "name": "Local AI", "provider": "localai", "defaultModel": "gpt-oss-20b"},
+		{"id": "architect", "name": "Architect AI", "provider": "architect", "defaultModel": "architect-ai"},
 	}
 
 	c.JSON(http.StatusOK, supportedModels)

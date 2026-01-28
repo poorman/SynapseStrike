@@ -93,6 +93,11 @@ const AI_PROVIDER_CONFIG: Record<string, {
     apiUrl: 'https://platform.moonshot.ai/console/api-keys',
     apiName: 'Moonshot',
   },
+  architect: {
+    defaultModel: 'architect-ai',
+    apiUrl: 'http://10.0.0.247:8065/api',
+    apiName: 'Architect AI',
+  },
 }
 
 interface AITradersPageProps {
@@ -794,7 +799,7 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
       {/* Configuration Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* AI Models */}
-        <div className="binance-card p-3 md:p-4">
+        <div className="glass-card p-3 md:p-4">
           <h3
             className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2"
             style={{ color: '#F9FAFB' }}
@@ -877,7 +882,7 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
         </div>
 
         {/* Brokerages */}
-        <div className="binance-card p-3 md:p-4">
+        <div className="glass-card p-3 md:p-4">
           <h3
             className="text-base md:text-lg font-semibold mb-3 flex items-center gap-2"
             style={{ color: '#F9FAFB' }}
@@ -948,7 +953,7 @@ export function AITradersPage({ onTraderSelect }: AITradersPageProps) {
       </div>
 
       {/* Traders List */}
-      <div className="binance-card p-4 md:p-6">
+      <div className="glass-card p-4 md:p-6">
         <div className="flex items-center justify-between mb-4 md:mb-5">
           <h2
             className="text-lg md:text-xl font-bold flex items-center gap-2"

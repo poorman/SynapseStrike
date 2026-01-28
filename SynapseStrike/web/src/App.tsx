@@ -832,8 +832,8 @@ function TraderDetailsPage({
   if (!selectedTrader) {
     return (
       <div className="space-y-6">
-        {/* Loading Skeleton - Binance Style */}
-        <div className="binance-card p-6 animate-pulse">
+        {/* Loading Skeleton - Brokerage Style */}
+        <div className="glass-card p-6 animate-pulse">
           <div className="skeleton h-8 w-48 mb-3"></div>
           <div className="flex gap-4">
             <div className="skeleton h-4 w-32"></div>
@@ -843,13 +843,13 @@ function TraderDetailsPage({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="binance-card p-5 animate-pulse">
+            <div key={i} className="glass-card p-5 animate-pulse">
               <div className="skeleton h-4 w-24 mb-3"></div>
               <div className="skeleton h-8 w-32"></div>
             </div>
           ))}
         </div>
-        <div className="binance-card p-6 animate-pulse">
+        <div className="glass-card p-6 animate-pulse">
           <div className="skeleton h-6 w-40 mb-4"></div>
           <div className="skeleton h-64 w-full"></div>
         </div>

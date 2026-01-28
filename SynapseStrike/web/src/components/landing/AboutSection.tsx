@@ -127,7 +127,7 @@ export default function AboutSection({ language }: AboutSectionProps) {
 
               {/* Terminal Content */}
               <div className="p-6 font-mono text-sm space-y-2">
-                <div style={{ color: '#6B7280' }}>$ git clone https://github.com/poorman/SynapseStrike.git</div>
+                <div style={{ color: '#6B7280' }}>$ cd SynapseStrike</div>
                 <div style={{ color: '#6B7280' }}>$ cd synapsestrike && chmod +x start.sh</div>
                 <div style={{ color: '#6B7280' }}>$ ./start.sh start --build</div>
                 <div className="pt-2" style={{ color: 'var(--primary)' }}>

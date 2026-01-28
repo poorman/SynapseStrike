@@ -662,7 +662,7 @@ export function BacktestPage() {
         {/* Left Panel - Config / History */}
         <div className="space-y-4">
           {/* Wizard */}
-          <div className="binance-card p-5">
+          <div className="glass-card p-5">
             <div className="flex items-center gap-2 mb-4">
               {[1, 2, 3].map((step) => (
                 <div key={step} className="flex items-center">
@@ -1265,7 +1265,7 @@ export function BacktestPage() {
           </div>
 
           {/* Run History */}
-          <div className="binance-card p-4">
+          <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: '#F9FAFB' }}>
                 <Layers className="w-4 h-4" style={{ color: 'var(--primary)' }} />
@@ -1340,7 +1340,7 @@ export function BacktestPage() {
         <div className="xl:col-span-2 space-y-4">
           {!selectedRunId ? (
             <div
-              className="binance-card p-12 text-center"
+              className="glass-card p-12 text-center"
               style={{ color: '#6B7280' }}
             >
               <Brain className="w-12 h-12 mx-auto mb-4 opacity-30" />
@@ -1349,7 +1349,7 @@ export function BacktestPage() {
           ) : (
             <>
               {/* Status Bar */}
-              <div className="binance-card p-4">
+              <div className="glass-card p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <ProgressRing progress={status?.progress_pct ?? selectedRun?.summary.progress_pct ?? 0} size={80} />
@@ -1471,7 +1471,7 @@ export function BacktestPage() {
               </div>
 
               {/* Tabs */}
-              <div className="binance-card">
+              <div className="glass-card">
                 <div className="flex border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}>
                   {(['overview', 'chart', 'trades', 'decisions'] as ViewTab[]).map((tab) => (
                     <button

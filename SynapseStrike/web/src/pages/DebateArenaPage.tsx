@@ -380,14 +380,25 @@ function CreateModal({
     try {
       await onCreate({ name, symbol, strategy_id: strategyId, max_rounds: maxRounds, participants })
       onClose()
-    } finally { setCreating(false) }
+    } catch (err: any) {
+      notify.error(err.message || 'Failed to create debate')
+      console.error('Create debate error:', err)
+    } finally {
+      setCreating(false)
+    }
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-      <div className="bg-[rgba(22, 27, 34, 0.88)] rounded-xl w-full max-w-md p-4 border border-[var(--glass-border)]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+      onClick={() => !creating && onClose()}
+    >
+      <div
+        className="bg-[rgba(22, 27, 34, 0.88)] rounded-xl w-full max-w-md p-4 border border-[var(--glass-border)]"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-white">{t('createDebate')}</h3>
           <button onClick={onClose}><X size={20} className="text-gray-400" /></button>
@@ -453,9 +464,13 @@ function CreateModal({
         </div>
 
         <div className="flex gap-2 mt-4">
-          <button onClick={onClose} className="flex-1 py-2 rounded-lg bg-[var(--bg-secondary)]/5 text-white text-sm">{t('cancel')}</button>
-          <button onClick={submit} disabled={creating}
-            className="flex-1 py-2 rounded-lg font-semibold text-sm disabled:opacity-50" style={{ background: 'var(--primary)', color: '#000' }}>
+          <button onClick={onClose} disabled={creating} className="flex-1 py-2 rounded-lg bg-[var(--bg-secondary)]/5 text-white text-sm disabled:opacity-50">{t('cancel')}</button>
+          <button
+            onClick={submit}
+            disabled={creating || !name || !strategyId || participants.length < 2}
+            className="flex-1 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            style={{ background: 'var(--primary)', color: '#000' }}
+          >
             {creating ? <Loader2 size={16} className="animate-spin mx-auto" /> : t('create')}
           </button>
         </div>
@@ -471,6 +486,8 @@ export function DebateArenaPage() {
   const [execId, setExecId] = useState<string | null>(null)
   const [traderId, setTraderId] = useState('')
   const [executing, setExecuting] = useState(false)
+  const [startingId, setStartingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { data: debates, mutate: mutateList } = useSWR<DebateSession[]>('debates', api.getDebates, { refreshInterval: 5000 })
   const { data: aiModels } = useSWR<AIModel[]>('ai-models', api.getModelConfigs)
@@ -519,16 +536,32 @@ export function DebateArenaPage() {
   }
 
   const onStart = async (id: string) => {
-    await api.startDebate(id)
-    notify.success('Started')
-    mutateList(); mutateDetail()
+    setStartingId(id)
+    try {
+      await api.startDebate(id)
+      notify.success('Started')
+      mutateList(); mutateDetail()
+    } catch (err: any) {
+      notify.error(err.message || 'Failed to start debate')
+      console.error('Start debate error:', err)
+    } finally {
+      setStartingId(null)
+    }
   }
 
   const onDelete = async (id: string) => {
-    await api.deleteDebate(id)
-    notify.success('Deleted')
-    if (selectedId === id) setSelectedId(null)
-    mutateList()
+    setDeletingId(id)
+    try {
+      await api.deleteDebate(id)
+      notify.success('Deleted')
+      if (selectedId === id) setSelectedId(null)
+      mutateList()
+    } catch (err: any) {
+      notify.error(err.message || 'Failed to delete debate')
+      console.error('Delete debate error:', err)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   const onExecute = async () => {
@@ -585,18 +618,30 @@ export function DebateArenaPage() {
                 <div className="flex gap-1 mt-1">
                   {/* Start button - only for pending */}
                   {d.status === 'pending' && (
-                    <button onClick={e => { e.stopPropagation(); onStart(d.id) }}
-                      className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">{t('start')}</button>
+                    <button
+                      onClick={e => { e.stopPropagation(); onStart(d.id) }}
+                      disabled={startingId === d.id}
+                      className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {startingId === d.id ? <Loader2 size={10} className="animate-spin" /> : null}
+                      {t('start')}
+                    </button>
                   )}
                   {/* Stop button - for running or voting */}
                   {(d.status === 'running' || d.status === 'voting') && (
                     <button onClick={e => { e.stopPropagation(); api.cancelDebate(d.id).then(() => { notify.success('Stopped'); mutateList(); }).catch(e => notify.error(e.message)) }}
-                      className="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">Stop</button>
+                      className="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded hover:bg-yellow-500/30 transition-colors">Stop</button>
                   )}
                   {/* Delete button - for all non-running statuses */}
                   {(d.status !== 'running' && d.status !== 'voting') && (
-                    <button onClick={e => { e.stopPropagation(); onDelete(d.id) }}
-                      className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded">{t('delete')}</button>
+                    <button
+                      onClick={e => { e.stopPropagation(); onDelete(d.id) }}
+                      disabled={deletingId === d.id}
+                      className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    >
+                      {deletingId === d.id ? <Loader2 size={10} className="animate-spin" /> : null}
+                      {t('delete')}
+                    </button>
                   )}
                 </div>
               )}
@@ -799,8 +844,14 @@ export function DebateArenaPage() {
 
       {/* Execute Modal */}
       {execId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="bg-[rgba(22, 27, 34, 0.88)] rounded-xl w-full max-w-sm p-4 border border-[var(--glass-border)]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+          onClick={() => !executing && setExecId(null)}
+        >
+          <div
+            className="bg-[rgba(22, 27, 34, 0.88)] rounded-xl w-full max-w-sm p-4 border border-[var(--glass-border)]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <Zap className="text-yellow-400" /> {t('executeTitle')}
             </h3>

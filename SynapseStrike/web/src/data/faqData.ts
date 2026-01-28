@@ -2,7 +2,6 @@ import {
   Rocket,
   Settings,
   Shield,
-  Code,
   Users,
   HelpCircle,
   Download,
@@ -238,28 +237,6 @@ export const faqCategories: FAQCategory[] = [
         id: 'market-data-issues',
         questionKey: 'faqMarketDataIssues',
         answerKey: 'faqMarketDataIssuesAnswer',
-      },
-    ],
-  },
-  {
-    id: 'contributing',
-    icon: Code,
-    titleKey: 'faqCategoryContributing',
-    items: [
-      {
-        id: 'github-projects-tasks',
-        questionKey: 'faqGitHubProjectsTasks',
-        answerKey: 'faqGitHubProjectsTasksAnswer',
-      },
-      {
-        id: 'contribute-pr-guidelines',
-        questionKey: 'faqContributePRGuidelines',
-        answerKey: 'faqContributePRGuidelinesAnswer',
-      },
-      {
-        id: 'bounty-program',
-        questionKey: 'faqBountyProgram',
-        answerKey: 'faqBountyProgramAnswer',
       },
     ],
   },

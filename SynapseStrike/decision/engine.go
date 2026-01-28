@@ -261,7 +261,33 @@ func GetFullDecisionWithStrategy(ctx *Context, mcpClient mcp.AIClient, engine *S
 
 	// 4. Call AI API
 	aiCallStart := time.Now()
-	aiResponse, err := mcpClient.CallWithMessages(systemPrompt, userPrompt)
+	var aiResponse string
+	var err error
+
+	if mcpClient.GetProvider() == mcp.ProviderArchitect {
+		// For Architect AI, include full market context in metadata for specialized port 8065 pipeline
+		symbol := "BTCUSDT" // Default
+		if len(ctx.CandidateStocks) > 0 {
+			symbol = ctx.CandidateStocks[0].Symbol
+		}
+		timeframe := engine.GetConfig().Indicators.Klines.PrimaryTimeframe
+		if timeframe == "" {
+			timeframe = "1m"
+		}
+
+		req, _ := mcp.NewRequestBuilder().
+			WithSystemPrompt(systemPrompt).
+			WithUserPrompt(userPrompt).
+			WithMetadataItem("market_context", ctx).
+			WithMetadataItem("symbol", symbol).
+			WithMetadataItem("timeframe", timeframe).
+			WithMetadataItem("question", userPrompt).
+			Build()
+		aiResponse, err = mcpClient.CallWithRequest(req)
+	} else {
+		aiResponse, err = mcpClient.CallWithMessages(systemPrompt, userPrompt)
+	}
+
 	aiCallDuration := time.Since(aiCallStart)
 	if err != nil {
 		return nil, fmt.Errorf("AI API call failed: %w", err)
@@ -1003,24 +1029,45 @@ func (e *StrategyEngine) BuildSystemPrompt(accountEquity float64, variant string
 		sb.WriteString("3. Write chain of thought first, then output structured JSON\n\n")
 	}
 
-	// 7. Output format
-	sb.WriteString("# Output Format (Strictly Follow)\n\n")
-	sb.WriteString("**Must use XML tags <reasoning> and <decision> to separate chain of thought and decision JSON, avoiding parsing errors**\n\n")
-	sb.WriteString("## Format Requirements\n\n")
+	// 7. Output format - CRITICAL: Must use exact XML tags
+	sb.WriteString("# ⚠️ OUTPUT FORMAT (CRITICAL - MUST FOLLOW EXACTLY)\n\n")
+	sb.WriteString("**YOUR RESPONSE MUST START WITH `<reasoning>` TAG AND END WITH `</decision>` TAG**\n\n")
+	sb.WriteString("## MANDATORY Structure (Copy This Exactly):\n\n")
+	sb.WriteString("```\n")
 	sb.WriteString("<reasoning>\n")
-	sb.WriteString("Your chain of thought analysis...\n")
-	sb.WriteString("- Briefly analyze your thinking process \n")
+	sb.WriteString("## Chain of Thought Analysis\n\n")
+	sb.WriteString("### 1. Account & Risk Assessment\n")
+	sb.WriteString("- Current equity: $XXX\n")
+	sb.WriteString("- Available margin: $XXX\n")
+	sb.WriteString("- Open positions: X\n\n")
+	sb.WriteString("### 2. Stock-by-Stock Analysis\n")
+	sb.WriteString("For each candidate stock, analyze:\n")
+	sb.WriteString("- **SYMBOL**: Price action, trend direction, key levels\n")
+	sb.WriteString("- Indicators: RSI, MACD, Volume signals\n")
+	sb.WriteString("- Decision: BUY/SELL/WAIT and why\n\n")
+	sb.WriteString("### 3. Final Decision Summary\n")
+	sb.WriteString("- Selected trades and reasoning\n")
 	sb.WriteString("</reasoning>\n\n")
 	sb.WriteString("<decision>\n")
-	sb.WriteString("Step 2: JSON decision array\n\n")
+	sb.WriteString("```json\n")
+	sb.WriteString("[{\"symbol\": \"XXX\", \"action\": \"wait\"}]\n")
+	sb.WriteString("```\n")
+	sb.WriteString("</decision>\n")
+	sb.WriteString("```\n\n")
+	sb.WriteString("## ⚠️ PARSING RULES (FAILURE = REJECTED RESPONSE)\n\n")
+	sb.WriteString("1. **FIRST LINE** of your response MUST be exactly: `<reasoning>`\n")
+	sb.WriteString("2. **LAST LINES** MUST be: `</decision>` (with JSON inside)\n")
+	sb.WriteString("3. **NO TEXT** before `<reasoning>` or after `</decision>`\n")
+	sb.WriteString("4. **JSON MUST** be inside ```json code fence within `<decision>` tags\n\n")
+	sb.WriteString("## JSON Decision Array Format:\n\n")
 	sb.WriteString("```json\n[\n")
 	// Use the actual configured position value ratio for Large Cap in the example
 	examplePositionSize := accountEquity * largeCapPosValueRatio
 	sb.WriteString(fmt.Sprintf("  {\"symbol\": \"AAPL\", \"action\": \"open_short\", \"leverage\": %d, \"position_size_usd\": %.0f, \"stop_loss\": 97000, \"take_profit\": 91000, \"confidence\": 85, \"risk_usd\": 300},\n",
 		riskControl.LargeCapMaxMargin, examplePositionSize))
-	sb.WriteString("  {\"symbol\": \"MSFT\", \"action\": \"close_long\"}\n")
-	sb.WriteString("]\n```\n")
-	sb.WriteString("</decision>\n\n")
+	sb.WriteString("  {\"symbol\": \"MSFT\", \"action\": \"close_long\"},\n")
+	sb.WriteString("  {\"symbol\": \"GOOGL\", \"action\": \"wait\"}\n")
+	sb.WriteString("]\n```\n\n")
 	sb.WriteString("## Field Description\n\n")
 	sb.WriteString("- `action`: open_long | open_short | close_long | close_short | hold | wait\n")
 	sb.WriteString(fmt.Sprintf("- `confidence`: 0-100 (opening recommended ≥ %d)\n", riskControl.MinConfidence))
@@ -1345,7 +1392,15 @@ func (e *StrategyEngine) BuildUserPrompt(ctx *Context) string {
 	}
 
 	sb.WriteString("---\n\n")
-	sb.WriteString("Now please analyze and output your decision (Chain of Thought + JSON)\n")
+	sb.WriteString("## 🚨 FINAL REMINDER - OUTPUT FORMAT\n\n")
+	sb.WriteString("Your response MUST follow this EXACT structure:\n\n")
+	sb.WriteString("1. Start with `<reasoning>` (no text before it)\n")
+	sb.WriteString("2. Write detailed Chain of Thought analysis for each stock\n")
+	sb.WriteString("3. Close with `</reasoning>`\n")
+	sb.WriteString("4. Open `<decision>` tag\n")
+	sb.WriteString("5. Write JSON array inside ```json code fence\n")
+	sb.WriteString("6. Close with `</decision>` (no text after it)\n\n")
+	sb.WriteString("**BEGIN YOUR RESPONSE WITH `<reasoning>` NOW:**\n")
 
 	return sb.String()
 }

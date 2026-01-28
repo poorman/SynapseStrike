@@ -635,11 +635,13 @@ func (at *AutoTrader) runCycle() error {
 	// logger.Infof(strings.Repeat("=", 70) + "\n")
 
 	// 6. Print AI chain of thought
-	// logger.Infof("\n" + strings.Repeat("-", 70))
-	// logger.Info("💭 AI chain of thought analysis:")
-	// logger.Info(strings.Repeat("-", 70))
-	// logger.Info(decision.CoTTrace)
-	// logger.Infof(strings.Repeat("-", 70) + "\n")
+	if aiDecision.CoTTrace != "" {
+		logger.Infof("\n" + strings.Repeat("-", 70))
+		logger.Info("💭 AI chain of thought analysis:")
+		logger.Info(strings.Repeat("-", 70))
+		logger.Info(aiDecision.CoTTrace)
+		logger.Infof(strings.Repeat("-", 70) + "\n")
+	}
 
 	// 7. Print AI decisions
 	// logger.Infof("📋 AI decision list (%d items):\n", len(decision.Decisions))

@@ -292,8 +292,8 @@ export function RegisterPage() {
                 <div
                   className="text-sm px-3 py-2 rounded"
                   style={{
-                    background: 'var(--binance-red-bg)',
-                    color: 'var(--binance-red)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#EF4444',
                   }}
                 >
                   {error}
@@ -487,8 +487,8 @@ export function RegisterPage() {
                 <div
                   className="text-sm px-3 py-2 rounded"
                   style={{
-                    background: 'var(--binance-red-bg)',
-                    color: 'var(--binance-red)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#EF4444',
                   }}
                 >
                   {error}

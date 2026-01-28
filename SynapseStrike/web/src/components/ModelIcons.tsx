@@ -13,6 +13,7 @@ const MODEL_COLORS: Record<string, string> = {
   gemini: '#4285F4',
   grok: '#000000',
   openai: '#10A37F',
+  architect: '#00CED1',
 }
 
 // Function to get AI model icon

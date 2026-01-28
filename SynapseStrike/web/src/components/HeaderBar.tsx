@@ -655,8 +655,8 @@ export default function HeaderBar({
                           }}
                           className="w-full px-3 py-2 text-sm font-semibold transition-colors hover:opacity-80 text-center"
                           style={{
-                            background: 'var(--binance-red-bg)',
-                            color: 'var(--binance-red)',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            color: '#EF4444',
                           }}
                         >
                           {t('exitLogin', language)}
@@ -1062,8 +1062,8 @@ export default function HeaderBar({
                   }}
                   className="w-full px-4 py-2 rounded text-sm font-semibold transition-colors text-center"
                   style={{
-                    background: 'var(--binance-red-bg)',
-                    color: 'var(--binance-red)',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#EF4444',
                   }}
                 >
                   {t('exitLogin', language)}

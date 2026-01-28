@@ -1,21 +1,12 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Play, Github, Zap } from 'lucide-react'
+import { ArrowRight, Play } from 'lucide-react'
 import { t, Language } from '../../i18n/translations'
-import { useGitHubStats } from '../../hooks/useGitHubStats'
-import { useCounterAnimation } from '../../hooks/useCounterAnimation'
-import { OFFICIAL_LINKS } from '../../constants/branding'
 
 interface HeroSectionProps {
   language: Language
 }
 
 export default function HeroSection({ language }: HeroSectionProps) {
-  const { stars, daysOld, isLoading } = useGitHubStats('poorman', 'synapsestrike')
-  const animatedStars = useCounterAnimation({
-    start: 0,
-    end: stars,
-    duration: 2000,
-  })
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -58,40 +49,6 @@ export default function HeroSection({ language }: HeroSectionProps) {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
-          style={{
-            background: 'var(--primary-bg, 0.1)',
-            border: '1px solid var(--primary-bg, 0.3)',
-          }}
-        >
-          <Zap className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-          <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
-            {isLoading ? (
-              t('githubStarsInDays', language)
-            ) : false ? (
-              <>
-                {daysOld} daysget in{' '}
-                <span className="font-bold tabular-nums">
-                  {(animatedStars / 1000).toFixed(1)}K+
-                </span>{' '}
-                GitHub Stars
-              </>
-            ) : (
-              <>
-                <span className="font-bold tabular-nums">
-                  {(animatedStars / 1000).toFixed(1)}K+
-                </span>{' '}
-                GitHub Stars in {daysOld} days
-              </>
-            )}
-          </span>
-        </motion.div>
-
         {/* Main Title */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -156,27 +113,6 @@ export default function HeroSection({ language }: HeroSectionProps) {
             {t('liveCompetition', language) || 'Live Competition'}
             <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </motion.a>
-
-          <motion.a
-            href={OFFICIAL_LINKS.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg transition-all"
-            style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: '#F9FAFB',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-            whileHover={{
-              scale: 1.02,
-              background: 'rgba(255, 255, 255, 0.08)',
-              borderColor: 'var(--primary-bg, 0.3)',
-            }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Github className="w-5 h-5" />
-            {t('viewSourceCode', language)}
-          </motion.a>
         </motion.div>
 
         {/* Stats Row */}
@@ -187,7 +123,6 @@ export default function HeroSection({ language }: HeroSectionProps) {
           className="flex flex-wrap items-center justify-center gap-8 sm:gap-12"
         >
           {[
-            { label: 'GitHub Stars', value: `${(stars / 1000).toFixed(1)}K+` },
             { label: false ? 'supportbrokerage' : 'Brokerages', value: '5+' },
             { label: false ? 'AI model' : 'AI Models', value: '10+' },
             { label: false ? 'open source free' : 'Open Source', value: '100%' },

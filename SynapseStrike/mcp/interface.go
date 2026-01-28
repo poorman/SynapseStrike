@@ -11,6 +11,7 @@ type AIClient interface {
 	SetTimeout(timeout time.Duration)
 	CallWithMessages(systemPrompt, userPrompt string) (string, error)
 	CallWithRequest(req *Request) (string, error) // Builder pattern API (supports advanced features)
+	GetProvider() string
 }
 
 // clientHooks internal hook interface (for subclass to override specific steps)

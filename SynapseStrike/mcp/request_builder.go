@@ -17,6 +17,7 @@ type RequestBuilder struct {
 	stop             []string
 	tools            []Tool
 	toolChoice       string
+	metadata         map[string]any
 }
 
 // NewRequestBuilder creates request builder
@@ -31,6 +32,7 @@ func NewRequestBuilder() *RequestBuilder {
 	return &RequestBuilder{
 		messages: make([]Message, 0),
 		tools:    make([]Tool, 0),
+		metadata: make(map[string]any),
 	}
 }
 
@@ -218,6 +220,25 @@ func (b *RequestBuilder) WithToolChoice(choice string) *RequestBuilder {
 }
 
 // ============================================================
+// Metadata Methods
+// ============================================================
+
+// WithMetadata sets metadata map
+func (b *RequestBuilder) WithMetadata(metadata map[string]any) *RequestBuilder {
+	b.metadata = metadata
+	return b
+}
+
+// WithMetadataItem adds/sets a single metadata item
+func (b *RequestBuilder) WithMetadataItem(key string, value any) *RequestBuilder {
+	if b.metadata == nil {
+		b.metadata = make(map[string]any)
+	}
+	b.metadata[key] = value
+	return b
+}
+
+// ============================================================
 // Build Methods
 // ============================================================
 
@@ -236,6 +257,7 @@ func (b *RequestBuilder) Build() (*Request, error) {
 		Stop:       b.stop,
 		Tools:      b.tools,
 		ToolChoice: b.toolChoice,
+		Metadata:   b.metadata,
 	}
 
 	// Only set non-nil optional parameters (avoid sending 0 values that override server defaults)

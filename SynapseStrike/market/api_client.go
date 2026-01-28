@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"SynapseStrike/hook"
 	"os"
 	"strconv"
@@ -116,7 +117,7 @@ func (c *APIClient) GetKlines(symbol, interval string, limit int) ([]Kline, erro
 		alpacaDataBaseURL,
 		symbol,
 		alpacaInterval,
-		startTime.Format(time.RFC3339),
+		url.QueryEscape(startTime.Format(time.RFC3339)),
 		limit,
 	)
 

@@ -3,7 +3,7 @@ import type { AIModel, Brokerage, CreateTraderRequest, Strategy } from '../types
 import { useLanguage } from '../contexts/LanguageContext'
 import { t } from '../i18n/translations'
 import { toast } from 'sonner'
-import { Pencil, Plus, X as IconX, Sparkles, ExternalLink, UserPlus } from 'lucide-react'
+import { Pencil, Plus, X as IconX, Sparkles } from 'lucide-react'
 import { httpClient } from '../lib/httpClient'
 
 // Extract name after underscore
@@ -13,14 +13,7 @@ function getShortName(fullName: string): string {
 }
 
 // Brokerageregisterlinkconfig
-const BROKERAGE_REGISTRATION_LINKS: Record<string, { url: string; hasReferral?: boolean }> = {
-  binance: { url: 'https://www.binance.com/join?ref=SynapseStrikeENG', hasReferral: true },
-  okx: { url: 'https://www.okx.com/join/1865360', hasReferral: true },
-  bybit: { url: 'https://partner.bybit.com/b/83856', hasReferral: true },
-  hyperliquid: { url: 'https://app.hyperliquid.xyz/join/AITRADING', hasReferral: true },
-  aster: { url: 'https://www.asterdex.com/en/referral/fdfc0e', hasReferral: true },
-  lighter: { url: 'https://app.lighter.xyz/?referral=68151432', hasReferral: true },
-}
+
 
 import type { TraderConfigData } from '../types'
 
@@ -321,31 +314,7 @@ export function TraderConfigModal({
                       </option>
                     ))}
                   </select>
-                  {/* Brokerage Registration Link */}
-                  {formData.brokerage_id && (() => {
-                    // Find the selected brokerage to get its type
-                    const selectedBrokerage = availableBrokerages.find(e => e.id === formData.brokerage_id)
-                    const brokerageType = selectedBrokerage?.brokerage_type?.toLowerCase() || ''
-                    const regLink = BROKERAGE_REGISTRATION_LINKS[brokerageType]
-                    if (!regLink) return null
-                    return (
-                      <a
-                        href={regLink.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-[rgb(195, 245, 60)] transition-colors"
-                      >
-                        <UserPlus className="w-3.5 h-3.5" />
-                        <span>No brokerage account? Click to register</span>
-                        {regLink.hasReferral && (
-                          <span className="px-1.5 py-0.5 bg-[var(--primary)]/10 text-[rgb(195, 245, 60)] rounded text-[10px]">
-                            Discount
-                          </span>
-                        )}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )
-                  })()}
+                  {/* Brokerage Registration Link removed */}
                 </div>
               </div>
             </div>

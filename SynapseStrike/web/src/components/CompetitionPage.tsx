@@ -45,7 +45,7 @@ export function CompetitionPage() {
   if (!competition) {
     return (
       <div className="space-y-6">
-        <div className="binance-card p-8 animate-pulse">
+        <div className="glass-card p-8 animate-pulse">
           <div className="flex items-center justify-between mb-6">
             <div className="space-y-3 flex-1">
               <div className="skeleton h-8 w-64"></div>
@@ -54,7 +54,7 @@ export function CompetitionPage() {
             <div className="skeleton h-12 w-32"></div>
           </div>
         </div>
-        <div className="binance-card p-6">
+        <div className="glass-card p-6">
           <div className="skeleton h-6 w-40 mb-4"></div>
           <div className="space-y-3">
             <div className="skeleton h-20 w-full rounded"></div>
@@ -108,7 +108,7 @@ export function CompetitionPage() {
         </div>
 
         {/* Empty State */}
-        <div className="binance-card p-8 text-center">
+        <div className="glass-card p-8 text-center">
           <Trophy
             className="w-16 h-16 mx-auto mb-4 opacity-40"
             style={{ color: '#9CA3AF' }}
@@ -196,7 +196,7 @@ export function CompetitionPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Left: Performance Comparison Chart */}
         <div
-          className="binance-card p-5 animate-slide-in"
+          className="glass-card p-5 animate-slide-in"
           style={{ animationDelay: '0.1s' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -215,7 +215,7 @@ export function CompetitionPage() {
 
         {/* Right: Leaderboard */}
         <div
-          className="binance-card p-5 animate-slide-in"
+          className="glass-card p-5 animate-slide-in"
           style={{ animationDelay: '0.1s' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -389,7 +389,7 @@ export function CompetitionPage() {
       {/* Head-to-Head Stats */}
       {competition.traders.length === 2 && (
         <div
-          className="binance-card p-5 animate-slide-in"
+          className="glass-card p-5 animate-slide-in"
           style={{ animationDelay: '0.3s' }}
         >
           <h2

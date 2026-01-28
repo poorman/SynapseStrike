@@ -316,6 +316,10 @@ func (client *Client) call(systemPrompt, userPrompt string) (string, error) {
 	return result, nil
 }
 
+func (client *Client) GetProvider() string {
+	return client.Provider
+}
+
 func (client *Client) String() string {
 	return fmt.Sprintf("[Provider: %s, Model: %s]",
 		client.Provider, client.Model)

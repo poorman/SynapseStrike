@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Github } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import HeaderBar from '../components/HeaderBar'
 import HeroSection from '../components/landing/HeroSection'
 import AboutSection from '../components/landing/AboutSection'
@@ -12,7 +12,6 @@ import FooterSection from '../components/landing/FooterSection'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import { t } from '../i18n/translations'
-import { OFFICIAL_LINKS } from '../constants/branding'
 
 export function LandingPage() {
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -93,7 +92,7 @@ export function LandingPage() {
                 className="group flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg"
                 style={{
                   background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
-                  color: '#FFFFFF',
+                  color: '#000000',
                   boxShadow: '0 4px 24px var(--primary-bg, 0.3)',
                 }}
                 whileHover={{
@@ -106,26 +105,6 @@ export function LandingPage() {
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </motion.button>
 
-              <motion.a
-                href={OFFICIAL_LINKS.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: '#F9FAFB',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}
-                whileHover={{
-                  scale: 1.02,
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  borderColor: 'var(--primary-bg, 0.3)',
-                }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Github className="w-5 h-5" />
-                {t('viewSourceCode', language)}
-              </motion.a>
             </motion.div>
           </div>
         </section>

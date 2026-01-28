@@ -151,26 +151,13 @@ export function FAQLayout({ language }: FAQLayoutProps) {
         </p>
         <div className="flex items-center justify-center gap-4">
           <a
-            href="https://github.com/tinkle-community/synapsestrike"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105"
-            style={{
-              background: 'rgba(22, 27, 34, 0.88)',
-              color: '#F9FAFB',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-            }}
-          >
-            GitHub
-          </a>
-          <a
             href="https://t.me/synapsestrike_dev_community"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
-              color: 'var(--text-primary)',
+              color: '#000000',
             }}
           >
             {t('community', language)}
