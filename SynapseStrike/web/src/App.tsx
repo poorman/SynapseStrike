@@ -677,9 +677,15 @@ function TraderDetailsPage({
   const chartSectionRef = useRef<HTMLDivElement>(null)
   const [decisionsTab, setDecisionsTab] = useState<'all' | 'trades'>('all')
 
-  // Filter decisions to only show trades (not wait/hold)
+  // Filter decisions to only show trades (explicitly check for trade actions)
+  // Includes: open_long, open_short, close_long, close_short, buy, sell
   const tradesOnly = decisions?.filter((d) =>
-    d.decisions?.some((action) => action.action !== 'wait' && action.action !== 'hold')
+    d.decisions?.some((action) => {
+      const act = action.action?.toLowerCase() || ''
+      return act === 'open_long' || act === 'open_short' ||
+        act === 'close_long' || act === 'close_short' ||
+        act === 'buy' || act === 'sell'
+    })
   ).slice(-100) ?? []
 
   const displayedDecisions = decisionsTab === 'trades' ? tradesOnly : decisions
