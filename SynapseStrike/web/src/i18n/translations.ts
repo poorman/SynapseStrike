@@ -69,6 +69,9 @@ export const translations = {
     aiThinking: 'AI Chain of Thought',
     collapse: 'Collapse',
     expand: 'Expand',
+    allDecisions: 'All Decisions',
+    tradesOnly: 'Trades Only',
+    lastTrades: 'Last {count} trades',
 
     // Equity Chart
     accountEquityCurve: 'Account Equity Curve',

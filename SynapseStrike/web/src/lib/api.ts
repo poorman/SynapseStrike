@@ -398,11 +398,13 @@ export const api = {
     return result.data!
   },
 
-  // Get equity history (supports trader_id)
-  async getEquityHistory(traderId?: string): Promise<any[]> {
-    const url = traderId
-      ? `${API_BASE}/equity-history?trader_id=${traderId}`
-      : `${API_BASE}/equity-history`
+  // Get equity history (supports trader_id and optional hours parameter for time filtering)
+  // hours: 24=1D, 120=5D, 720=1M, 4320=6M, 0=all data (YTD)
+  async getEquityHistory(traderId?: string, hours?: number): Promise<any[]> {
+    const params = new URLSearchParams()
+    if (traderId) params.append('trader_id', traderId)
+    if (hours && hours > 0) params.append('hours', String(hours))
+    const url = params.toString() ? `${API_BASE}/equity-history?${params}` : `${API_BASE}/equity-history`
     const result = await httpClient.get<any[]>(url)
     if (!result.success) throw new Error('Failed to get history data')
     return result.data!

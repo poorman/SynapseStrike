@@ -2125,6 +2125,7 @@ func (s *Server) handleCompetition(c *gin.Context) {
 
 // handleEquityHistory Return rate historical data
 // Query directly from database, not dependent on trader in memory (so historical data can be retrieved after restart)
+// Supports optional 'hours' parameter to filter data by time range (e.g., hours=24 for last 24 hours)
 func (s *Server) handleEquityHistory(c *gin.Context) {
 	_, traderID, err := s.getTraderFromQuery(c)
 	if err != nil {
@@ -2132,9 +2133,25 @@ func (s *Server) handleEquityHistory(c *gin.Context) {
 		return
 	}
 
+	// Parse optional hours parameter for time filtering
+	// hours=24 for 1D, hours=120 for 5D, hours=720 for 1M, hours=4320 for 6M, hours=0 for all data
+	hours := 0
+	if hoursParam := c.Query("hours"); hoursParam != "" {
+		fmt.Sscanf(hoursParam, "%d", &hours)
+	}
+
 	// Get equity historical data from new equity table
-	// Every 3 minutes per cycle: 10000 records = about 20 days of data
-	snapshots, err := s.store.Equity().GetLatest(traderID, 10000)
+	var snapshots []*store.EquitySnapshot
+	now := time.Now()
+
+	if hours > 0 {
+		// Filter by time range
+		startTime := now.Add(-time.Duration(hours) * time.Hour)
+		snapshots, err = s.store.Equity().GetByTimeRange(traderID, startTime, now)
+	} else {
+		// Default: Every 3 minutes per cycle: 10000 records = about 20 days of data
+		snapshots, err = s.store.Equity().GetLatest(traderID, 10000)
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Sprintf("Failed to get historical data: %v", err),
@@ -2146,6 +2163,7 @@ func (s *Server) handleEquityHistory(c *gin.Context) {
 		c.JSON(http.StatusOK, []interface{}{})
 		return
 	}
+
 
 	// Build return rate historical data points
 	type EquityPoint struct {

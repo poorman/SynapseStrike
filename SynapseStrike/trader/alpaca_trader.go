@@ -156,16 +156,37 @@ func (t *AlpacaTrader) GetPositions() ([]map[string]interface{}, error) {
 			entryPrice, _ = strconv.ParseFloat(avgEntry, 64)
 		}
 		
-		// Parse current price
+		// Fetch current market price actively
+		// Try to get live quote first, fallback to parsed current_price from position data
 		currentPrice := 0.0
-		if curPrice, ok := pos["current_price"].(string); ok {
-			currentPrice, _ = strconv.ParseFloat(curPrice, 64)
+		marketPrice, err := t.GetMarketPrice(symbol)
+		if err != nil {
+			// Fallback to current_price from position data if GetMarketPrice fails
+			if curPrice, ok := pos["current_price"].(string); ok {
+				currentPrice, _ = strconv.ParseFloat(curPrice, 64)
+			}
+			// If still 0, use entry price as last resort
+			if currentPrice == 0.0 {
+				logger.Infof("⚠️ [Alpaca] Could not fetch current price for %s, using entry price: %v", symbol, err)
+				currentPrice = entryPrice
+			}
+		} else {
+			currentPrice = marketPrice
 		}
 		
-		// Parse unrealized P&L
+		// Parse unrealized P&L from position data
 		unrealizedPnL := 0.0
 		if pnl, ok := pos["unrealized_pl"].(string); ok {
 			unrealizedPnL, _ = strconv.ParseFloat(pnl, 64)
+		}
+		
+		// If unrealized PnL is 0 but we have current and entry prices, calculate it
+		if unrealizedPnL == 0.0 && currentPrice > 0 && entryPrice > 0 {
+			// For long positions: (current - entry) * qty
+			// For short positions: (entry - current) * qty
+			if qty > 0 {
+				unrealizedPnL = (currentPrice - entryPrice) * qty
+			}
 		}
 		
 		// Determine side
@@ -187,7 +208,7 @@ func (t *AlpacaTrader) GetPositions() ([]map[string]interface{}, error) {
 		})
 	}
 
-	logger.Infof("🏦 [Alpaca] Found %d open positions", len(result))
+	logger.Infof("🏦 [Alpaca] Found %d open positions with current prices", len(result))
 	return result, nil
 }
 

@@ -36,14 +36,27 @@ interface EquityChartProps {
   embedded?: boolean // embedded mode（notshowouter card）
 }
 
+// Time range options with hours values
+type TimeRange = '1D' | '5D' | '1M' | '6M' | 'YTD'
+const TIME_RANGE_HOURS: Record<TimeRange, number> = {
+  '1D': 24,
+  '5D': 120,
+  '1M': 720,
+  '6M': 4320,
+  'YTD': 0, // 0 = all data
+}
+
 export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
   const { language } = useLanguage()
   const { user, token } = useAuth()
   const [displayMode, setDisplayMode] = useState<'dollar' | 'percent'>('dollar')
+  const [timeRange, setTimeRange] = useState<TimeRange>('1D')
+
+  const hours = TIME_RANGE_HOURS[timeRange]
 
   const { data: history, error, isLoading } = useSWR<EquityPoint[]>(
-    user && token && traderId ? `equity-history-${traderId}` : null,
-    () => api.getEquityHistory(traderId),
+    user && token && traderId ? `equity-history-${traderId}-${timeRange}` : null,
+    () => api.getEquityHistory(traderId, hours),
     {
       refreshInterval: 30000, // 30sec refresh（historydataUpdatelower frequency）
       revalidateOnFocus: false,
@@ -271,40 +284,68 @@ export function EquityChart({ traderId, embedded = false }: EquityChartProps) {
         </div>
 
         {/* Display Mode Toggle */}
-        <div
-          className="flex gap-0.5 sm:gap-1 rounded p-0.5 sm:p-1 self-start sm:self-auto"
-          style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
-        >
-          <button
-            onClick={() => setDisplayMode('dollar')}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-bold transition-all flex items-center gap-1"
-            style={
-              displayMode === 'dollar'
-                ? {
-                  background: 'var(--primary)',
-                  color: '#000',
-                  boxShadow: '0 2px 8px var(--primary-bg, 0.4)',
-                }
-                : { background: 'transparent', color: '#9CA3AF' }
-            }
+        <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+          {/* Time Range Selector */}
+          <div
+            className="flex gap-0.5 sm:gap-1 rounded p-0.5 sm:p-1"
+            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
           >
-            <DollarSign className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setDisplayMode('percent')}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-bold transition-all flex items-center gap-1"
-            style={
-              displayMode === 'percent'
-                ? {
-                  background: 'var(--primary)',
-                  color: '#000',
-                  boxShadow: '0 2px 8px var(--primary-bg, 0.4)',
+            {(['1D', '5D', '1M', '6M', 'YTD'] as TimeRange[]).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className="px-2 sm:px-3 py-1.5 rounded text-xs font-bold transition-all"
+                style={
+                  timeRange === range
+                    ? {
+                      background: 'var(--primary)',
+                      color: '#000',
+                      boxShadow: '0 2px 8px var(--primary-bg, 0.4)',
+                    }
+                    : { background: 'transparent', color: '#9CA3AF' }
                 }
-                : { background: 'transparent', color: '#9CA3AF' }
-            }
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+
+          {/* $ / % Toggle */}
+          <div
+            className="flex gap-0.5 sm:gap-1 rounded p-0.5 sm:p-1"
+            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
           >
-            <Percent className="w-4 h-4" />
-          </button>
+            <button
+              onClick={() => setDisplayMode('dollar')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-bold transition-all flex items-center gap-1"
+              style={
+                displayMode === 'dollar'
+                  ? {
+                    background: 'var(--primary)',
+                    color: '#000',
+                    boxShadow: '0 2px 8px var(--primary-bg, 0.4)',
+                  }
+                  : { background: 'transparent', color: '#9CA3AF' }
+              }
+            >
+              <DollarSign className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setDisplayMode('percent')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-bold transition-all flex items-center gap-1"
+              style={
+                displayMode === 'percent'
+                  ? {
+                    background: 'var(--primary)',
+                    color: '#000',
+                    boxShadow: '0 2px 8px var(--primary-bg, 0.4)',
+                  }
+                  : { background: 'transparent', color: '#9CA3AF' }
+              }
+            >
+              <Percent className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 

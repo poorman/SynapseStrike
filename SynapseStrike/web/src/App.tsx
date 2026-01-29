@@ -675,6 +675,14 @@ function TraderDetailsPage({
   >(undefined)
   const [chartUpdateKey, setChartUpdateKey] = useState<number>(0)
   const chartSectionRef = useRef<HTMLDivElement>(null)
+  const [decisionsTab, setDecisionsTab] = useState<'all' | 'trades'>('all')
+
+  // Filter decisions to only show trades (not wait/hold)
+  const tradesOnly = decisions?.filter((d) =>
+    d.decisions?.some((action) => action.action !== 'wait' && action.action !== 'hold')
+  ).slice(-100) ?? []
+
+  const displayedDecisions = decisionsTab === 'trades' ? tradesOnly : decisions
 
   // close positionaction
   const handleClosePosition = async (symbol: string, side: string) => {
@@ -1254,7 +1262,7 @@ function TraderDetailsPage({
         >
           {/* title */}
           <div
-            className="flex items-center gap-3 mb-5 pb-4 border-b"
+            className="flex items-center gap-3 mb-4 pb-4 border-b"
             style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}
           >
             <div
@@ -1268,11 +1276,13 @@ function TraderDetailsPage({
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold" style={{ color: '#F9FAFB' }}>
-                {t('recentDecisions', language)}
+                {decisionsTab === 'trades' ? t('tradesOnly', language) : t('recentDecisions', language)}
               </h2>
-              {decisions && decisions.length > 0 && (
+              {displayedDecisions && displayedDecisions.length > 0 && (
                 <div className="text-xs" style={{ color: '#9CA3AF' }}>
-                  {t('lastCycles', language, { count: decisions.length })}
+                  {decisionsTab === 'trades'
+                    ? t('lastTrades', language, { count: displayedDecisions.length })
+                    : t('lastCycles', language, { count: displayedDecisions.length })}
                 </div>
               )}
             </div>
@@ -1295,13 +1305,39 @@ function TraderDetailsPage({
             </select>
           </div>
 
+          {/* Tab buttons */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setDecisionsTab('all')}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+              style={{
+                background: decisionsTab === 'all' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
+                color: decisionsTab === 'all' ? '#000' : '#9CA3AF',
+                border: decisionsTab === 'all' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              {t('allDecisions', language)}
+            </button>
+            <button
+              onClick={() => setDecisionsTab('trades')}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+              style={{
+                background: decisionsTab === 'trades' ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)',
+                color: decisionsTab === 'trades' ? '#000' : '#9CA3AF',
+                border: decisionsTab === 'trades' ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              {t('tradesOnly', language)} ({tradesOnly.length})
+            </button>
+          </div>
+
           {/* decisionlist - scrollable */}
           <div
             className="space-y-4 overflow-y-auto pr-2"
             style={{ maxHeight: 'calc(100vh - 280px)' }}
           >
-            {decisions && decisions.length > 0 ? (
-              decisions.map((decision, i) => (
+            {displayedDecisions && displayedDecisions.length > 0 ? (
+              displayedDecisions.map((decision, i) => (
                 <DecisionCard key={i} decision={decision} language={language} />
               ))
             ) : (

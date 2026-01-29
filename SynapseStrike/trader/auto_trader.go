@@ -437,6 +437,67 @@ func (at *AutoTrader) Run() error {
 				continue
 			}
 
+			// UNIVERSAL MARKET CLOSE CHECK (applies to ALL traders, not just VWAP)
+			// Automatically close all positions 5 minutes before market close
+			if at.config.TradeOnlyMarketHours && isMarketOpen() {
+				loc, _ := time.LoadLocation("America/New_York")
+				now := time.Now().In(loc)
+				currentMinutes := now.Hour()*60 + now.Minute()
+				marketCloseMinutes := 16*60 - 5 // 3:55 PM (5 min before 4 PM close)
+				timeToClose := 16*60 - currentMinutes
+				
+				if currentMinutes >= marketCloseMinutes && currentMinutes < 16*60 {
+					logger.Infof("🔔 [AUTO-CLOSE] Market closing in %d minutes - checking for positions to close", timeToClose)
+					
+					// Get all current positions
+					positions, err := at.trader.GetPositions()
+					if err != nil {
+						logger.Infof("⚠️ [AUTO-CLOSE] Failed to get positions: %v", err)
+					} else if len(positions) > 0 {
+						logger.Infof("🔔 [AUTO-CLOSE] Found %d open positions - closing all before market close", len(positions))
+						
+						for _, pos := range positions {
+							symbol := pos["symbol"].(string)
+							side := pos["side"].(string)
+							
+							// Calculate PnL for logging
+							entryPrice := 0.0
+							markPrice := 0.0
+							if ep, ok := pos["entryPrice"].(float64); ok {
+								entryPrice = ep
+							}
+							if mp, ok := pos["markPrice"].(float64); ok {
+								markPrice = mp
+							}
+							
+							pnlPct := 0.0
+							if entryPrice > 0 && markPrice > 0 {
+								if side == "long" || side == "buy" {
+									pnlPct = ((markPrice - entryPrice) / entryPrice) * 100
+								} else {
+									pnlPct = ((entryPrice - markPrice) / entryPrice) * 100
+								}
+							}
+							
+							logger.Infof("🔔 [AUTO-CLOSE] Closing %s %s at %.2f%% PnL (market closes in %d min)", 
+								symbol, side, pnlPct, timeToClose)
+							
+							reasoning := fmt.Sprintf("Auto-close before market close at 4:00 PM ET (closes in %d min) | PnL: %.2f%%", timeToClose, pnlPct)
+							if err := at.closePositionWithReason(symbol, side, "market_close", reasoning); err != nil {
+								logger.Infof("❌ [AUTO-CLOSE] Failed to close %s: %v", symbol, err)
+							} else {
+								logger.Infof("✅ [AUTO-CLOSE] Successfully closed %s before market close", symbol)
+							}
+						}
+					} else {
+						logger.Infof("📊 [AUTO-CLOSE] No positions to close (%d min to market close)", timeToClose)
+					}
+					
+					// Skip normal trading cycle during market close window
+					continue
+				}
+			}
+
 			// Dynamic interval adjustment for VWAP mode
 			if vwapEnabled {
 				newInterval := at.getVWAPAwareInterval()
