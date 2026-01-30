@@ -1937,6 +1937,11 @@ func (s *Server) handlePositions(c *gin.Context) {
 
 	// Step 2: Get live positions from exchange for current prices
 	livePositions, liveErr := trader.GetPositions()
+	if liveErr != nil {
+		logger.Infof("⚠️ Failed to get live positions for trader %s: %v", traderID, liveErr)
+	} else {
+		logger.Infof("📊 Got %d live positions from exchange for trader %s", len(livePositions), traderID)
+	}
 
 	// If we have DB positions, merge with live data for current prices
 	if dbErr == nil && len(dbPositions) > 0 {
@@ -1950,6 +1955,8 @@ func (s *Server) handlePositions(c *gin.Context) {
 				sideUpper := strings.ToUpper(side)
 				key := symbol + "_" + sideUpper
 				livePriceMap[key] = lp
+				logger.Infof("📌 Added live position to map: key=%s, markPrice=%v, uPnL=%v", 
+					key, lp["markPrice"], lp["unRealizedProfit"])
 			}
 		}
 
@@ -1972,12 +1979,17 @@ func (s *Server) handlePositions(c *gin.Context) {
 
 			// Merge with live data if available
 			key := dbPos.Symbol + "_" + strings.ToUpper(dbPos.Side)
+			logger.Infof("🔍 Trying to match DB position: key=%s (symbol=%s, side=%s)", 
+				key, dbPos.Symbol, dbPos.Side)
 			if livePos, found := livePriceMap[key]; found {
+				logger.Infof("✓ Match found for %s! Updating mark_price and uPnL", key)
 				if markPrice, ok := livePos["markPrice"].(float64); ok {
 					posMap["mark_price"] = markPrice
+					logger.Infof("  → mark_price: %.4f", markPrice)
 				}
 				if uPnL, ok := livePos["unRealizedProfit"].(float64); ok {
 					posMap["unrealized_pnl"] = uPnL
+					logger.Infof("  → unrealized_pnl: %.2f", uPnL)
 				}
 				if liqPrice, ok := livePos["liquidationPrice"].(float64); ok {
 					posMap["liquidation_price"] = liqPrice
@@ -1989,6 +2001,25 @@ func (s *Server) handlePositions(c *gin.Context) {
 					} else {
 						posMap["unrealized_pnl_pct"] = (dbPos.EntryPrice - mark) / dbPos.EntryPrice * 100
 					}
+				}
+			} else {
+				logger.Infof("❌ No match found for %s in livePriceMap, attempting fallback price fetch", key)
+				// Fallback: If not found in live positions, try to fetch current market price directly
+				marketPrice, err := trader.GetMarketPrice(dbPos.Symbol)
+				if err == nil && marketPrice > 0 {
+					logger.Infof("⚡ Fallback success! Got price for %s: %.4f", dbPos.Symbol, marketPrice)
+					posMap["mark_price"] = marketPrice
+					// Calculate PnL based on this fetched price
+					if strings.ToUpper(dbPos.Side) == "LONG" {
+						posMap["unrealized_pnl"] = (marketPrice - dbPos.EntryPrice) * dbPos.Quantity
+						posMap["unrealized_pnl_pct"] = (marketPrice - dbPos.EntryPrice) / dbPos.EntryPrice * 100
+					} else {
+						posMap["unrealized_pnl"] = (dbPos.EntryPrice - marketPrice) * dbPos.Quantity
+						posMap["unrealized_pnl_pct"] = (dbPos.EntryPrice - marketPrice) / dbPos.EntryPrice * 100
+					}
+					logger.Infof("  → Rescued uPnL: %.2f", posMap["unrealized_pnl"])
+				} else {
+					logger.Warnf("⚠️ Fallback failed for %s: %v", dbPos.Symbol, err)
 				}
 			}
 

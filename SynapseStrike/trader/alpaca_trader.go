@@ -119,10 +119,23 @@ func (t *AlpacaTrader) GetBalance() (map[string]interface{}, error) {
 	}
 
 	// Parse unrealized P&L
-	result["totalUnrealizedProfit"] = 0.0
+	// Instead of hardcoding 0.0, we can attempt to get the sum from live positions
+	// but Alpaca actually provides it in the account response as 'unrealized_intraday_pl' or we can calculate it
+	totalUnrealizedProfit := 0.0
+	if pnl, ok := account["unrealized_intraday_pl"].(string); ok {
+		totalUnrealizedProfit, _ = strconv.ParseFloat(pnl, 64)
+	}
+	result["totalUnrealizedProfit"] = totalUnrealizedProfit
 
-	logger.Infof("🏦 [Alpaca] Account balance fetched: equity=%v, buying_power=%v", 
-		result["total_equity"], result["availableBalance"])
+	// Re-calculate total_equity if needed (Alpaca's equity field is usually correct)
+	if _, ok := result["total_equity"]; !ok {
+		if wallet, ok := result["wallet_balance"].(float64); ok {
+			result["total_equity"] = wallet + totalUnrealizedProfit
+		}
+	}
+
+	logger.Infof("🏦 [Alpaca] Account balance fetched: equity=%v, wallet=%v, unrealized=%v", 
+		result["total_equity"], result["wallet_balance"], result["totalUnrealizedProfit"])
 
 	return result, nil
 }
@@ -183,9 +196,11 @@ func (t *AlpacaTrader) GetPositions() ([]map[string]interface{}, error) {
 		// If unrealized PnL is 0 but we have current and entry prices, calculate it
 		if unrealizedPnL == 0.0 && currentPrice > 0 && entryPrice > 0 {
 			// For long positions: (current - entry) * qty
-			// For short positions: (entry - current) * qty
+			// For short positions: (entry - current) * -qty (qty is negative for shorts)
 			if qty > 0 {
 				unrealizedPnL = (currentPrice - entryPrice) * qty
+			} else {
+				unrealizedPnL = (entryPrice - currentPrice) * (-qty)
 			}
 		}
 		

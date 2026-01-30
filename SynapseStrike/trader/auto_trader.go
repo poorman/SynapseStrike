@@ -1542,6 +1542,11 @@ func (at *AutoTrader) executeCloseShortWithRecord(decision *decision.Decision, a
 }
 
 // GetID gets trader ID
+// GetMarketPrice returns current market price for a symbol
+func (at *AutoTrader) GetMarketPrice(symbol string) (float64, error) {
+	return at.trader.GetMarketPrice(symbol)
+}
+
 func (at *AutoTrader) GetID() string {
 	return at.id
 }
