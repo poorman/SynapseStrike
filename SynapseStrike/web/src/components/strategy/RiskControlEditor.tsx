@@ -55,6 +55,71 @@ export function RiskControlEditor({
 
   return (
     <div className="space-y-6">
+      {/* End-of-Day Auto-Close */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="w-5 h-5" style={{ color: '#F59E0B' }} />
+          <h3 className="font-medium" style={{ color: '#F9FAFB' }}>
+            End-of-Day Position Close
+          </h3>
+        </div>
+
+        <div
+          className="p-4 rounded-lg"
+          style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <label className="block text-sm" style={{ color: '#F9FAFB' }}>
+                Close all positions before market close
+              </label>
+              <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                Auto-sell all open positions at the specified time (ET)
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => updateField('close_at_eod', !config.close_at_eod)}
+              disabled={disabled}
+              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+              style={{
+                background: config.close_at_eod ? 'var(--primary)' : 'rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              <span
+                className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                style={{
+                  transform: config.close_at_eod ? 'translateX(1.375rem)' : 'translateX(0.25rem)',
+                }}
+              />
+            </button>
+          </div>
+
+          {config.close_at_eod && (
+            <div className="flex items-center gap-3 mt-2">
+              <label className="text-xs" style={{ color: '#9CA3AF' }}>
+                Close at (ET):
+              </label>
+              <input
+                type="time"
+                value={config.close_at_eod_time || '15:55'}
+                onChange={(e) => updateField('close_at_eod_time', e.target.value)}
+                disabled={disabled}
+                className="px-2 py-1 rounded text-sm"
+                style={{
+                  background: 'rgba(22, 27, 34, 0.88)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  color: '#F9FAFB',
+                }}
+              />
+              <span className="text-xs" style={{ color: '#6B7280' }}>
+                Default: 3:55 PM (5 min before close)
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Position Limits */}
       <div>
         <div className="flex items-center gap-2 mb-4">

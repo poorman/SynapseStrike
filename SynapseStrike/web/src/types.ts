@@ -494,6 +494,9 @@ export interface IndicatorConfig {
   enable_vwap_slope_stretch?: boolean;   // Enable VWAP + Slope & Stretch algorithm
   vwap_entry_time?: string;              // Entry time in ET (default: "10:00")
 
+  // Genetic Algorithm (multi-factor scoring with pre-evolved chromosome weights)
+  enable_genetic_algo?: boolean;          // Enable Genetic Algorithm trading
+
   // Top Movers Scalping Algorithm
   enable_top_movers_scalping?: boolean;  // Enable Top Movers Scalping algorithm
   tms_min_price?: number;                // Minimum price filter (default: 0.50)
@@ -573,6 +576,10 @@ export interface RiskControlConfig {
   use_partial_profits?: boolean;    // Enable partial profit taking
   partial_profit_pct?: number;      // % to close at first target (default: 50%)
   partial_profit_r?: number;        // R-multiple for first target (default: 2.0)
+
+  // End-of-Day Position Close
+  close_at_eod?: boolean;            // Auto-close all positions before market close
+  close_at_eod_time?: string;        // Time to close positions (default: "15:55" = 3:55 PM ET)
 
   // Market Hours Filter
   use_market_hours_filter?: boolean; // Only trade during market hours

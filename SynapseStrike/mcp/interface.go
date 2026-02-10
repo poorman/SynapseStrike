@@ -12,6 +12,7 @@ type AIClient interface {
 	CallWithMessages(systemPrompt, userPrompt string) (string, error)
 	CallWithRequest(req *Request) (string, error) // Builder pattern API (supports advanced features)
 	GetProvider() string
+	GetModel() string
 }
 
 // clientHooks internal hook interface (for subclass to override specific steps)

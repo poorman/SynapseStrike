@@ -41,6 +41,20 @@ function getModelDisplayName(modelId: string): string {
       return 'Qwen'
     case 'claude':
       return 'Claude'
+    case 'openai':
+      return 'OpenAI'
+    case 'gemini':
+      return 'Gemini'
+    case 'grok':
+      return 'Grok'
+    case 'kimi':
+      return 'Kimi'
+    case 'localai':
+      return 'Local AI'
+    case 'localfunc':
+      return 'Smart Function'
+    case 'architect':
+      return 'Architect'
     default:
       return modelId.toUpperCase()
   }
@@ -1309,14 +1323,17 @@ function ModelConfigModal({
     }
   }, [editingModelId, selectedModel])
 
+  const isLocalFunc = selectedModel?.provider === 'localfunc'
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedModelId || !apiKey.trim()) return
+    if (!selectedModelId) return
+    if (!isLocalFunc && !apiKey.trim()) return
 
     onSave(
       selectedModelId,
-      apiKey.trim(),
-      baseUrl.trim() || undefined,
+      isLocalFunc ? 'local-function' : apiKey.trim(),
+      isLocalFunc ? undefined : (baseUrl.trim() || undefined),
       modelName.trim() || undefined
     )
   }
@@ -1451,74 +1468,98 @@ function ModelConfigModal({
 
             {selectedModel && (
               <>
-                <div>
-                  <label
-                    className="block text-sm font-semibold mb-2"
-                    style={{ color: '#F9FAFB' }}
-                  >
-                    API Key
-                  </label>
-                  <input
-                    type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder={t('enterAPIKey', language)}
-                    className="w-full px-3 py-2 rounded"
-                    style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      color: '#F9FAFB',
-                    }}
-                    required
-                  />
-                </div>
+                {/* API Key and Base URL - hidden for Local Function */}
+                {!isLocalFunc && (
+                  <>
+                    <div>
+                      <label
+                        className="block text-sm font-semibold mb-2"
+                        style={{ color: '#F9FAFB' }}
+                      >
+                        API Key
+                      </label>
+                      <input
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder={t('enterAPIKey', language)}
+                        className="w-full px-3 py-2 rounded"
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#F9FAFB',
+                        }}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        className="block text-sm font-semibold mb-2"
+                        style={{ color: '#F9FAFB' }}
+                      >
+                        {t('customBaseURL', language)}
+                      </label>
+                      <input
+                        type="url"
+                        value={baseUrl}
+                        onChange={(e) => setBaseUrl(e.target.value)}
+                        placeholder={t('customBaseURLPlaceholder', language)}
+                        className="w-full px-3 py-2 rounded"
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#F9FAFB',
+                        }}
+                      />
+                      <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
+                        {t('leaveBlankForDefault', language)}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label
                     className="block text-sm font-semibold mb-2"
                     style={{ color: '#F9FAFB' }}
                   >
-                    {t('customBaseURL', language)}
+                    {isLocalFunc ? 'Model' : t('customModelName', language)}
                   </label>
-                  <input
-                    type="url"
-                    value={baseUrl}
-                    onChange={(e) => setBaseUrl(e.target.value)}
-                    placeholder={t('customBaseURLPlaceholder', language)}
-                    className="w-full px-3 py-2 rounded"
-                    style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      color: '#F9FAFB',
-                    }}
-                  />
-                  <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
-                    {t('leaveBlankForDefault', language)}
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    className="block text-sm font-semibold mb-2"
-                    style={{ color: '#F9FAFB' }}
-                  >
-                    {t('customModelName', language)}
-                  </label>
-                  <input
-                    type="text"
-                    value={modelName}
-                    onChange={(e) => setModelName(e.target.value)}
-                    placeholder={t('customModelNamePlaceholder', language)}
-                    className="w-full px-3 py-2 rounded"
-                    style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      color: '#F9FAFB',
-                    }}
-                  />
-                  <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
-                    {t('leaveBlankForDefaultModel', language)}
-                  </div>
+                  {isLocalFunc ? (
+                    <select
+                      value={modelName || 'model_1'}
+                      onChange={(e) => setModelName(e.target.value)}
+                      className="w-full px-3 py-2 rounded"
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        color: '#F9FAFB',
+                      }}
+                    >
+                      <option value="model_1">Model 1</option>
+                      <option value="model_2">Model 2</option>
+                      <option value="model_3">Model 3</option>
+                    </select>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        value={modelName}
+                        onChange={(e) => setModelName(e.target.value)}
+                        placeholder={t('customModelNamePlaceholder', language)}
+                        className="w-full px-3 py-2 rounded"
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          color: '#F9FAFB',
+                        }}
+                      />
+                      <div className="text-xs mt-1" style={{ color: '#9CA3AF' }}>
+                        {t('leaveBlankForDefaultModel', language)}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div
@@ -1532,15 +1573,26 @@ function ModelConfigModal({
                     className="text-sm font-semibold mb-2"
                     style={{ color: 'var(--primary)' }}
                   >
-                    ℹ️ {t('information', language)}
+                    ℹ️ {isLocalFunc ? 'Local Function' : t('information', language)}
                   </div>
                   <div
                     className="text-xs space-y-1"
                     style={{ color: '#9CA3AF' }}
                   >
-                    <div>{t('modelConfigInfo1', language)}</div>
-                    <div>{t('modelConfigInfo2', language)}</div>
-                    <div>{t('modelConfigInfo3', language)}</div>
+                    {isLocalFunc ? (
+                      <>
+                        <div>• No API key or URL needed — runs locally</div>
+                        <div>• Zero latency, zero API cost</div>
+                        <div>• Auto-detects algo type (VWAPer, Scalper, etc.)</div>
+                        <div>• Each model uses different parameters per algo</div>
+                      </>
+                    ) : (
+                      <>
+                        <div>{t('modelConfigInfo1', language)}</div>
+                        <div>{t('modelConfigInfo2', language)}</div>
+                        <div>{t('modelConfigInfo3', language)}</div>
+                      </>
+                    )}
                   </div>
                 </div>
               </>
@@ -1561,7 +1613,7 @@ function ModelConfigModal({
             </button>
             <button
               type="submit"
-              disabled={!selectedModel || !apiKey.trim()}
+              disabled={!selectedModel || (!isLocalFunc && !apiKey.trim())}
               className="flex-1 px-4 py-2 rounded text-sm font-semibold disabled:opacity-50"
               style={{ background: 'var(--primary)', color: '#000' }}
             >

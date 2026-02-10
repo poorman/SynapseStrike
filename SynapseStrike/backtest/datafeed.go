@@ -73,7 +73,13 @@ func (df *DataFeed) loadAll() error {
 			}
 			fetchEnd := end.Add(dur)
 
-			klines, err := market.GetKlinesRange(symbol, tf, fetchStart, fetchEnd)
+			var klines []market.Kline
+			var err error
+			if df.cfg.DataSource == "polygon" && df.cfg.PolygonAPIKey != "" {
+				klines, err = market.GetKlinesRangePolygon(symbol, tf, fetchStart, fetchEnd, df.cfg.PolygonAPIKey, df.cfg.PolygonBaseURL)
+			} else {
+				klines, err = market.GetKlinesRange(symbol, tf, fetchStart, fetchEnd)
+			}
 			if err != nil {
 				return fmt.Errorf("fetch klines for %s %s: %w", symbol, tf, err)
 			}

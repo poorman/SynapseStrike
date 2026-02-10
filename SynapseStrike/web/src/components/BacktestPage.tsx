@@ -55,7 +55,8 @@ type WizardStep = 1 | 2 | 3
 type ViewTab = 'overview' | 'chart' | 'trades' | 'decisions' | 'compare'
 
 const TIMEFRAME_OPTIONS = ['1m', '3m', '5m', '15m', '30m', '1h', '4h', '1d']
-const POPULAR_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META']
+// Popular symbols kept for reference/future use
+// const POPULAR_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META']
 
 // ============ Helper Functions ============
 const toLocalInput = (date: Date) => {
@@ -389,6 +390,10 @@ export function BacktestPage() {
     strategyId: '',
     enableVwapAlgorithm: false,
     vwapEntryTime: '10:00',
+    // New fields
+    dataSource: 'alpaca',
+    polygonApiKey: '',
+    simulatedTime: new Date().toISOString().slice(0, 16),
   })
 
   // Data fetching
@@ -471,9 +476,12 @@ export function BacktestPage() {
       const end = new Date(formState.end).getTime()
       if (end <= start) throw new Error(tr('toasts.invalidRange'))
 
+      // Build symbols from manual input (if no strategy selected, strategy resolves on backend)
+      const manualSymbols = formState.symbols.split(',').map((s: string) => s.trim()).filter(Boolean)
+
       const payload = await api.startBacktest({
         run_id: formState.runId.trim() || undefined,
-        symbols: formState.symbols.split(',').map((s) => s.trim()).filter(Boolean),
+        symbols: manualSymbols.length > 0 ? manualSymbols : [],
         timeframes: formState.timeframes,
         decision_timeframe: formState.decisionTf,
         decision_cadence_nbars: formState.cadence,
@@ -490,11 +498,16 @@ export function BacktestPage() {
         cache_ai: formState.cacheAI,
         replay_only: formState.replayOnly,
         ai_model_id: formState.aiModelId,
+        strategy_id: formState.strategyId || undefined,
+        simulated_time: (formState as any).simulatedTime ? Math.floor(new Date((formState as any).simulatedTime).getTime() / 1000) : undefined,
+        data_source: (formState as any).dataSource || 'alpaca',
+        polygon_api_key: (formState as any).dataSource === 'polygon' ? ((formState as any).polygonApiKey || localStorage.getItem('widesurf_api_key') || '') : undefined,
+        polygon_base_url: (formState as any).dataSource === 'polygon' ? ((formState as any).widesurfBaseUrl || localStorage.getItem('widesurf_base_url') || '') : undefined,
         margin: {
           large_cap_margin: formState.largeCapMargin,
           small_cap_margin: formState.smallCapMargin,
         },
-      })
+      } as any)
 
       setToast({ text: tr('toasts.startSuccess', { id: payload.run_id }), tone: 'success' })
       setSelectedRunId(payload.run_id)
@@ -701,287 +714,152 @@ export function BacktestPage() {
 
             <form onSubmit={handleStart}>
               <AnimatePresence mode="wait">
-                {/* Step 1: Model & Symbols */}
+                {/* Step 1: Configure & Run */}
                 {wizardStep === 1 && (
                   <motion.div
                     key="step1"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className="space-y-4"
+                    className="space-y-3"
                   >
+                    {/* AI Model */}
                     <div>
-                      <label className="block text-xs mb-2" style={{ color: '#9CA3AF' }}>
-                        {tr('form.aiModelLabel')}
+                      <label className="block text-xs mb-1.5" style={{ color: '#9CA3AF' }}>
+                        AI Model
                       </label>
                       <select
-                        className="w-full p-3 rounded-lg text-sm"
+                        className="w-full p-2 rounded text-sm"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
                         value={formState.aiModelId}
                         onChange={(e) => handleFormChange('aiModelId', e.target.value)}
                       >
-                        <option value="">{tr('form.selectAiModel')}</option>
-                        {aiModels?.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name} ({m.provider}) {!m.enabled && '⚠️'}
-                          </option>
-                        ))}
-                      </select>
-                      {selectedModel && (
-                        <div className="mt-2 flex items-center gap-2 text-xs">
-                          <span
-                            className="px-2 py-0.5 rounded"
-                            style={{
-                              background: selectedModel.enabled ? 'rgba(14,203,129,0.1)' : 'rgba(246,70,93,0.1)',
-                              color: selectedModel.enabled ? 'var(--primary)' : '#F6465D',
-                            }}
-                          >
-                            {selectedModel.enabled ? tr('form.enabled') : tr('form.disabled')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Strategy Selection Section */}
-                    <div className="p-3 rounded-lg" style={{ background: 'rgba(139, 92, 246, 0.08)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Layers className="w-4 h-4" style={{ color: '#8B5CF6' }} />
-                        <span className="text-xs font-medium" style={{ color: '#8B5CF6' }}>Strategy Configuration</span>
-                      </div>
-
-                      {/* Strategy Type Dropdown */}
-                      <div className="mb-3">
-                        <label className="block text-xs mb-1" style={{ color: '#9CA3AF' }}>
-                          Strategy Source
-                        </label>
-                        <select
-                          className="w-full p-2 rounded-lg text-sm"
-                          style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                          value={formState.strategyType}
-                          onChange={(e) => {
-                            handleFormChange('strategyType', e.target.value)
-                            handleFormChange('strategyId', '') // Reset strategy selection
-                          }}
-                        >
-                          <option value="">None (Default)</option>
-                          <option value="strategies">Default</option>
-                          <option value="sonnet">Sonnet</option>
-                          <option value="opus">Opus</option>
-                          <option value="current">Current</option>
-                          <option value="cursor">Cursor</option>
-                        </select>
-                      </div>
-
-                      {/* Strategy Name Dropdown - only show when type is selected */}
-                      {formState.strategyType && (
-                        <div className="mb-3">
-                          <label className="block text-xs mb-1" style={{ color: '#9CA3AF' }}>
-                            Select Strategy
-                          </label>
-                          <select
-                            className="w-full p-2 rounded-lg text-sm"
-                            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                            value={formState.strategyId}
-                            onChange={(e) => handleFormChange('strategyId', e.target.value)}
-                          >
-                            <option value="">Select a strategy...</option>
-                            {formState.strategyType === 'strategies' && strategies.map((s: any) => (
-                              <option key={s.id} value={s.id}>
-                                {s.name} {s.is_active && '✓'}
-                              </option>
-                            ))}
-                            {/* Filter tactics by strategy_type for Sonnet/Opus/Current/Cursor */}
-                            {['sonnet', 'opus', 'current', 'cursor'].includes(formState.strategyType) &&
-                              tactics
-                                .filter((t: any) => t.strategy_type === formState.strategyType ||
-                                  // Fallback for legacy data without strategy_type
-                                  (!t.strategy_type && formState.strategyType === 'sonnet'))
-                                .map((t: any) => (
-                                  <option key={t.id} value={t.id}>
-                                    {t.name} {t.is_active && '✓'}
-                                  </option>
-                                ))
-                            }
-                          </select>
-                        </div>
-                      )}
-
-                      {/* VWAP Algorithm Toggle */}
-                      <div className="flex items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                        <input
-                          type="checkbox"
-                          id="enableVwapAlgorithm"
-                          checked={formState.enableVwapAlgorithm}
-                          onChange={(e) => handleFormChange('enableVwapAlgorithm', e.target.checked)}
-                          className="w-4 h-4 rounded accent-violet-500"
-                        />
-                        <label htmlFor="enableVwapAlgorithm" className="text-xs cursor-pointer" style={{ color: '#F9FAFB' }}>
-                          📊 VWAP + Slope & Stretch Algorithm (1-min bars 9:30-Entry)
-                        </label>
-                      </div>
-
-                      {/* VWAP Entry Time - only show when VWAP is enabled */}
-                      {formState.enableVwapAlgorithm && (
-                        <div className="mt-3 flex items-center gap-3">
-                          <label className="text-xs" style={{ color: '#9CA3AF' }}>Entry Time (ET):</label>
-                          <input
-                            type="time"
-                            value={formState.vwapEntryTime}
-                            onChange={(e) => handleFormChange('vwapEntryTime', e.target.value)}
-                            className="px-2 py-1 rounded text-xs"
-                            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                          />
-                          <span className="text-[10px]" style={{ color: '#6B7280' }}>
-                            (Collects 1-min VWAP from 9:30 AM)
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-xs" style={{ color: '#9CA3AF' }}>
-                          {tr('form.symbolsLabel')}
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => handleFormChange('showDataSourceConfig', !formState.showDataSourceConfig)}
-                          className="text-[10px] px-2 py-0.5 rounded border border-dashed border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-black transition-all flex items-center gap-1"
-                        >
-                          <span>🤖</span>
-                          {formState.showDataSourceConfig ? 'Hide AI100' : 'AI100'}
-                        </button>
-                      </div>
-
-                      {/* AI100 Data Source Configuration Panel */}
-                      <AnimatePresence>
-                        {formState.showDataSourceConfig && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="mb-4 p-3 rounded-lg space-y-3"
-                            style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)' }}
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-xs font-medium" style={{ color: '#10b981' }}>📡 Data Source Configuration - AI 100 Stocks</span>
-                            </div>
-
-                            {/* Enable AI100 Checkbox */}
-                            <label className="flex items-center gap-3 cursor-pointer mb-3">
-                              <input
-                                type="checkbox"
-                                checked={formState.useAi100}
-                                onChange={async (e) => {
-                                  const enabled = e.target.checked
-                                  handleFormChange('useAi100', enabled)
-                                  if (enabled) {
-                                    // Auto-load AI100 stocks when enabled
-                                    try {
-                                      const url = formState.ai100ApiUrl || 'http://24.12.59.214:8082/api/ai100/list?auth=pluq8P0XTgucCN6kyxey5EPTof36R54lQc3rfgQsoNQ&sort=fin&limit=100'
-                                      const res = await fetch(url)
-                                      const data = await res.json()
-                                      if (data && Array.isArray(data.items)) {
-                                        const symbols = data.items.slice(0, formState.ai100Limit || 100).map((it: any) => it.symbol).join(',')
-                                        handleFormChange('symbols', symbols)
-                                        setToast({ text: `Loaded ${Math.min(data.items.length, formState.ai100Limit || 100)} AI stocks`, tone: 'success' })
-                                      }
-                                    } catch (err) {
-                                      setToast({ text: 'Failed to load AI100', tone: 'error' })
-                                    }
-                                  }
-                                }}
-                                className="w-5 h-5 rounded accent-emerald-500"
-                              />
-                              <span style={{ color: '#F9FAFB' }}>Enable AI 100 Stocks</span>
-                            </label>
-
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs" style={{ color: '#9CA3AF' }}>AI100 Limit:</span>
-                              <input
-                                type="number"
-                                value={formState.ai100Limit}
-                                onChange={(e) => handleFormChange('ai100Limit', parseInt(e.target.value) || 100)}
-                                min={1}
-                                max={100}
-                                className="w-20 px-2 py-1 rounded text-xs"
-                                style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                              />
-                            </div>
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <label className="text-xs" style={{ color: '#9CA3AF' }}>AI 100 API URL</label>
-                                {!formState.ai100ApiUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleFormChange('ai100ApiUrl', 'http://24.12.59.214:8082/api/ai100/list?auth=pluq8P0XTgucCN6kyxey5EPTof36R54lQc3rfgQsoNQ&sort=fin&limit=100')}
-                                    className="text-[10px] px-2 py-0.5 rounded"
-                                    style={{ background: '#10b98120', color: '#10b981' }}
-                                  >
-                                    Fill Default
-                                  </button>
-                                )}
-                              </div>
-                              <input
-                                type="url"
-                                value={formState.ai100ApiUrl}
-                                onChange={(e) => handleFormChange('ai100ApiUrl', e.target.value)}
-                                placeholder="Enter AI 100 Stocks API URL..."
-                                className="w-full px-3 py-2 rounded-lg font-mono text-xs"
-                                style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                              />
-                              <div className="mt-2 text-[10px]" style={{ color: '#10b981' }}>
-                                📋 <strong>API Structure:</strong> API must return JSON: {'{"success": true, "data": {"stocks": [{"pair": "SYMBOL", "score": 0.0}]}}'}
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      <div className="flex flex-wrap gap-1 mb-2">
-                        {POPULAR_SYMBOLS.map((sym) => {
-                          const isSelected = formState.symbols.includes(sym)
+                        <option value="">Select AI Model</option>
+                        {aiModels?.filter(m => m.enabled).map((m) => {
+                          const displayName = {
+                            deepseek: 'DeepSeek', qwen: 'Qwen', claude: 'Claude', openai: 'OpenAI',
+                            gemini: 'Gemini', grok: 'Grok', kimi: 'Kimi', localai: 'Local AI',
+                            localfunc: 'Smart Function', architect: 'Architect'
+                          }[m.provider] || m.provider.toUpperCase()
+                          const modelInfo = m.customModelName || m.provider
                           return (
-                            <button
-                              key={sym}
-                              type="button"
-                              onClick={() => {
-                                const current = formState.symbols.split(',').map((s) => s.trim()).filter(Boolean)
-                                const updated = isSelected
-                                  ? current.filter((s) => s !== sym)
-                                  : [...current, sym]
-                                handleFormChange('symbols', updated.join(','))
-                              }}
-                              className="px-2 py-1 rounded text-xs transition-all"
-                              style={{
-                                background: isSelected ? 'rgba(240,185,11,0.15)' : 'rgba(22, 27, 34, 0.88)',
-                                border: `1px solid ${isSelected ? 'var(--primary)' : 'rgba(255, 255, 255, 0.08)'}`,
-                                color: isSelected ? 'var(--primary)' : '#9CA3AF',
-                              }}
-                            >
-                              {sym.replace('', '')}
-                            </button>
+                            <option key={m.id} value={m.id}>
+                              {displayName} ({modelInfo})
+                            </option>
                           )
                         })}
-                      </div>
-                      <textarea
-                        className="w-full p-2 rounded-lg text-xs font-mono"
-                        style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
-                        value={formState.symbols}
-                        onChange={(e) => handleFormChange('symbols', e.target.value)}
-                        rows={2}
-                      />
+                      </select>
                     </div>
 
+                    {/* Strategy Selection */}
+                    <div>
+                      <label className="block text-xs mb-1.5" style={{ color: '#9CA3AF' }}>
+                        Strategy
+                      </label>
+                      <select
+                        className="w-full p-2 rounded text-sm"
+                        style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.08)', color: '#F9FAFB' }}
+                        value={formState.strategyId}
+                        onChange={(e) => handleFormChange('strategyId', e.target.value)}
+                      >
+                        <option value="">None (use manual symbols)</option>
+                        {strategies.map((s: { id: string; name: string }) => (
+                          <option key={s.id} value={s.id}>{s.name} (Strategy)</option>
+                        ))}
+                        {tactics.map((t: { id: string; name: string }) => (
+                          <option key={t.id} value={t.id}>{t.name} (Tactic)</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Data Source Toggle */}
+                    <div>
+                      <label className="block text-xs mb-1.5" style={{ color: '#9CA3AF' }}>
+                        Data Source
+                      </label>
+                      <div className="flex rounded overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <button type="button"
+                          className="flex-1 py-1.5 text-xs font-medium transition-colors"
+                          style={{
+                            background: (formState as any).dataSource !== 'polygon' ? 'var(--primary)' : 'var(--bg-secondary)',
+                            color: (formState as any).dataSource !== 'polygon' ? '#000' : '#9CA3AF',
+                          }}
+                          onClick={() => handleFormChange('dataSource', 'alpaca')}
+                        >
+                          Alpaca
+                        </button>
+                        <button type="button"
+                          className="flex-1 py-1.5 text-xs font-medium transition-colors"
+                          style={{
+                            background: (formState as any).dataSource === 'polygon' ? '#A855F7' : 'var(--bg-secondary)',
+                            color: (formState as any).dataSource === 'polygon' ? '#FFF' : '#9CA3AF',
+                          }}
+                          onClick={() => handleFormChange('dataSource', 'polygon')}
+                        >
+                          Widesurf
+                        </button>
+                      </div>
+                      {(formState as any).dataSource === 'polygon' && (
+                        <div className="mt-2 space-y-2">
+                          <input
+                            type="text"
+                            placeholder="http://10.0.0.94:8020"
+                            className="w-full p-2 rounded text-xs"
+                            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.08)', color: '#F9FAFB' }}
+                            value={(formState as any).widesurfBaseUrl || localStorage.getItem('widesurf_base_url') || 'http://10.0.0.94:8020'}
+                            onChange={(e) => {
+                              handleFormChange('widesurfBaseUrl', e.target.value)
+                              localStorage.setItem('widesurf_base_url', e.target.value)
+                            }}
+                          />
+                          <input
+                            type="password"
+                            placeholder="Widesurf API Key"
+                            className="w-full p-2 rounded text-xs"
+                            style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.08)', color: '#F9FAFB' }}
+                            value={(formState as any).polygonApiKey || localStorage.getItem('widesurf_api_key') || ''}
+                            onChange={(e) => {
+                              handleFormChange('polygonApiKey', e.target.value)
+                              localStorage.setItem('widesurf_api_key', e.target.value)
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Simulated Time */}
+                    <div>
+                      <label className="block text-xs mb-1.5" style={{ color: '#9CA3AF' }}>
+                        Simulated Time (pretend "now" is this time)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="w-full p-2 rounded text-sm"
+                        style={{ background: 'var(--bg-secondary)', border: '1px solid rgba(255,255,255,0.08)', color: '#F9FAFB' }}
+                        value={(formState as any).simulatedTime || new Date().toISOString().slice(0, 16)}
+                        onChange={(e) => handleFormChange('simulatedTime', e.target.value)}
+                      />
+                      <p className="text-[10px] mt-1" style={{ color: '#6B7280' }}>
+                        The system will evaluate the strategy as if this is the current time
+                      </p>
+                    </div>
+
+                    {/* Run Backtest Button */}
                     <button
                       type="button"
                       onClick={() => setWizardStep(2)}
                       disabled={!selectedModel?.enabled}
-                      className="w-full py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                      className="w-full py-2 rounded font-medium text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                       style={{ background: 'var(--primary)', color: '#000000' }}
                     >
-                      {false ? 'Next' : 'Next'}
+                      Next
                       <ChevronRight className="w-4 h-4" />
                     </button>
+
+                    {/* Backward compat: keep symbols in state for Step 2 */}
+                    <input type="hidden" value={formState.symbols}
+                      onChange={(e) => handleFormChange('symbols', e.target.value)} />
+
                   </motion.div>
                 )}
 

@@ -46,6 +46,15 @@ type BacktestConfig struct {
 	CacheAI              bool     `json:"cache_ai"`
 	ReplayOnly           bool     `json:"replay_only"`
 
+	// Strategy-based configuration
+	StrategyID    string `json:"strategy_id,omitempty"`    // Strategy/tactic ID (loads stock source, indicators, algo config)
+	SimulatedTime int64  `json:"simulated_time,omitempty"` // Unix timestamp: pretend "now" is this time for algo evaluation
+
+	// Data source selection
+	DataSource     string `json:"data_source,omitempty"`      // "alpaca" (default) or "polygon" (Widesurf/Polygon-compatible)
+	PolygonAPIKey  string `json:"polygon_api_key,omitempty"`  // Widesurf API key
+	PolygonBaseURL string `json:"polygon_base_url,omitempty"` // Widesurf base URL (e.g. https://api.widesurf.io)
+
 	AICfg    AIConfig       `json:"ai"`
 	Leverage LeverageConfig `json:"leverage"`
 
@@ -70,11 +79,17 @@ func (cfg *BacktestConfig) Validate() error {
 	}
 	cfg.AIModelID = strings.TrimSpace(cfg.AIModelID)
 
-	if len(cfg.Symbols) == 0 {
-		return fmt.Errorf("at least one symbol is required")
+	// Symbols can be empty if strategy_id is set (resolved from strategy stock source)
+	if len(cfg.Symbols) == 0 && cfg.StrategyID == "" {
+		return fmt.Errorf("at least one symbol is required (or set strategy_id)")
 	}
 	for i, sym := range cfg.Symbols {
 		cfg.Symbols[i] = market.Normalize(sym)
+	}
+
+	// Default data source
+	if cfg.DataSource == "" {
+		cfg.DataSource = "alpaca"
 	}
 
 	if len(cfg.Timeframes) == 0 {

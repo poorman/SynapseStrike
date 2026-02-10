@@ -1,7 +1,8 @@
 /**
  * TechnicalIndicatorsEditor - Standalone Technical Indicators section
  */
-import { Info } from 'lucide-react'
+import { useState } from 'react'
+import { Info, ChevronDown, ChevronUp } from 'lucide-react'
 import type { IndicatorConfig } from '../../types'
 
 interface TechnicalIndicatorsEditorProps {
@@ -11,6 +12,7 @@ interface TechnicalIndicatorsEditorProps {
 }
 
 export function TechnicalIndicatorsEditor({ config, onChange, disabled }: TechnicalIndicatorsEditorProps) {
+    const [showDataFlow, setShowDataFlow] = useState(false)
     const indicators = [
         { key: 'enable_ema', label: 'EMA', desc: 'Exponential Moving Average', color: 'var(--primary)', periodKey: 'ema_periods', defaultPeriods: '20,50' },
         { key: 'enable_macd', label: 'MACD', desc: 'Moving Average Convergence Divergence', color: '#a855f7' },
@@ -84,6 +86,63 @@ export function TechnicalIndicatorsEditor({ config, onChange, disabled }: Techni
                     </div>
                 ))}
             </div>
+
+            {/* Data Flow Info Panel */}
+            <button
+                type="button"
+                onClick={() => setShowDataFlow(!showDataFlow)}
+                className="flex items-center gap-1.5 mt-3 px-2 py-1 rounded text-[10px] transition-colors hover:bg-white/5"
+                style={{ color: '#6B7280' }}
+            >
+                <Info className="w-3 h-3" style={{ color: '#60a5fa' }} />
+                <span>How are indicators calculated?</span>
+                {showDataFlow ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+
+            {showDataFlow && (
+                <div className="mt-2 p-3 rounded-lg text-[10px] space-y-2" style={{ background: 'rgba(96, 165, 250, 0.05)', border: '1px solid rgba(96, 165, 250, 0.15)' }}>
+                    <div className="font-semibold text-xs" style={{ color: '#60a5fa' }}>Data Pipeline</div>
+
+                    <div className="space-y-1.5" style={{ color: '#9CA3AF' }}>
+                        <div className="flex items-start gap-2">
+                            <span style={{ color: '#60a5fa' }}>1.</span>
+                            <span><b style={{ color: '#F9FAFB' }}>Stock Source</b> (AI100 / Top Winners / Static List) provides candidate stock symbols</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                            <span style={{ color: '#60a5fa' }}>2.</span>
+                            <span><b style={{ color: '#F9FAFB' }}>Alpaca API</b> fetches raw OHLCV klines for each stock across selected timeframes (5m, 15m, 1h, 4h)</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                            <span style={{ color: '#60a5fa' }}>3.</span>
+                            <span><b style={{ color: '#F9FAFB' }}>Indicator Engine</b> computes all checked indicators from raw klines and caches in memory:</span>
+                        </div>
+
+                        <div className="ml-5 grid grid-cols-2 gap-x-4 gap-y-0.5" style={{ color: '#6B7280' }}>
+                            <span>• EMA (20, 50) — trend direction</span>
+                            <span>• RSI (7, 14) — overbought/oversold</span>
+                            <span>• MACD — momentum crossovers</span>
+                            <span>• ATR (14) — volatility for TP/SL</span>
+                            <span>• VWAP — institutional fair value</span>
+                            <span>• Volume Profile — support/resistance</span>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                            <span style={{ color: '#60a5fa' }}>4.</span>
+                            <span><b style={{ color: '#F9FAFB' }}>Decision Engine</b> reads pre-calculated values to make trading decisions:</span>
+                        </div>
+
+                        <div className="ml-5 space-y-0.5" style={{ color: '#6B7280' }}>
+                            <span>• <b style={{ color: '#a855f7' }}>AI Models</b> (Qwen, GPT, etc.) — indicators are formatted into a text prompt for LLM analysis</span>
+                            <br />
+                            <span>• <b style={{ color: '#0ECB81' }}>Smart Function</b> — reads indicator values directly from memory (zero latency)</span>
+                        </div>
+                    </div>
+
+                    <div className="pt-1.5 mt-1.5" style={{ borderTop: '1px solid rgba(96, 165, 250, 0.1)', color: '#6B7280' }}>
+                        All indicators are computed every cycle regardless of checkboxes. The checkboxes control what gets included in the AI prompt — Smart Function always has access to everything.
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

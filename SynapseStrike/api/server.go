@@ -1901,9 +1901,18 @@ func (s *Server) handleAccount(c *gin.Context) {
 	logger.Infof("📊 Received account info request [%s]", trader.GetName())
 	account, err := trader.GetAccountInfo()
 	if err != nil {
-		logger.Infof("❌ Failed to get account info [%s]: %v", trader.GetName(), err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("Failed to get account info: %v", err),
+		logger.Infof("⚠️ Failed to get account info [%s]: %v", trader.GetName(), err)
+		// Return degraded response with zeros instead of 500
+		// This prevents the dashboard from showing repeated error toasts
+		// when exchange credentials are invalid or exchange is temporarily down
+		c.JSON(http.StatusOK, gin.H{
+			"total_equity":      0.0,
+			"available_balance": 0.0,
+			"total_pnl":         0.0,
+			"total_pnl_pct":     0.0,
+			"position_count":    0,
+			"margin_used_pct":   0.0,
+			"error_message":     fmt.Sprintf("Exchange unavailable: %v", err),
 		})
 		return
 	}
@@ -2054,8 +2063,15 @@ func (s *Server) handleDecisions(c *gin.Context) {
 		return
 	}
 
+	// Guard against nil store (trader not fully initialized)
+	st := trader.GetStore()
+	if st == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Trader store not initialized"})
+		return
+	}
+
 	// Get all historical decision records (unlimited)
-	records, err := trader.GetStore().Decision().GetLatestRecords(trader.GetID(), 10000)
+	records, err := st.Decision().GetLatestRecords(trader.GetID(), 10000)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Sprintf("Failed to get decision log: %v", err),
@@ -2091,7 +2107,14 @@ func (s *Server) handleLatestDecisions(c *gin.Context) {
 		}
 	}
 
-	records, err := trader.GetStore().Decision().GetLatestRecords(trader.GetID(), limit)
+	// Guard against nil store (trader not fully initialized)
+	st := trader.GetStore()
+	if st == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Trader store not initialized"})
+		return
+	}
+
+	records, err := st.Decision().GetLatestRecords(trader.GetID(), limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Sprintf("Failed to get decision log: %v", err),
@@ -2122,7 +2145,14 @@ func (s *Server) handleStatistics(c *gin.Context) {
 		return
 	}
 
-	stats, err := trader.GetStore().Decision().GetStatistics(trader.GetID())
+	// Guard against nil store (trader not fully initialized)
+	st := trader.GetStore()
+	if st == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Trader store not initialized"})
+		return
+	}
+
+	stats, err := st.Decision().GetStatistics(trader.GetID())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Sprintf("Failed to get statistics: %v", err),
@@ -2586,6 +2616,7 @@ func (s *Server) handleGetSupportedModels(c *gin.Context) {
 		{"id": "grok", "name": "Grok AI", "provider": "grok", "defaultModel": "grok-3-latest"},
 		{"id": "kimi", "name": "Kimi AI", "provider": "kimi", "defaultModel": "moonshot-v1-auto"},
 		{"id": "localai", "name": "Local AI", "provider": "localai", "defaultModel": "gpt-oss-20b"},
+		{"id": "localfunc", "name": "Smart Function", "provider": "localfunc", "defaultModel": "model_1"},
 		{"id": "architect", "name": "Architect AI", "provider": "architect", "defaultModel": "architect-ai"},
 	}
 

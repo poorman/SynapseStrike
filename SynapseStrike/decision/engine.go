@@ -252,70 +252,187 @@ func GetFullDecisionWithStrategy(ctx *Context, mcpClient mcp.AIClient, engine *S
 		}
 	}
 
-	// 2. Build System Prompt using strategy engine
 	riskConfig := engine.GetRiskControlConfig()
-	systemPrompt := engine.BuildSystemPrompt(ctx.Account.TotalEquity, variant)
 
-	// 3. Build User Prompt using strategy engine
-	userPrompt := engine.BuildUserPrompt(ctx)
+	// =========================================================================
+	// Local Function Provider: bypass AI calls entirely, use algorithmic logic
+	// =========================================================================
+	if mcpClient.GetProvider() == mcp.ProviderLocalFunc {
+		return GetLocalFunctionDecision(ctx, engine, mcpClient.GetModel())
+	}
 
-	// 4. Call AI API
-	aiCallStart := time.Now()
-	var aiResponse string
-	var err error
+	// =========================================================================
+	// Batched AI Calls: Split candidates into chunks to fit within LLM context
+	// Each batch gets its own AI call with a subset of stocks, then results
+	// are merged into a single FullDecision.
+	// =========================================================================
+	const batchSize = 2 // Max stocks per AI call (tuned for ~16K context LLMs)
 
-	if mcpClient.GetProvider() == mcp.ProviderArchitect {
-		// For Architect AI, include full market context in metadata for specialized port 8065 pipeline
-		symbol := "BTCUSDT" // Default
-		if len(ctx.CandidateStocks) > 0 {
-			symbol = ctx.CandidateStocks[0].Symbol
+	allCandidates := ctx.CandidateStocks
+	needsBatching := len(allCandidates) > batchSize
+
+	if needsBatching {
+		logger.Infof("📦 [Batch Mode] Splitting %d candidates into batches of %d (%d AI calls)",
+			len(allCandidates), batchSize, (len(allCandidates)+batchSize-1)/batchSize)
+	}
+
+	var allDecisions []Decision
+	var allCoTTraces []string
+	var allUserPrompts []string
+	var allRawResponses []string
+	var systemPrompt string
+	var totalAIDurationMs int64
+	var lastErr error
+
+	// Split candidates into batches
+	for batchIdx := 0; batchIdx < len(allCandidates); batchIdx += batchSize {
+		end := batchIdx + batchSize
+		if end > len(allCandidates) {
+			end = len(allCandidates)
 		}
-		timeframe := engine.GetConfig().Indicators.Klines.PrimaryTimeframe
-		if timeframe == "" {
-			timeframe = "1m"
+		batchStocks := allCandidates[batchIdx:end]
+		batchNum := batchIdx/batchSize + 1
+		totalBatches := (len(allCandidates) + batchSize - 1) / batchSize
+
+		if needsBatching {
+			symbols := make([]string, len(batchStocks))
+			for i, s := range batchStocks {
+				symbols[i] = s.Symbol
+			}
+			logger.Infof("📦 [Batch %d/%d] Processing stocks: %s", batchNum, totalBatches, strings.Join(symbols, ", "))
 		}
 
-		req, _ := mcp.NewRequestBuilder().
-			WithSystemPrompt(systemPrompt).
-			WithUserPrompt(userPrompt).
-			WithMetadataItem("market_context", ctx).
-			WithMetadataItem("symbol", symbol).
-			WithMetadataItem("timeframe", timeframe).
-			WithMetadataItem("question", userPrompt).
-			Build()
-		aiResponse, err = mcpClient.CallWithRequest(req)
-	} else {
-		aiResponse, err = mcpClient.CallWithMessages(systemPrompt, userPrompt)
+		// Create a sub-context with only this batch's candidates
+		batchCtx := &Context{
+			CurrentTime:    ctx.CurrentTime,
+			CallCount:      ctx.CallCount,
+			RuntimeMinutes: ctx.RuntimeMinutes,
+			Account:        ctx.Account,
+			Positions:      ctx.Positions,
+			CandidateStocks: batchStocks,
+			MarketDataMap:  ctx.MarketDataMap,
+			OITopDataMap:   ctx.OITopDataMap,
+			QuantDataMap:   ctx.QuantDataMap,
+			RecentOrders:   ctx.RecentOrders,
+		}
+
+		// Build prompts for this batch
+		systemPrompt = engine.BuildSystemPrompt(ctx.Account.TotalEquity, variant)
+		userPrompt := engine.BuildUserPrompt(batchCtx)
+
+		// Call AI API
+		aiCallStart := time.Now()
+		var aiResponse string
+		var err error
+
+		if mcpClient.GetProvider() == mcp.ProviderArchitect {
+			symbol := "BTCUSDT"
+			if len(batchStocks) > 0 {
+				symbol = batchStocks[0].Symbol
+			}
+			timeframe := engine.GetConfig().Indicators.Klines.PrimaryTimeframe
+			if timeframe == "" {
+				timeframe = "1m"
+			}
+			req, _ := mcp.NewRequestBuilder().
+				WithSystemPrompt(systemPrompt).
+				WithUserPrompt(userPrompt).
+				WithMetadataItem("market_context", batchCtx).
+				WithMetadataItem("symbol", symbol).
+				WithMetadataItem("timeframe", timeframe).
+				WithMetadataItem("question", userPrompt).
+				Build()
+			aiResponse, err = mcpClient.CallWithRequest(req)
+		} else {
+			aiResponse, err = mcpClient.CallWithMessages(systemPrompt, userPrompt)
+		}
+
+		aiCallDuration := time.Since(aiCallStart)
+		totalAIDurationMs += aiCallDuration.Milliseconds()
+
+		if err != nil {
+			lastErr = fmt.Errorf("AI API call failed (batch %d/%d): %w", batchNum, totalBatches, err)
+			if needsBatching {
+				logger.Warnf("⚠️  [Batch %d/%d] AI call failed: %v — skipping batch", batchNum, totalBatches, err)
+				allCoTTraces = append(allCoTTraces, fmt.Sprintf("## Batch %d/%d — FAILED\nError: %v", batchNum, totalBatches, err))
+			} else {
+				return nil, fmt.Errorf("AI API call failed: %w", err)
+			}
+			continue
+		}
+
+		if needsBatching {
+			logger.Infof("✅ [Batch %d/%d] AI responded in %.1fs", batchNum, totalBatches, float64(aiCallDuration.Milliseconds())/1000)
+		}
+
+		// Parse this batch's response
+		batchDecision, parseErr := parseFullDecisionResponse(
+			aiResponse,
+			ctx.Account.TotalEquity,
+			riskConfig.LargeCapMaxMargin,
+			riskConfig.SmallCapMaxMargin,
+			riskConfig.LargeCapMaxPositionValueRatio,
+			riskConfig.SmallCapMaxPositionValueRatio,
+		)
+
+		if batchDecision != nil {
+			if batchDecision.CoTTrace != "" {
+				header := fmt.Sprintf("## Batch %d/%d", batchNum, totalBatches)
+				allCoTTraces = append(allCoTTraces, header+"\n"+batchDecision.CoTTrace)
+			}
+			// Collect decisions (skip generic "ALL wait" if we have real decisions from other batches)
+			for _, d := range batchDecision.Decisions {
+				if d.Symbol == "ALL" && d.Action == "wait" && needsBatching {
+					// Only add ALL/wait if this is the only batch or no other decisions exist
+					continue
+				}
+				allDecisions = append(allDecisions, d)
+			}
+		}
+
+		allUserPrompts = append(allUserPrompts, userPrompt)
+		allRawResponses = append(allRawResponses, aiResponse)
+
+		if parseErr != nil && !needsBatching {
+			return batchDecision, fmt.Errorf("failed to parse AI response: %w", parseErr)
+		} else if parseErr != nil {
+			logger.Warnf("⚠️  [Batch %d/%d] Parse error (non-fatal): %v", batchNum, totalBatches, parseErr)
+		}
 	}
 
-	aiCallDuration := time.Since(aiCallStart)
-	if err != nil {
-		return nil, fmt.Errorf("AI API call failed: %w", err)
+	// If all batches failed, return the last error
+	if len(allDecisions) == 0 && lastErr != nil {
+		return nil, lastErr
 	}
 
-	// 5. Parse AI response
-	decision, err := parseFullDecisionResponse(
-		aiResponse,
-		ctx.Account.TotalEquity,
-		riskConfig.LargeCapMaxMargin,
-		riskConfig.SmallCapMaxMargin,
-		riskConfig.LargeCapMaxPositionValueRatio,
-		riskConfig.SmallCapMaxPositionValueRatio,
-	)
-
-	if decision != nil {
-		decision.Timestamp = time.Now()
-		decision.SystemPrompt = systemPrompt
-		decision.UserPrompt = userPrompt
-		decision.AIRequestDurationMs = aiCallDuration.Milliseconds()
-		decision.RawResponse = aiResponse
+	// If no decisions from any batch, add a default wait
+	if len(allDecisions) == 0 {
+		allDecisions = append(allDecisions, Decision{
+			Symbol:    "ALL",
+			Action:    "wait",
+			Reasoning: "No actionable signals found across all batches",
+		})
 	}
 
-	if err != nil {
-		return decision, fmt.Errorf("failed to parse AI response: %w", err)
+	// Merge all batch results into a single FullDecision
+	mergedCoT := strings.Join(allCoTTraces, "\n\n---\n\n")
+	mergedPrompts := strings.Join(allUserPrompts, "\n\n===BATCH SEPARATOR===\n\n")
+	mergedRaw := strings.Join(allRawResponses, "\n\n===BATCH SEPARATOR===\n\n")
+
+	if needsBatching {
+		logger.Infof("📦 [Batch Mode] Complete: %d batches, %d decisions, total AI time %.1fs",
+			(len(allCandidates)+batchSize-1)/batchSize, len(allDecisions), float64(totalAIDurationMs)/1000)
 	}
 
-	return decision, nil
+	return &FullDecision{
+		SystemPrompt:        systemPrompt,
+		UserPrompt:          mergedPrompts,
+		CoTTrace:            mergedCoT,
+		Decisions:           allDecisions,
+		RawResponse:         mergedRaw,
+		Timestamp:           time.Now(),
+		AIRequestDurationMs: totalAIDurationMs,
+	}, nil
 }
 
 // ============================================================================
@@ -1847,12 +1964,21 @@ func formatFloatSlice(values []float64) string {
 func parseFullDecisionResponse(aiResponse string, accountEquity float64, largeCapLeverage, smallCapLeverage int, largeCapPosRatio, smallCapPosRatio float64) (*FullDecision, error) {
 	cotTrace := extractCoTTrace(aiResponse)
 
+	// Detect potentially truncated response (max_tokens reached)
+	trimmed := strings.TrimSpace(aiResponse)
+	if len(trimmed) > 0 {
+		lastChar := trimmed[len(trimmed)-1]
+		if lastChar != ']' && lastChar != '}' && lastChar != '`' && !strings.HasSuffix(trimmed, "</decision>") {
+			logger.Warnf("⚠️  AI response may be truncated (last char: '%c', length: %d). Consider increasing AI_MAX_TOKENS.", lastChar, len(trimmed))
+		}
+	}
+
 	decisions, err := extractDecisions(aiResponse)
 	if err != nil {
 		return &FullDecision{
 			CoTTrace:  cotTrace,
 			Decisions: []Decision{},
-		}, fmt.Errorf("failed to extract decisions: %w", err)
+		}, fmt.Errorf("failed to extract decisions (response length: %d): %w", len(aiResponse), err)
 	}
 
 	if err := validateDecisions(decisions, accountEquity, largeCapLeverage, smallCapLeverage, largeCapPosRatio, smallCapPosRatio); err != nil {

@@ -225,3 +225,133 @@ func getTimeframeDurationMs(tf string) int64 {
 		return 60 * 60 * 1000 // Default 1 hour
 	}
 }
+
+// ============================================================================
+// Widesurf / Polygon-compatible Data Fetcher
+// ============================================================================
+
+const defaultWidesurfBaseURL = "http://10.0.0.94:8020"
+
+// PolygonAggResult represents a single aggregate bar from Polygon API
+type PolygonAggResult struct {
+	Timestamp    int64   `json:"t"`  // Unix ms timestamp
+	Open         float64 `json:"o"`
+	High         float64 `json:"h"`
+	Low          float64 `json:"l"`
+	Close        float64 `json:"c"`
+	Volume       float64 `json:"v"`
+	VWAP         float64 `json:"vw"`
+	Transactions int     `json:"n"`
+}
+
+// PolygonAggsResponse is the response from Polygon aggregates API
+type PolygonAggsResponse struct {
+	Results    []PolygonAggResult `json:"results"`
+	Status     string             `json:"status"`
+	ResultsCount int              `json:"resultsCount"`
+	NextURL    string             `json:"next_url"`
+}
+
+// mapTimeframeToPolygon converts our timeframe to Polygon multiplier + timespan
+func mapTimeframeToPolygon(tf string) (int, string) {
+	tf = strings.ToLower(tf)
+	switch tf {
+	case "1m", "1min":
+		return 1, "minute"
+	case "3m", "3min":
+		return 3, "minute"
+	case "5m", "5min":
+		return 5, "minute"
+	case "15m", "15min":
+		return 15, "minute"
+	case "30m", "30min":
+		return 30, "minute"
+	case "1h", "60m":
+		return 1, "hour"
+	case "4h", "240m":
+		return 4, "hour"
+	case "1d", "d":
+		return 1, "day"
+	case "1w", "w":
+		return 1, "week"
+	default:
+		return 1, "hour"
+	}
+}
+
+// GetKlinesRangePolygon fetches K-line data from Widesurf (Polygon-compatible API).
+// API format: GET /v1/aggs/ticker/{symbol}/range/{multiplier}/{timespan}/{from}/{to}
+func GetKlinesRangePolygon(symbol string, timeframe string, start, end time.Time, apiKey string, baseURL string) ([]Kline, error) {
+	symbol = strings.ToUpper(strings.TrimSuffix(symbol, "USDT"))
+	symbol = strings.TrimSuffix(symbol, "USD")
+
+	if apiKey == "" {
+		return nil, fmt.Errorf("Widesurf API key not configured")
+	}
+
+	if !end.After(start) {
+		return nil, fmt.Errorf("end time must be after start time")
+	}
+
+	multiplier, timespan := mapTimeframeToPolygon(timeframe)
+	fromDate := start.Format("2006-01-02")
+	toDate := end.Format("2006-01-02")
+
+	if baseURL == "" {
+		baseURL = defaultWidesurfBaseURL
+	}
+	baseURL = strings.TrimRight(baseURL, "/")
+
+	var all []Kline
+	client := &http.Client{Timeout: 30 * time.Second}
+
+	url := fmt.Sprintf("%s/v1/aggs/ticker/%s/range/%d/%s/%s/%s?apiKey=%s&adjusted=true&sort=asc&limit=50000",
+		baseURL, symbol, multiplier, timespan, fromDate, toDate, apiKey)
+
+	fmt.Printf("📊 [Widesurf] GET %s\n", url)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("Widesurf request failed: %w", err)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Widesurf API returned status %d: %s (URL: %s)", resp.StatusCode, string(body), url)
+	}
+
+	var aggsResp PolygonAggsResponse
+	if err := json.Unmarshal(body, &aggsResp); err != nil {
+		return nil, fmt.Errorf("failed to parse Widesurf response: %w (body: %s)", err, string(body[:min(len(body), 200)]))
+	}
+
+	for _, result := range aggsResp.Results {
+		openTimeMs := result.Timestamp
+		tfDurMs := getTimeframeDurationMs(mapTimeframeToAlpaca(timeframe)) // reuse existing duration calculator
+		closeTimeMs := openTimeMs + tfDurMs - 1
+
+		kline := Kline{
+			OpenTime:  openTimeMs,
+			Open:      result.Open,
+			High:      result.High,
+			Low:       result.Low,
+			Close:     result.Close,
+			Volume:    result.Volume,
+			CloseTime: closeTimeMs,
+		}
+		all = append(all, kline)
+	}
+
+	fmt.Printf("📊 [Widesurf] Got %d bars for %s %s\n", len(all), symbol, timeframe)
+	return all, nil
+}

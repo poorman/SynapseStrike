@@ -221,25 +221,25 @@ export function TraderConfigModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
       <div
-        className="bg-[#161b22] rounded-xl shadow-2xl max-w-2xl w-full my-8"
-        style={{ maxHeight: 'calc(100vh - 4rem)' }}
+        className="bg-[#161b22] rounded-lg shadow-2xl max-w-lg w-full my-4"
+        style={{ maxHeight: 'calc(100vh - 2rem)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#161b22] to-[#1e2530] sticky top-0 z-10 rounded-t-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, rgb(195, 245, 60), rgb(195, 245, 60))' }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#161b22] to-[#1e2530] sticky top-0 z-10 rounded-t-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded flex items-center justify-center text-white" style={{ background: 'linear-gradient(135deg, rgb(195, 245, 60), rgb(195, 245, 60))' }}>
               {isEditMode ? (
-                <Pencil className="w-5 h-5" />
+                <Pencil className="w-3.5 h-3.5" />
               ) : (
-                <Plus className="w-5 h-5" />
+                <Plus className="w-3.5 h-3.5" />
               )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-[#F9FAFB]">
+              <h2 className="text-sm font-bold text-[#F9FAFB]">
                 {isEditMode ? 'Edit Trader' : 'Create Trader'}
               </h2>
-              <p className="text-sm text-[#9CA3AF] mt-1">
+              <p className="text-xs text-[#9CA3AF]">
                 {isEditMode ? 'Edit Trader Configuration' : 'Select strategy and configure parameters'}
               </p>
             </div>
@@ -254,17 +254,17 @@ export function TraderConfigModal({
 
         {/* Content */}
         <div
-          className="p-6 space-y-6 overflow-y-auto"
-          style={{ maxHeight: 'calc(100vh - 16rem)' }}
+          className="px-4 py-3 space-y-3 overflow-y-auto"
+          style={{ maxHeight: 'calc(100vh - 10rem)' }}
         >
           {/* Basic Info */}
-          <div className="bg-[var(--glass-bg)] border border-[rgba(255,255,255,0.04)] rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-[#F9FAFB] mb-5 flex items-center gap-2">
+          <div className="bg-[var(--glass-bg)] border border-[rgba(255,255,255,0.04)] rounded-lg p-3">
+            <h3 className="text-xs font-semibold text-[#F9FAFB] mb-3 flex items-center gap-2">
               <span className="text-[rgb(195, 245, 60)]">1</span> Basic Configuration
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               <div>
-                <label className="text-sm text-[#F9FAFB] block mb-2">
+                <label className="text-xs text-[#F9FAFB] block mb-1">
                   Trader Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -279,7 +279,7 @@ export function TraderConfigModal({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-[#F9FAFB] block mb-2">
+                  <label className="text-xs text-[#F9FAFB] block mb-1">
                     AI Model <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -297,7 +297,7 @@ export function TraderConfigModal({
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm text-[#F9FAFB] block mb-2">
+                  <label className="text-xs text-[#F9FAFB] block mb-1">
                     Brokerage <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -321,14 +321,14 @@ export function TraderConfigModal({
           </div>
 
           {/* Strategy Selection */}
-          <div className="bg-[var(--glass-bg)] border border-[rgba(255,255,255,0.04)] rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-[#F9FAFB] mb-5 flex items-center gap-2">
+          <div className="bg-[var(--glass-bg)] border border-[rgba(255,255,255,0.04)] rounded-lg p-3">
+            <h3 className="text-xs font-semibold text-[#F9FAFB] mb-3 flex items-center gap-2">
               <span className="text-[rgb(195, 245, 60)]">2</span> Select Trading Strategy
               <Sparkles className="w-4 h-4 text-[rgb(195, 245, 60)]" />
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               <div>
-                <label className="text-sm text-[#F9FAFB] block mb-2">
+                <label className="text-xs text-[#F9FAFB] block mb-1">
                   Use Strategy
                 </label>
                 <select
@@ -386,14 +386,14 @@ export function TraderConfigModal({
           </div>
 
           {/* Trading Timeline */}
-          <div className="bg-[var(--glass-bg)] border border-[rgba(255,255,255,0.04)] rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-[#F9FAFB] mb-5 flex items-center gap-2">
+          <div className="bg-[var(--glass-bg)] border border-[rgba(255,255,255,0.04)] rounded-lg p-3">
+            <h3 className="text-xs font-semibold text-[#F9FAFB] mb-3 flex items-center gap-2">
               <span className="text-[rgb(195, 245, 60)]">3</span> Trading Timeline
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm text-[#F9FAFB] block mb-2">
+                  <label className="text-xs text-[#F9FAFB] block mb-1">
                     Margin Mode
                   </label>
                   <div className="flex gap-2">
@@ -424,7 +424,7 @@ export function TraderConfigModal({
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm text-[#F9FAFB] block mb-2">
+                  <label className="text-xs text-[#F9FAFB] block mb-1">
                     {t('aiScanInterval', language)}
                   </label>
                   <input
@@ -450,7 +450,7 @@ export function TraderConfigModal({
 
               {/* Competition visibility */}
               <div>
-                <label className="text-sm text-[#F9FAFB] block mb-2">
+                <label className="text-xs text-[#F9FAFB] block mb-1">
                   Arena Visibility
                 </label>
                 <div className="flex gap-2">
@@ -567,10 +567,10 @@ export function TraderConfigModal({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-[rgba(255, 255, 255, 0.08)] bg-gradient-to-r from-[rgba(22, 27, 34, 0.88)] to-[#252B35] sticky bottom-0 z-10 rounded-b-xl">
+        <div className="flex justify-end gap-2 px-4 py-2.5 border-t border-[rgba(255, 255, 255, 0.08)] bg-gradient-to-r from-[rgba(22, 27, 34, 0.88)] to-[#252B35] sticky bottom-0 z-10 rounded-b-lg">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-[rgba(255, 255, 255, 0.08)] text-[#F9FAFB] rounded-lg hover:bg-[#404750] transition-all duration-200 border border-[#404750]"
+            className="px-4 py-1.5 text-xs bg-[rgba(255, 255, 255, 0.08)] text-[#F9FAFB] rounded hover:bg-[#404750] transition-all duration-200 border border-[#404750]"
           >
             Cancel
           </button>
@@ -583,7 +583,7 @@ export function TraderConfigModal({
                 !Boolean(formData.ai_model) ||
                 !Boolean(formData.brokerage_id)
               }
-              className="px-8 py-3 rounded-lg transition-all duration-200 font-medium shadow-lg cursor-pointer"
+              className="px-5 py-1.5 text-xs rounded transition-all duration-200 font-medium shadow-lg cursor-pointer"
               style={{
                 background: (isSaving || !formData.trader_name || !formData.ai_model || !formData.brokerage_id)
                   ? '#6B7280'  // Gray when disabled

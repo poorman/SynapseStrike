@@ -195,6 +195,11 @@ func NewAutoTrader(config AutoTraderConfig, st *store.Store, userID string) (*Au
 		mcpClient.SetAPIKey(config.CustomAPIKey, config.CustomAPIURL, config.CustomModelName)
 		logger.Infof("🤖 [%s] Using LocalAI", config.Name)
 
+	case "localfunc":
+		mcpClient = mcp.NewLocalFuncClient()
+		mcpClient.SetAPIKey("local", config.CustomAPIURL, config.CustomModelName)
+		logger.Infof("🤖 [%s] Using Local Function (model: %s)", config.Name, config.CustomModelName)
+
 	case "custom":
 		mcpClient = mcp.New()
 		mcpClient.SetAPIKey(config.CustomAPIKey, config.CustomAPIURL, config.CustomModelName)
@@ -437,13 +442,36 @@ func (at *AutoTrader) Run() error {
 				continue
 			}
 
-			// UNIVERSAL MARKET CLOSE CHECK (applies to ALL traders, not just VWAP)
-			// Automatically close all positions 5 minutes before market close
-			if at.config.TradeOnlyMarketHours && isMarketOpen() {
+			// PER-ALGO MARKET CLOSE CHECK
+			// Only auto-close positions before market close if the strategy has CloseAtEOD enabled.
+			// Behavior per algo type (configurable in Strategy Studio > Risk Control > "Close at EOD"):
+			//   - VWAPer:       CloseAtEOD = true  (day-trade strategy, no overnight holds)
+			//   - Scalper:      CloseAtEOD = true  (intraday scalping, no overnight risk)
+			//   - Swing/Custom: CloseAtEOD = false (positions may be held overnight)
+			// When disabled, positions are NOT closed at market close and carry overnight.
+			shouldCloseAtEOD := true       // default: close (backward compatible)
+			eodCloseTime := "15:55"        // default: 3:55 PM ET
+			if at.strategyEngine != nil {
+				cfg := at.strategyEngine.GetConfig()
+				if cfg != nil {
+					shouldCloseAtEOD = cfg.RiskControl.CloseAtEOD
+					if cfg.RiskControl.CloseAtEODTime != "" {
+						eodCloseTime = cfg.RiskControl.CloseAtEODTime
+					}
+				}
+			}
+			if shouldCloseAtEOD && at.config.TradeOnlyMarketHours && isMarketOpen() {
 				loc, _ := time.LoadLocation("America/New_York")
 				now := time.Now().In(loc)
 				currentMinutes := now.Hour()*60 + now.Minute()
-				marketCloseMinutes := 16*60 - 5 // 3:55 PM (5 min before 4 PM close)
+
+				// Parse configurable close time (HH:MM format)
+				var eodHour, eodMin int
+				fmt.Sscanf(eodCloseTime, "%d:%d", &eodHour, &eodMin)
+				if eodHour == 0 && eodMin == 0 {
+					eodHour, eodMin = 15, 55 // fallback default
+				}
+				marketCloseMinutes := eodHour*60 + eodMin
 				timeToClose := 16*60 - currentMinutes
 				
 				if currentMinutes >= marketCloseMinutes && currentMinutes < 16*60 {
@@ -633,28 +661,34 @@ func (at *AutoTrader) runCycle() error {
 	logger.Infof("🤖 Requesting AI analysis and decision... [Strategy Engine]")
 	aiDecision, err := decision.GetFullDecisionWithStrategy(ctx, at.mcpClient, at.strategyEngine, "balanced")
 
-	// [Bulletproof] Trigger Algorithmic Fallback if AI API fails (Quota limit, etc.)
+	// [Bulletproof] Trigger Algorithmic Fallback if AI decision fails for ANY reason
+	// This covers: API errors (429, 5xx), network failures, parse errors, quota exhaustion, etc.
 	if err != nil {
-		errStr := err.Error()
-		// Catch 429: Resource Exhausted (Quota), or generic AI call failure
-		if strings.Contains(errStr, "429") || strings.Contains(errStr, "RESOURCE_EXHAUSTED") ||
-			strings.Contains(errStr, "AI API call failed") {
-			logger.Warnf("⚠️ AI API Failure detected: %v", err)
-			logger.Infof("🛡️ [Bulletproof] Triggering Algorithmic Fallback...")
+		aiErrMsg := err.Error()
+		logger.Warnf("⚠️ AI Decision Failure detected: %v", err)
+		logger.Infof("🛡️ [Bulletproof] Triggering Algorithmic Fallback...")
 
-			fallbackDecision, fallbackErr := decision.GetAlgorithmicDecision(ctx, at.strategyEngine)
-			if fallbackErr != nil {
-				logger.Errorf("❌ Fallback failed with error: %v", fallbackErr)
-			} else if fallbackDecision == nil {
-				logger.Errorf("❌ Fallback returned nil decision")
-			}
+		fallbackDecision, fallbackErr := decision.GetAlgorithmicDecision(ctx, at.strategyEngine)
+		if fallbackErr != nil {
+			logger.Errorf("❌ Fallback failed with error: %v", fallbackErr)
+		} else if fallbackDecision == nil {
+			logger.Errorf("❌ Fallback returned nil decision")
+		}
 
-			if fallbackErr == nil && fallbackDecision != nil {
-				logger.Infof("✅ Fallback SUCCESS: Proceeding with technical algorithm")
-				aiDecision = fallbackDecision
-				err = nil // Clear error as we have a fallback decision
-				record.ExecutionLog = append(record.ExecutionLog, "Fallback: Triggered technical algorithm due to AI failure")
+		if fallbackErr == nil && fallbackDecision != nil {
+			logger.Infof("✅ Fallback SUCCESS: Proceeding with technical algorithm")
+			// Preserve any partial AI data (CoT, raw response) from the failed attempt
+			if aiDecision != nil {
+				fallbackDecision.CoTTrace = fmt.Sprintf("AI Error: %s\n---\n%s", aiErrMsg, aiDecision.CoTTrace)
+				fallbackDecision.SystemPrompt = aiDecision.SystemPrompt
+				fallbackDecision.UserPrompt = aiDecision.UserPrompt
+				fallbackDecision.RawResponse = aiDecision.RawResponse
+			} else {
+				fallbackDecision.CoTTrace = fmt.Sprintf("AI Error: %s", aiErrMsg)
 			}
+			aiDecision = fallbackDecision
+			err = nil // Clear error as we have a fallback decision
+			record.ExecutionLog = append(record.ExecutionLog, fmt.Sprintf("Fallback: Triggered technical algorithm due to AI failure (%s)", aiErrMsg))
 		}
 	}
 
@@ -1451,6 +1485,15 @@ func (at *AutoTrader) executeOpenShortWithRecord(decision *decision.Decision, ac
 func (at *AutoTrader) executeCloseLongWithRecord(decision *decision.Decision, actionRecord *store.DecisionAction) error {
 	logger.Infof("  🔄 Close long: %s", decision.Symbol)
 
+	// Ownership guard: verify this position belongs to the current trader
+	if at.store != nil {
+		dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, decision.Symbol, "long")
+		if err != nil || dbPos == nil {
+			logger.Warnf("🚫 [%s] Blocked close_long %s: position not owned by this trader", at.config.Name, decision.Symbol)
+			return fmt.Errorf("position %s long not owned by trader %s", decision.Symbol, at.config.Name)
+		}
+	}
+
 	// Get current price
 	marketData, err := market.Get(decision.Symbol)
 	if err != nil {
@@ -1497,6 +1540,15 @@ func (at *AutoTrader) executeCloseLongWithRecord(decision *decision.Decision, ac
 // executeCloseShortWithRecord executes close short position and records detailed information
 func (at *AutoTrader) executeCloseShortWithRecord(decision *decision.Decision, actionRecord *store.DecisionAction) error {
 	logger.Infof("  🔄 Close short: %s", decision.Symbol)
+
+	// Ownership guard: verify this position belongs to the current trader
+	if at.store != nil {
+		dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, decision.Symbol, "short")
+		if err != nil || dbPos == nil {
+			logger.Warnf("🚫 [%s] Blocked close_short %s: position not owned by this trader", at.config.Name, decision.Symbol)
+			return fmt.Errorf("position %s short not owned by trader %s", decision.Symbol, at.config.Name)
+		}
+	}
 
 	// Get current price
 	marketData, err := market.Get(decision.Symbol)
@@ -1977,6 +2029,16 @@ func (at *AutoTrader) emergencyClosePosition(symbol, side string) error {
 // reasoning: Human-readable explanation for the decision log
 func (at *AutoTrader) closePositionWithReason(symbol, side, reason, reasoning string) error {
 	side = strings.ToLower(side)
+
+	// Ownership guard: verify this position belongs to the current trader
+	// Prevents one trader (e.g. VWAPer) from closing another trader's (e.g. Scalper) positions
+	if at.store != nil {
+		dbPos, err := at.store.Position().GetOpenPositionBySymbol(at.id, symbol, side)
+		if err != nil || dbPos == nil {
+			logger.Warnf("🚫 [%s] Blocked: position %s %s not owned by this trader (owned by another trader on same account)", at.config.Name, symbol, side)
+			return fmt.Errorf("position %s %s not owned by trader %s", symbol, side, at.config.Name)
+		}
+	}
 
 	// Get current market price and position data before closing
 	marketData, _ := market.Get(symbol)

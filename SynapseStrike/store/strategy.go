@@ -202,6 +202,9 @@ type IndicatorConfig struct {
 	EnableVWAPSlopeStretch bool   `json:"enable_vwap_slope_stretch"` // Enable VWAP + Slope & Stretch algorithm
 	VWAPEntryTime          string `json:"vwap_entry_time"`           // Entry time in ET (default: "10:00")
 
+	// Genetic Algorithm (multi-factor scoring with pre-evolved chromosome weights)
+	EnableGeneticAlgo bool `json:"enable_genetic_algo"` // Enable Genetic Algorithm trading
+
 	// Top Movers Scalping Algorithm
 	EnableTopMoversScalping bool    `json:"enable_top_movers_scalping"`           // Enable Top Movers Scalping algorithm
 	TMSMinPrice             float64 `json:"tms_min_price,omitempty"`              // Minimum price filter (default: 0.50)
@@ -313,6 +316,16 @@ type RiskControlConfig struct {
 	UsePartialProfits bool    `json:"use_partial_profits"` // Enable partial profit taking
 	PartialProfitPct  float64 `json:"partial_profit_pct"`  // % to close at first target (default: 50%)
 	PartialProfitR    float64 `json:"partial_profit_r"`    // R-multiple for first target (default: 2.0)
+
+	// End-of-Day Position Close
+	// When enabled, all positions are automatically closed 5 minutes before market close (3:55 PM ET).
+	// Behavior per algo type:
+	//   - VWAPer: Should typically be ON (day-trade strategy, no overnight holds)
+	//   - Scalper: Should typically be ON (intraday scalping, no overnight risk)
+	//   - Swing/Custom: Can be OFF (positions may be held overnight)
+	// When disabled, positions are held past market close (overnight).
+	CloseAtEOD     bool   `json:"close_at_eod"`      // Auto-close all positions before market close
+	CloseAtEODTime string `json:"close_at_eod_time"` // Time to close in HH:MM ET format (default: "15:55")
 
 	// Market Hours Filter
 	UseMarketHoursFilter bool   `json:"use_market_hours_filter"` // Only trade during market hours
@@ -494,6 +507,9 @@ func GetDefaultStrategyConfig(lang string) StrategyConfig {
 			UsePartialProfits: false, // Partial profits disabled by default
 			PartialProfitPct:  0.50,  // Take 50% at first target
 			PartialProfitR:    2.0,   // First target at 2R
+
+			CloseAtEOD:           true,    // Auto-close positions before market close (default: on for day-trade)
+			CloseAtEODTime:       "15:55", // 3:55 PM ET (5 min before close)
 
 			UseMarketHoursFilter: true, // Market hours filter enabled
 			MarketOpenTime:       "09:30",

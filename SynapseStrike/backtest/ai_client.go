@@ -76,6 +76,16 @@ func configureMCPClient(cfg BacktestConfig, base mcp.AIClient) (mcp.AIClient, er
 		localC := mcp.NewLocalAIClientWithOptions()
 		localC.(*mcp.LocalAIClient).SetAPIKey(cfg.AICfg.APIKey, cfg.AICfg.BaseURL, cfg.AICfg.Model)
 		return localC, nil
+	case "localfunc":
+		// Local Function - no API calls, decision intercepted in decision engine
+		lf := mcp.NewLocalFuncClient()
+		lf.SetAPIKey("local-function", "", cfg.AICfg.Model)
+		return lf, nil
+	case "architect":
+		// Architect AI - local LLM proxy
+		ac := mcp.NewLocalAIClientWithOptions() // Architect uses OpenAI-compatible API
+		ac.(*mcp.LocalAIClient).SetAPIKey(cfg.AICfg.APIKey, cfg.AICfg.BaseURL, cfg.AICfg.Model)
+		return ac, nil
 	case "custom":
 		if cfg.AICfg.BaseURL == "" || cfg.AICfg.APIKey == "" || cfg.AICfg.Model == "" {
 			return nil, fmt.Errorf("custom provider requires base_url, api key and model")
@@ -131,6 +141,11 @@ func cloneBaseClient(base mcp.AIClient) *mcp.Client {
 			return &cp
 		}
 	case *mcp.LocalAIClient:
+		if c != nil && c.Client != nil {
+			cp := *c.Client
+			return &cp
+		}
+	case *mcp.LocalFuncClient:
 		if c != nil && c.Client != nil {
 			cp := *c.Client
 			return &cp

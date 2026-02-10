@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -71,10 +72,20 @@ func (s *Server) handleBacktestStart(c *gin.Context) {
 		return
 	}
 
-	// Load Alpaca credentials from user's brokerage config for market data
-	if err := s.loadAlpacaCredentialsForBacktest(cfg.UserID); err != nil {
-		// Log warning but don't fail - env vars might be set
-		fmt.Printf("⚠️ Could not load Alpaca credentials from brokerage: %v\n", err)
+	// Load Alpaca credentials from user's brokerage config for market data (skip for Polygon)
+	if cfg.DataSource != "polygon" {
+		if err := s.loadAlpacaCredentialsForBacktest(cfg.UserID); err != nil {
+			fmt.Printf("⚠️ Could not load Alpaca credentials from brokerage: %v\n", err)
+		}
+	}
+
+	// Resolve symbols from strategy stock source if no manual symbols provided
+	if len(cfg.Symbols) == 0 && cfg.StrategyID != "" {
+		resolvedSymbols := s.resolveStrategySymbols(cfg.UserID, cfg.StrategyID)
+		if len(resolvedSymbols) > 0 {
+			cfg.Symbols = resolvedSymbols
+			fmt.Printf("📊 [Backtest] Resolved %d symbols from strategy %s: %v\n", len(resolvedSymbols), cfg.StrategyID, resolvedSymbols)
+		}
 	}
 
 	runner, err := s.backtestManager.Start(context.Background(), cfg)
@@ -608,6 +619,56 @@ func (s *Server) hydrateBacktestAIConfig(cfg *backtest.BacktestConfig) error {
 		if cfg.AICfg.Model == "" {
 			return fmt.Errorf("Custom AI model requires model name configuration")
 		}
+	}
+
+	return nil
+}
+
+// resolveStrategySymbols loads a strategy/tactic config and returns its static stock list.
+// For dynamic sources (AI100, Top Winners), returns a reasonable default set.
+func (s *Server) resolveStrategySymbols(userID, strategyID string) []string {
+	if s.store == nil || strategyID == "" {
+		return nil
+	}
+
+	// Try strategies table first
+	strategy, err := s.store.Strategy().Get(userID, strategyID)
+	if err == nil && strategy != nil {
+		return extractSymbolsFromConfigJSON(strategy.Config)
+	}
+
+	// Try tactics table
+	tactic, err := s.store.Tactic().Get(userID, strategyID)
+	if err == nil && tactic != nil {
+		return extractSymbolsFromConfigJSON(tactic.Config)
+	}
+
+	return nil
+}
+
+func extractSymbolsFromConfigJSON(configJSON string) []string {
+	if configJSON == "" {
+		return nil
+	}
+
+	var config store.StrategyConfig
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return nil
+	}
+
+	src := config.CoinSource
+
+	// Static stocks
+	if len(src.StaticStocks) > 0 {
+		return src.StaticStocks
+	}
+	if len(src.StaticCoins) > 0 {
+		return src.StaticCoins
+	}
+
+	// For dynamic sources, return a popular default set for backtesting
+	if src.UseAI100 || src.UseStockPool || src.UseCoinPool {
+		return []string{"AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA", "META"}
 	}
 
 	return nil

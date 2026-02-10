@@ -17,9 +17,9 @@ const (
 )
 
 var (
-	DefaultTimeout = 120 * time.Second
+	DefaultTimeout = 300 * time.Second
 
-	MaxRetryTimes = 3
+	MaxRetryTimes = 5
 
 	retryableErrors = []string{
 		"EOF",
@@ -28,8 +28,20 @@ var (
 		"connection refused",
 		"temporary failure",
 		"no such host",
-		"stream error",   // HTTP/2 stream error
-		"INTERNAL_ERROR", // Server internal error
+		"stream error",     // HTTP/2 stream error
+		"INTERNAL_ERROR",   // Server internal error
+		"status 429",       // HTTP 429 Too Many Requests (rate limit)
+		"status 502",       // HTTP 502 Bad Gateway
+		"status 503",       // HTTP 503 Service Unavailable
+		"status 529",       // HTTP 529 Service Overloaded (Anthropic)
+		"RESOURCE_EXHAUSTED", // Google/Gemini quota exhausted
+		"overloaded",       // Anthropic overloaded error
+		"rate_limit",       // Generic rate limit error
+		"rate limit",       // Generic rate limit (space variant)
+		"quota",            // Quota exceeded
+		"capacity",         // Server at capacity
+		"server_error",     // Generic server error
+		"internal_error",   // Internal error (lowercase)
 	}
 )
 
@@ -163,10 +175,17 @@ func (client *Client) CallWithMessages(systemPrompt, userPrompt string) (string,
 			return "", err
 		}
 
-		// Wait before retry
+		// Wait before retry with exponential backoff (2s, 4s, 8s, ...)
 		if attempt < maxRetries {
-			waitTime := client.config.RetryWaitBase * time.Duration(attempt)
-			client.logger.Infof("⏳ Waiting %v before retry...", waitTime)
+			waitTime := client.config.RetryWaitBase
+			for i := 1; i < attempt; i++ {
+				waitTime *= 2
+			}
+			// Cap at 30 seconds
+			if waitTime > 30*time.Second {
+				waitTime = 30 * time.Second
+			}
+			client.logger.Infof("⏳ Waiting %v before retry (exponential backoff)...", waitTime)
 			time.Sleep(waitTime)
 		}
 	}
@@ -207,6 +226,16 @@ func (client *Client) buildMCPRequestBody(systemPrompt, userPrompt string) map[s
 	} else {
 		requestBody["max_tokens"] = client.MaxTokens
 	}
+
+	// Disable thinking/reasoning mode for Qwen3+ models via vLLM chat_template_kwargs
+	// This prevents the model from wasting tokens on <think> internal reasoning
+	modelLower := strings.ToLower(client.Model)
+	if strings.Contains(modelLower, "qwen3") || strings.Contains(modelLower, "qwen/qwen3") {
+		requestBody["chat_template_kwargs"] = map[string]interface{}{
+			"enable_thinking": false,
+		}
+	}
+
 	return requestBody
 }
 
@@ -320,6 +349,10 @@ func (client *Client) GetProvider() string {
 	return client.Provider
 }
 
+func (client *Client) GetModel() string {
+	return client.Model
+}
+
 func (client *Client) String() string {
 	return fmt.Sprintf("[Provider: %s, Model: %s]",
 		client.Provider, client.Model)
@@ -390,10 +423,17 @@ func (client *Client) CallWithRequest(req *Request) (string, error) {
 			return "", err
 		}
 
-		// Wait before retry
+		// Wait before retry with exponential backoff (2s, 4s, 8s, ...)
 		if attempt < maxRetries {
-			waitTime := client.config.RetryWaitBase * time.Duration(attempt)
-			client.logger.Infof("⏳ Waiting %v before retry...", waitTime)
+			waitTime := client.config.RetryWaitBase
+			for i := 1; i < attempt; i++ {
+				waitTime *= 2
+			}
+			// Cap at 30 seconds
+			if waitTime > 30*time.Second {
+				waitTime = 30 * time.Second
+			}
+			client.logger.Infof("⏳ Waiting %v before retry (exponential backoff)...", waitTime)
 			time.Sleep(waitTime)
 		}
 	}

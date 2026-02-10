@@ -244,8 +244,8 @@ func TestConfig_DefaultValues(t *testing.T) {
 	c := client.(*Client)
 
 	// Verify default values
-	if c.config.MaxRetries != 3 {
-		t.Errorf("default MaxRetries should be 3, got %d", c.config.MaxRetries)
+	if c.config.MaxRetries != 5 {
+		t.Errorf("default MaxRetries should be 5, got %d", c.config.MaxRetries)
 	}
 
 	if c.config.Temperature != 0.5 {

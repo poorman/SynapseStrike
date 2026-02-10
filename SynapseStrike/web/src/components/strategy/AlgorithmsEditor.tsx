@@ -4,7 +4,7 @@
  * Displays trading algorithms that can be enabled/disabled via checkboxes.
  * When an algorithm is enabled, it will be used for trading decisions.
  */
-import { Info, Zap, TrendingUp } from 'lucide-react'
+import { Info, Zap, TrendingUp, Dna } from 'lucide-react'
 import type { IndicatorConfig } from '../../types'
 
 interface AlgorithmsEditorProps {
@@ -76,6 +76,41 @@ export function AlgorithmsEditor({ config, onChange, disabled }: AlgorithmsEdito
                 'Stop trading ticker after 2 consecutive losses',
                 'Hard shutdown at 10:15 AM ET',
                 'Skip if spread > 0.5% or RVOL < 2.0'
+            ]
+        },
+        {
+            key: 'enable_genetic_algo',
+            name: 'Genetic Algorithm',
+            description: 'Multi-factor scoring with pre-evolved chromosome weights. Scores stocks on RSI, MACD, Volume, Momentum, and VWAP proximity. Uses Smart Function model profiles.',
+            icon: Dna,
+            color: '#A855F7',
+            tier: 'Tier 1',
+            details: [
+                'Entry: Composite score (5 weighted factors) exceeds chromosome threshold',
+                'Factors: RSI neutral zone, MACD trend, Volume surge, Momentum, VWAP distance',
+                'Take Profit: ATR-based with AI100 override',
+                'Stop Loss: ATR-based per chromosome profile',
+                'Position size scaled by confidence (composite score)'
+            ],
+            metrics: [
+                { label: 'RSI Score', desc: 'Best at 40-60 (neutral zone = opportunity)' },
+                { label: 'MACD Score', desc: 'Positive + rising = 100, negative + falling = 10' },
+                { label: 'Volume Score', desc: 'Ratio >= 2.0 = institutional interest' },
+                { label: 'Momentum', desc: 'Sweet spot: +1% to +5% from open' },
+                { label: 'VWAP Proximity', desc: 'Best: 0-1% above VWAP (supported)' }
+            ],
+            parameters: [],
+            thesis: `**Why This Works (Based on GA Theory):**
+• 5 independent factors reduce single-indicator noise
+• Pre-evolved weight profiles tested across market conditions
+• Model 1 (Aggressive): Catches breakouts with volume + momentum
+• Model 2 (Balanced): Even factor weighting for consistent returns
+• Model 3 (Conservative): Waits for VWAP-confirmed support entries`,
+            riskRules: [
+                'Composite score must exceed chromosome threshold',
+                'Position size scales with confidence (lower score = smaller position)',
+                'ATR-based TP/SL adapts to each stock\'s volatility',
+                'Close at EOD if configured (day-trade mode)'
             ]
         }
     ]
