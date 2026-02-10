@@ -1,59 +1,211 @@
-# 🚀 SynapseStrike - AI-Powered Trading Ecosystem
+# SynapseStrike - AI-Powered Trading Ecosystem
 
-**A complete AI trading platform combining local LLMs, advanced decision engines, and automated trading**
+**A complete AI trading platform combining local LLMs, algorithmic strategies, and automated execution across multiple brokerages.**
 
 ---
 
-## 📦 Repository Structure
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph UI [Web Dashboard - Port 3000]
+        Dashboard[Dashboard]
+        Config[Config Page]
+        Strategy[Strategy Studio]
+        Backtest[Backtest Lab]
+        Arena[Debate Arena]
+    end
+
+    subgraph Core [Trading Engine - Port 8080]
+        API[REST API]
+        TM[Trader Manager]
+        DE[Decision Engine]
+        PS[Position Sync]
+    end
+
+    subgraph AI [AI Model Providers]
+        SF[Smart Function - Zero Latency]
+        Arch[Architect AI - Local LLM]
+        Cloud[Cloud LLMs - GPT / Claude / Gemini / etc]
+    end
+
+    subgraph Algos [Trading Algorithms]
+        VWAP[VWAP Slope+Stretch]
+        GA[Genetic Algorithm]
+        Scalper[Top Movers Scalper]
+    end
+
+    subgraph Data [Market Data]
+        Alpaca[Alpaca API]
+        Widesurf[Widesurf API]
+        AI100[AI100 Stock Picks]
+    end
+
+    subgraph Brokers [Brokerages]
+        AlpacaBrk[Alpaca]
+        IBKR[Interactive Brokers]
+        Bybit[Bybit]
+        Binance[Binance]
+    end
+
+    UI --> API
+    API --> TM
+    TM --> DE
+    DE --> AI
+    DE --> Algos
+    Algos --> Data
+    TM --> PS
+    PS --> Brokers
+```
+
+## Decision Flow
+
+```mermaid
+flowchart LR
+    Cycle[Trading Cycle] --> Fetch[Fetch Market Data]
+    Fetch --> Provider{AI Provider?}
+    Provider -->|Smart Function| LocalFunc[Local Algorithm]
+    Provider -->|LLM Model| Batch[Batched AI Calls]
+
+    LocalFunc --> AlgoSwitch{Algo Type?}
+    AlgoSwitch -->|Genetic| Score["5-Factor Scoring\nRSI + MACD + Volume\n+ Momentum + VWAP"]
+    AlgoSwitch -->|VWAPer| VWAPCheck["4 Conditions\nprice>VWAP, slope>0\nstretch, momentum"]
+    AlgoSwitch -->|Scalper| ScalperLogic[Scalper Logic]
+
+    Batch --> Parse[Parse AI Response]
+    Score --> Decide{Score > Threshold?}
+    VWAPCheck --> Decide
+    Parse --> Decide
+
+    Decide -->|Buy| Execute[Execute Trade]
+    Decide -->|Wait| NextCycle[Wait for Next Cycle]
+    Execute --> Monitor[Monitor TP/SL/EOD]
+```
+
+---
+
+## Repository Structure
 
 ```
 SynapseStrike/
-├── SynapseStrike/          # Go-based trading platform
-├── LocalAI/                # Self-hosted LLM infrastructure  
+├── SynapseStrike/          # Go trading platform (core)
+│   ├── api/                # REST API handlers
+│   ├── trader/             # Auto-trader, position sync, VWAP collector
+│   ├── decision/           # Decision engine + Local Function algorithms
+│   ├── mcp/                # Multi-model AI clients (10+ providers)
+│   ├── market/             # Market data (Alpaca, Widesurf, AI100)
+│   ├── backtest/           # Backtest Lab engine
+│   ├── store/              # SQLite database layer
+│   ├── web/                # React frontend (TypeScript)
+│   └── docker/             # Dockerfiles
 ├── AIArchitect/            # Python decision pipeline backend
-├── README.md               # This file
-├── CHANGELOG.md            # Version history
-├── ENHANCEMENT_PLAN.html   # Feature roadmap & integration guide
+├── LocalAI/                # Self-hosted LLM infrastructure
 ├── install.sh              # Interactive installer
-├── LICENSE                 # Apache 2.0 License
-└── .env.example            # Environment configuration template
+└── README.md
 ```
-
-## 🎯 Three Pillars
-
-### 1. **SynapseStrike Trading Platform**
-- Go-based high-performance trading engine
-- Multi-broker support (Alpaca, Interactive Brokers, etc.)
-- Real-time market data processing
-- Advanced order management
-- **Location**: `SynapseStrike/`
-
-### 2. **LocalAI** 
-- Self-hosted LLM infrastructure
-- 8192 token context size
-- OpenAI-compatible API
-- GPU-accelerated inference
-- **Zero monthly API costs**
-- **Location**: `LocalAI/`
-- **Port**: 8050
-
-### 3. **AIArchitect**
-- 6-step decision pipeline
-- Multi-LLM consensus (Qwen2.5-32B + DeepSeek-R1-14B)
-- Semantic memory with Qdrant vector DB
-- PostgreSQL trade logging
-- FastAPI web interface
-- **Location**: `AIArchitect/`
-- **Port**: 8065
 
 ---
 
-## 🚀 Quick Start
+## Key Features
+
+### Smart Function (Local Algorithm Engine)
+- **Zero latency, zero API cost** -- pure algorithmic trading decisions
+- Auto-detects algo type (VWAPer, Genetic, Scalper) from strategy config
+- 3 model profiles per algo (different parameter aggressiveness)
+- Full Chain of Thought trace showing every condition checked
+
+### Genetic Algorithm Trading
+Multi-factor stock scoring with pre-evolved chromosome weights:
+
+| Factor | What It Measures | Peak Score |
+|--------|-----------------|------------|
+| RSI | Neutral zone (40-60) = opportunity | 100 at RSI 50 |
+| MACD | Bullish crossover + rising | 100 when positive + rising |
+| Volume | Institutional interest (2x+ avg) | 100 at 3x surge |
+| Momentum | Sweet spot +1-5% from open | 100 at +3% |
+| VWAP | Price 0-1% above VWAP | 100 right at VWAP |
+
+Three pre-evolved chromosome profiles:
+- **Model 1 (Aggressive)**: Heavy volume + momentum, low threshold (55)
+- **Model 2 (Balanced)**: Even weights, medium threshold (65)
+- **Model 3 (Conservative)**: Heavy VWAP, high threshold (75)
+
+### VWAP Slope + Stretch Algorithm
+Adaptive VWAP entry at configurable time with 4 conditions:
+- Price > VWAP (trading above average)
+- VWAP slope positive (buyers in control)
+- Stretch < 0.5x volatility (not overextended)
+- Momentum > 0.25x volatility (solid move)
+- TP from AI100 optimization API, SL at day's open
+
+### Batched AI Calls
+- Splits large stock lists into batches of 2 to fit within LLM context limits
+- Sequential processing with per-batch error handling
+- Failed batches skip gracefully, remaining continue
+- Supports Qwen3, GPT, Claude, Gemini, Grok, DeepSeek, and more
+
+### Bulletproof Error Handling
+- Universal fallback catches ALL AI errors (not just specific ones)
+- Exponential backoff retry (2s, 4s, 8s, 16s...)
+- 20+ retryable error patterns (429, 503, rate limits, quota, etc.)
+- Algorithmic fallback when AI is unavailable
+- Full error context preserved in Chain of Thought
+
+### Trader Position Isolation
+- Ownership guard prevents one trader from closing another's positions
+- Database-verified ownership check before every close operation
+- Safe for multiple traders sharing the same brokerage account
+
+### Configurable End-of-Day Close
+- Per-strategy toggle: close positions before market close or hold overnight
+- Configurable close time (default 3:55 PM ET)
+- VWAPer/Scalper = close at EOD, Swing = hold overnight
+
+### Backtest Lab
+- Strategy-based backtesting (no manual symbol input needed)
+- Widesurf data source (Polygon-compatible API)
+- Simulated time picker (backtest at any time of day)
+- Model dropdown matches dashboard names
+
+---
+
+## Supported AI Models
+
+| Provider | Default Model | Type |
+|----------|--------------|------|
+| Smart Function | model_1 / model_2 / model_3 | Local algorithm (zero cost) |
+| Architect AI | Qwen3-32B-AWQ | Local LLM (self-hosted) |
+| DeepSeek | deepseek-chat | Cloud API |
+| OpenAI | gpt-5.2 | Cloud API |
+| Claude | claude-opus-4-5 | Cloud API |
+| Gemini | gemini-3-pro-preview | Cloud API |
+| Grok | grok-3-latest | Cloud API |
+| Qwen | qwen3-max | Cloud API |
+| Kimi | moonshot-v1-auto | Cloud API |
+| Local AI | custom model | Self-hosted OpenAI-compatible |
+
+---
+
+## Service Endpoints
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Trading Platform | 3000 | Web dashboard |
+| Backend API | 8080 | REST API |
+| LocalAI | 8050 | Self-hosted LLM |
+| AIArchitect | 8065 | Decision pipeline |
+| Main LLM (vLLM) | 8060 | Qwen3-32B inference |
+| Embeddings | 8062 | BGE-large embeddings |
+| Qdrant | 8063 | Vector database |
+| PostgreSQL | 8064 | Trade logs |
+
+---
+
+## Quick Start
 
 ### Prerequisites
 - **Docker** with Docker Compose
 - **NVIDIA GPU** with 24GB+ VRAM (recommended) or CPU
-- **50GB** disk space
 - **Linux/macOS** (Windows via WSL2)
 
 ### One-Command Install
@@ -62,196 +214,60 @@ SynapseStrike/
 ./install.sh
 ```
 
-The installer will guide you through:
-1. Checking prerequisites
-2. Selecting components to install
-3. Configuring services
-4. Starting containers
+### Manual Start
 
-### Manual Installation
-
-#### 1. LocalAI (Self-Hosted LLMs)
 ```bash
-cd LocalAI
-docker compose up -d
-```
-
-#### 2. AIArchitect (Decision Engine)
-```bash
-cd AIArchitect
-cp .env.example .env  # Edit with your settings
-docker compose up -d
-```
-
-#### 3. Trading Platform
-```bash
+# Start trading platform
 cd SynapseStrike
-./install.sh
+cp .env.example .env  # Edit with your API keys
+./start.sh start --build
+
+# Access dashboard
+open http://localhost:3000
 ```
-
----
-
-## 🌐 Service Endpoints
-
-| Service | Port | URL | Description |
-|---------|------|-----|-------------|
-| LocalAI | 8050 | http://localhost:8050 | LLM API & Chat UI |
-| AIArchitect Backend | 8065 | http://localhost:8065 | Decision Pipeline Web UI |
-| Qdrant Vector DB | 8063 | http://localhost:8063/dashboard | Semantic Memory |
-| PostgreSQL | 8064 | localhost:8064 | Trade Logs Database |
-| Main LLM | 8060 | http://localhost:8060 | Qwen2.5-32B vLLM |
-| Critic LLM | 8061 | http://localhost:8061 | DeepSeek-R1-14B vLLM |
-| Embeddings | 8062 | http://localhost:8062 | BGE-large embeddings |
-
----
-
-## 💡 Key Features
-
-### 🤖 AI-Powered Decision Making
-- **Multi-LLM Consensus**: Primary + Critic models validate each other
-- **Semantic Memory**: Learn from historical trades via vector search
-- **Rule-Based Constraints**: Never break risk management rules
-- **Cost Effective**: $200-500/month savings vs cloud APIs
-
-### 📊 Advanced Trading
-- **Multi-Timeframe Analysis**: Trade when all timeframes align
-- **Adaptive Position Sizing**: Kelly Criterion-based sizing
-- **Smart Entry/Exit**: Limit orders at VWAP ± ATR
-- **Real-Time Metrics**: Sharpe ratio, max drawdown, P&L tracking
-
-### 🔒 Privacy & Security
-- **100% Local Execution**: Trading decisions never leave your server
-- **No API Rate Limits**: Unlimited requests to your own LLMs
-- **Complete Audit Trail**: Every decision logged in PostgreSQL
-- **Encrypted Communication**: TLS between services
-
----
-
-## 📚 Documentation
-
-### Getting Started
-1. **Read This**: [ENHANCEMENT_PLAN.html](./ENHANCEMENT_PLAN.html) - Feature roadmap and integration guide
-2. **LocalAI Setup**: [LocalAI/README.md](./LocalAI/README.md)
-3. **AIArchitect Guide**: [AIArchitect/README.md](./AIArchitect/README.md)
-4. **Trading Platform**: [SynapseStrike/README.md](./SynapseStrike/README.md)
 
 ### Configuration
-- **Environment Variables**: Copy `.env.example` to `.env` in each component directory
-- **Trading Rules**: Add custom rules to `AIArchitect/rules/`
-- **Model Configuration**: Edit `LocalAI/models/*.yaml`
+
+1. **Add Brokerage**: Config > Brokerages > Add Alpaca (paper or live)
+2. **Add AI Model**: Config > AI Models > Choose provider + enter API key
+3. **Create Strategy**: Strategy Studio > New > Configure stock source + algorithms
+4. **Create Trader**: Config > Create Trader > Select model + strategy + brokerage
+5. **Start Trading**: Click "Start" on your trader
 
 ---
 
-## 🔧 Hardware Requirements
+## Hardware Requirements
 
-### Minimum (CPU-Only)
-- **CPU**: 8+ cores
-- **RAM**: 32GB
-- **Storage**: 50GB SSD
-- **Note**: Much slower inference
-
-### Recommended (GPU)
-- **GPU**: NVIDIA RTX 3090 (24GB VRAM)
-- **CPU**: 16+ cores
-- **RAM**: 64GB
-- **Storage**: 100GB NVMe SSD
-
-### Optimal (Production)
-- **GPU**: NVIDIA RTX 4090 or A6000 (40GB+ VRAM)
-- **CPU**: 32+ cores
-- **RAM**: 128GB
-- **Storage**: 500GB NVMe SSD
-- **Network**: 1Gbps for real-time data
+| Tier | GPU | RAM | Use Case |
+|------|-----|-----|----------|
+| Minimum | None (CPU) | 32GB | Smart Function only |
+| Recommended | RTX 3090 (24GB) | 64GB | Local LLM + Smart Function |
+| Optimal | 2x RTX 3090 | 128GB | Full stack with Qwen3-32B |
 
 ---
 
-## 💰 Cost Analysis
+## Cost Comparison
 
-### Cloud AI Costs (Monthly)
-- OpenAI GPT-4: ~$300-500
-- Claude 3 Opus: ~$200-400
-- Embeddings API: ~$50-100
-- **Total**: **$550-1000/month**
-
-### SynapseStrike (One-Time + Hosting)
-- Hardware (RTX 3090): $1200 one-time
-- Electricity: ~$30/month
-- **ROI**: **2-3 months**
+| Approach | Monthly Cost | Latency |
+|----------|-------------|---------|
+| Cloud LLMs (GPT/Claude) | $300-1000/mo | 2-30s per decision |
+| Self-hosted LLM (Qwen3) | $30/mo (electricity) | 5-30s per decision |
+| **Smart Function** | **$0** | **<1ms per decision** |
 
 ---
 
-## 🛣️ Roadmap
-
-See [ENHANCEMENT_PLAN.html](./ENHANCEMENT_PLAN.html) for the complete feature roadmap, including:
-
-**Tier 1** (High Priority)
-- Multi-timeframe analysis engine
-- Adaptive position sizing (Kelly Criterion)
-- Smart limit order entry
-- ATR-based trailing stops
-- News/earnings event filter
-
-**Tier 2** (Competitive Edge)
-- Paper trading simulator
-- Strategy backtesting
-- Multi-strategy portfolio
-- Real-time performance dashboard
-
-**Tier 3** (Cutting Edge)
-- Order flow analysis
-- Social sentiment integration
-- Options flow tracking
-- Advanced ML pattern recognition
-
----
-
-## 🤝 Contributing
+## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
----
-
-## 📝 License
+## License
 
 Apache 2.0 - See [LICENSE](./LICENSE)
 
----
-
-## ⚠️ Disclaimer
+## Disclaimer
 
 **Trading involves substantial risk of loss. This software is for educational and research purposes. Past performance does not guarantee future results. Use at your own risk.**
 
 ---
 
-## 🆘 Support
-
-- **Issues**: [GitHub Issues](https://github.com/poorman/SynapseStrike/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/poorman/SynapseStrike/discussions)
-- **Enhancement Plan**: [ENHANCEMENT_PLAN.html](./ENHANCEMENT_PLAN.html)
-
----
-
-## 🎯 Quick Commands
-
-```bash
-# Start all services
-./install.sh
-
-# Check status
-docker ps
-
-# View logs
-docker compose logs -f
-
-# Stop all services
-docker compose down
-
-# Clean restart
-docker compose down -v && docker compose up -d
-```
-
----
-
-**Built with ❤️ for traders who value privacy, control, and cost efficiency**
-
-🚀 **Start Trading Smarter, Not Harder**
+**Built for traders who value privacy, control, and cost efficiency.**
