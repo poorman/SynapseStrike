@@ -34,7 +34,7 @@ interface ComparisonChartProps {
 
 export function ComparisonChart({ traders }: ComparisonChartProps) {
   const { language } = useLanguage()
-  const [selectedPeriod, setSelectedPeriod] = useState('7d') // Default to 7 days
+  const [selectedPeriod, setSelectedPeriod] = useState('1d') // Default to 1 day
 
   // Get hours for selected period
   const selectedHours = TIME_PERIODS.find(p => p.key === selectedPeriod)?.hours || 0
@@ -117,7 +117,7 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
           let time: string
           if (selectedHours <= 24) {
             // 1 day: show HH:mm
-            time = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+            time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
           } else if (selectedHours <= 72) {
             // 3 days: show MM/DD HH:mm
             time = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
@@ -148,7 +148,14 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
       .sort(([tsA], [tsB]) => new Date(tsA).getTime() - new Date(tsB).getTime())
 
     // Track last known values for each trader to fill gaps
+    // Initialize all traders with 0% P&L so new traders show as flat lines from the start
     const lastKnown: Map<string, { pnl_pct: number; equity: number }> = new Map()
+    traders.forEach((trader) => {
+      lastKnown.set(trader.trader_id, {
+        pnl_pct: 0,
+        equity: trader.total_equity || 100000,
+      })
+    })
 
     const combined = sortedEntries.map(([ts, data], index) => {
       const entry: any = {
@@ -186,9 +193,12 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
   // Get trader color based on their current P&L
   const traderColor = (traderId: string) => getTraderColor(traders, traderId)
 
-  // Get line color based on P&L - green for profit, red for loss
-  const getLineColor = (currentPnl: number) => {
-    return currentPnl >= 0 ? 'rgb(0, 200, 5)' : 'rgb(255, 80, 0)'
+  // Get fixed color per trader (matches leaderboard)
+  const getLineColor = (_currentPnl: number, traderId?: string) => {
+    if (traderId) {
+      return getTraderColor(traders, traderId)
+    }
+    return 'rgba(255, 255, 255, 0.7)'
   }
 
   // Calculate trader stats early so we can use them for line colors
@@ -273,15 +283,15 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
     if (active && payload && payload.length) {
       const data = payload[0].payload
       const date = new Date(data.timestamp)
-      const dateStr = date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
       return (
         <div
-          className="rounded-xl p-4 shadow-2xl backdrop-blur-sm"
+          className="rounded-lg p-3 shadow-2xl backdrop-blur-sm"
           style={{
-            background: 'rgba(30, 35, 41, 0.95)',
-            border: '1px solid var(--primary-bg, 0.2)',
-            minWidth: '200px'
+            background: 'rgba(17, 20, 24, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            minWidth: '180px'
           }}
         >
           <div className="flex items-center gap-2 mb-3 pb-2" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
@@ -399,19 +409,20 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
       {/* Chart */}
       <div className="relative rounded-xl overflow-hidden"
         style={{ background: 'linear-gradient(180deg, rgba(11, 14, 17, 0.8) 0%, rgba(11, 14, 17, 1) 100%)' }}>
-        {/* Watermark */}
+        {/* Watermark - subtle */}
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          fontSize: '80px',
-          fontWeight: 'bold',
-          color: 'rgba(0, 200, 5, 0.3)',
+          fontSize: '32px',
+          fontWeight: '600',
+          color: 'rgba(255, 255, 255, 0.03)',
           zIndex: 1,
           pointerEvents: 'none',
-          fontFamily: 'monospace',
-          letterSpacing: '0.1em',
+          fontFamily: 'system-ui, sans-serif',
+          letterSpacing: '0.2em',
+          textTransform: 'uppercase',
         }}>
           SynapseStrike
         </div>
@@ -469,16 +480,16 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
 
             <Tooltip content={<CustomTooltip />} />
 
-            {/* Zero reference line */}
+            {/* Zero reference line - subtle so trader lines at 0% are visible */}
             <ReferenceLine
               y={0}
-              stroke="#DADCE0"
-              strokeDasharray="8 4"
-              strokeWidth={1}
+              stroke="rgba(255, 255, 255, 0.08)"
+              strokeDasharray="4 4"
+              strokeWidth={0.5}
             />
 
-            {/* Area fills for top 2 traders */}
-            {traders.slice(0, 2).map((trader) => (
+            {/* Area fills for all traders */}
+            {traders.map((trader) => (
               <Area
                 key={`area-${trader.trader_id}`}
                 type="monotone"
@@ -492,15 +503,15 @@ export function ComparisonChart({ traders }: ComparisonChartProps) {
             {/* Lines for all traders */}
             {traders.map((trader, idx) => {
               const currentPnl = getTraderCurrentPnl(trader.trader_id)
-              const lineColor = getLineColor(currentPnl)
+              const lineColor = getLineColor(currentPnl, trader.trader_id)
               return (
                 <Line
                   key={trader.trader_id}
                   type="monotone"
                   dataKey={`${trader.trader_id}_pnl_pct`}
                   stroke={lineColor}
-                  strokeWidth={idx === 0 ? 3 : 2}
-                  dot={false}
+                  strokeWidth={idx === 0 ? 2.5 : 1.5}
+                  dot={{ r: 1.5, fill: lineColor, strokeWidth: 0 }}
                   activeDot={{
                     r: 6,
                     fill: lineColor,

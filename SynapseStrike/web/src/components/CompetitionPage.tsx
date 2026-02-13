@@ -345,7 +345,7 @@ export function CompetitionPage() {
                       {/* Positions */}
                       <div className="text-right">
                         <div className="text-xs" style={{ color: '#9CA3AF' }}>
-                          {t('pos', language)}
+                          Pos
                         </div>
                         <div
                           className="text-xs md:text-sm font-bold mono"
@@ -354,7 +354,7 @@ export function CompetitionPage() {
                           {trader.position_count}
                         </div>
                         <div className="text-xs" style={{ color: '#9CA3AF' }}>
-                          {trader.margin_used_pct.toFixed(1)}%
+                          {trader.margin_used_pct > 0 ? `${trader.margin_used_pct.toFixed(1)}%` : 'Open'}
                         </div>
                       </div>
 

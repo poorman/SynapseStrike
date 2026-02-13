@@ -2,12 +2,12 @@ version: "3.9"
 
 services:
   localai:
-    image: localai/localai:latest-aio-gpu-nvidia-cuda-12
+    image: localai/localai:latest-aio-cpu
     container_name: localai
     restart: unless-stopped
-    runtime: nvidia
+    # runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      # - NVIDIA_VISIBLE_DEVICES=all
       - CONTEXT_SIZE=8192
       - THREADS=16
     ports:
@@ -15,13 +15,13 @@ services:
     volumes:
       - ./models:/models
       - localai_data:/build/models
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/readyz"]
       interval: 30s

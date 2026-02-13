@@ -123,6 +123,7 @@ type Context struct {
 	LargeCapLeverage int                                `json:"-"`
 	SmallCapLeverage int                                `json:"-"`
 	Timeframes       []string                           `json:"-"`
+	PositionTPSLMap  map[string][2]float64              `json:"-"` // Cached TP/SL prices per position (symbol_side -> [TP, SL])
 }
 
 // Decision AI trading decision
@@ -2372,7 +2373,10 @@ func calculateVWAPSlopeStretchWithAnalysis(ctx *Context, symbol string, config *
 				orLow = k.Low
 			}
 		}
-		if t.Hour() == entryHour && t.Minute() == entryMin {
+		// Check if we have kline data at or past entry time (not exact minute match)
+		klineMinutes := t.Hour()*60 + t.Minute()
+		entryMinutes := entryHour*60 + entryMin
+		if klineMinutes >= entryMinutes && !foundEntry {
 			foundEntry = true
 		}
 	}
@@ -2520,6 +2524,57 @@ func HandlePositionSafekeeping(ctx *Context, engine *StrategyEngine) []Decision 
 	var decisions []Decision
 
 	for _, pos := range ctx.Positions {
+		// Priority 1: Check ATR-based price TP/SL (from Genetic/VWAPer algo decisions)
+		posKey := pos.Symbol + "_" + pos.Side
+		if ctx.PositionTPSLMap != nil {
+			if tpsl, ok := ctx.PositionTPSLMap[posKey]; ok {
+				tpPrice := tpsl[0]
+				slPrice := tpsl[1]
+				currentPrice := pos.MarkPrice
+
+				// Check Take Profit (price-based)
+				if tpPrice > 0 && currentPrice > 0 {
+					if pos.Side == "long" && currentPrice >= tpPrice {
+						decisions = append(decisions, Decision{
+							Symbol:    pos.Symbol,
+							Action:    "close_" + pos.Side,
+							Reasoning: fmt.Sprintf("ATR-based TP hit: price $%.2f >= TP $%.2f (entry $%.2f, +%.2f%%)", currentPrice, tpPrice, pos.EntryPrice, pos.UnrealizedPnLPct),
+						})
+						continue
+					}
+					if pos.Side == "short" && currentPrice <= tpPrice {
+						decisions = append(decisions, Decision{
+							Symbol:    pos.Symbol,
+							Action:    "close_" + pos.Side,
+							Reasoning: fmt.Sprintf("ATR-based TP hit: price $%.2f <= TP $%.2f (entry $%.2f, +%.2f%%)", currentPrice, tpPrice, pos.EntryPrice, pos.UnrealizedPnLPct),
+						})
+						continue
+					}
+				}
+
+				// Check Stop Loss (price-based)
+				if slPrice > 0 && currentPrice > 0 {
+					if pos.Side == "long" && currentPrice <= slPrice {
+						decisions = append(decisions, Decision{
+							Symbol:    pos.Symbol,
+							Action:    "close_" + pos.Side,
+							Reasoning: fmt.Sprintf("ATR-based SL hit: price $%.2f <= SL $%.2f (entry $%.2f, %.2f%%)", currentPrice, slPrice, pos.EntryPrice, pos.UnrealizedPnLPct),
+						})
+						continue
+					}
+					if pos.Side == "short" && currentPrice >= slPrice {
+						decisions = append(decisions, Decision{
+							Symbol:    pos.Symbol,
+							Action:    "close_" + pos.Side,
+							Reasoning: fmt.Sprintf("ATR-based SL hit: price $%.2f >= SL $%.2f (entry $%.2f, %.2f%%)", currentPrice, slPrice, pos.EntryPrice, pos.UnrealizedPnLPct),
+						})
+						continue
+					}
+				}
+			}
+		}
+
+		// Priority 2: Percentage-based TP from AI100 sell trigger
 		ai100Client := market.GetAI100Client()
 		tpPct := ai100Client.GetSellTrigger(pos.Symbol)
 

@@ -128,6 +128,10 @@ type AutoTrader struct {
 	vwapCollectors   map[string]*VWAPCollector // Per-symbol VWAP collectors
 	vwapPreEntryMode bool                      // True if in pre-entry collection phase
 	vwapCollectorsMu sync.RWMutex              // Mutex for vwapCollectors map
+
+	// ATR-based TP/SL price cache (from Genetic/VWAPer algo decisions)
+	positionTPSL      map[string][2]float64 // symbol_side -> [TakeProfit, StopLoss] prices
+	positionTPSLMutex sync.RWMutex          // Mutex for positionTPSL map
 }
 
 // NewAutoTrader creates an automatic trader
@@ -359,6 +363,8 @@ func NewAutoTrader(config AutoTraderConfig, st *store.Store, userID string) (*Au
 		peakPnLCacheMutex:     sync.RWMutex{},
 		lastBalanceSyncTime:   time.Now(),
 		userID:                userID,
+		positionTPSL:          make(map[string][2]float64),
+		positionTPSLMutex:     sync.RWMutex{},
 	}, nil
 }
 
@@ -797,7 +803,7 @@ func (at *AutoTrader) runCycle() error {
 			record.ExecutionLog = append(record.ExecutionLog, fmt.Sprintf("❌ %s %s failed: %v", d.Symbol, d.Action, err))
 		} else {
 			actionRecord.Success = true
-			record.ExecutionLog = append(record.ExecutionLog, fmt.Sprintf("✓ %s %s succeeded", d.Symbol, d.Action))
+			record.ExecutionLog = append(record.ExecutionLog, fmt.Sprintf("✓ %s %s succeeded — %s", d.Symbol, d.Action, d.Reasoning))
 			// Brief delay after successful execution
 			time.Sleep(1 * time.Second)
 		}
@@ -995,6 +1001,16 @@ func (at *AutoTrader) buildTradingContext() (*decision.Context, error) {
 		Positions:       positionInfos,
 		CandidateStocks: candidateStocks,
 	}
+
+	// Populate TP/SL cache into context for safekeeping enforcement
+	at.positionTPSLMutex.RLock()
+	if len(at.positionTPSL) > 0 {
+		ctx.PositionTPSLMap = make(map[string][2]float64, len(at.positionTPSL))
+		for k, v := range at.positionTPSL {
+			ctx.PositionTPSLMap[k] = v
+		}
+	}
+	at.positionTPSLMutex.RUnlock()
 
 	// 7. Add recent closed trades (if store is available)
 	if at.store != nil {
@@ -1361,6 +1377,12 @@ func (at *AutoTrader) executeOpenLongWithRecord(decision *decision.Decision, act
 		logger.Infof("  ⚠ Failed to set take profit: %v", err)
 	}
 
+	// Cache TP/SL prices for safekeeping enforcement (works even if exchange doesn't support server-side TP/SL)
+	if decision.TakeProfit > 0 || decision.StopLoss > 0 {
+		at.SetPositionTPSL(decision.Symbol, "long", decision.TakeProfit, decision.StopLoss)
+		logger.Infof("  📌 Cached ATR-based TP/SL for %s long: TP=$%.2f, SL=$%.2f", decision.Symbol, decision.TakeProfit, decision.StopLoss)
+	}
+
 	return nil
 }
 
@@ -1476,6 +1498,12 @@ func (at *AutoTrader) executeOpenShortWithRecord(decision *decision.Decision, ac
 	}
 	if err := at.trader.SetTakeProfit(decision.Symbol, "SHORT", quantity, decision.TakeProfit); err != nil {
 		logger.Infof("  ⚠ Failed to set take profit: %v", err)
+	}
+
+	// Cache TP/SL prices for safekeeping enforcement (works even if exchange doesn't support server-side TP/SL)
+	if decision.TakeProfit > 0 || decision.StopLoss > 0 {
+		at.SetPositionTPSL(decision.Symbol, "short", decision.TakeProfit, decision.StopLoss)
+		logger.Infof("  📌 Cached ATR-based TP/SL for %s short: TP=$%.2f, SL=$%.2f", decision.Symbol, decision.TakeProfit, decision.StopLoss)
 	}
 
 	return nil
@@ -2099,6 +2127,9 @@ func (at *AutoTrader) closePositionWithReason(symbol, side, reason, reasoning st
 	// Create and save a decision record so it shows in the UI
 	at.saveVWAPSellDecision(symbol, side, action, reason, reasoning, currentPrice, entryPrice, quantity)
 
+	// Clear cached TP/SL prices for this position
+	at.ClearPositionTPSL(symbol, side)
+
 	return nil
 }
 
@@ -2123,7 +2154,7 @@ func (at *AutoTrader) saveVWAPSellDecision(symbol, side, action, reason, reasoni
 		TraderID:     at.id,
 		Timestamp:    time.Now().UTC(),
 		Success:      true,
-		ExecutionLog: []string{fmt.Sprintf("✓ %s %s succeeded (%s)", symbol, action, reason)},
+		ExecutionLog: []string{fmt.Sprintf("✓ %s %s succeeded (%s) — %s", symbol, action, reason, reasoning)},
 		Decisions: []store.DecisionAction{
 			{
 				Action:    action,
@@ -2185,6 +2216,36 @@ func (at *AutoTrader) ClearPeakPnLCache(symbol, side string) {
 
 	posKey := symbol + "_" + side
 	delete(at.peakPnLCache, posKey)
+}
+
+// SetPositionTPSL caches ATR-based TP/SL prices for a position
+func (at *AutoTrader) SetPositionTPSL(symbol, side string, takeProfit, stopLoss float64) {
+	at.positionTPSLMutex.Lock()
+	defer at.positionTPSLMutex.Unlock()
+
+	posKey := symbol + "_" + side
+	at.positionTPSL[posKey] = [2]float64{takeProfit, stopLoss}
+}
+
+// GetPositionTPSL returns cached TP/SL prices for a position (tp, sl, exists)
+func (at *AutoTrader) GetPositionTPSL(symbol, side string) (float64, float64, bool) {
+	at.positionTPSLMutex.RLock()
+	defer at.positionTPSLMutex.RUnlock()
+
+	posKey := symbol + "_" + side
+	if tpsl, ok := at.positionTPSL[posKey]; ok {
+		return tpsl[0], tpsl[1], true
+	}
+	return 0, 0, false
+}
+
+// ClearPositionTPSL clears cached TP/SL prices for a closed position
+func (at *AutoTrader) ClearPositionTPSL(symbol, side string) {
+	at.positionTPSLMutex.Lock()
+	defer at.positionTPSLMutex.Unlock()
+
+	posKey := symbol + "_" + side
+	delete(at.positionTPSL, posKey)
 }
 
 // recordAndConfirmOrder polls order status for actual fill data and records position
@@ -2403,11 +2464,18 @@ func (at *AutoTrader) enforceMinPositionSize(positionSizeUSD float64) error {
 
 // enforceMaxPositions checks maximum positions count (CODE ENFORCED)
 func (at *AutoTrader) enforceMaxPositions(currentPositionCount int) error {
-	if at.config.StrategyConfig == nil {
-		return nil
+	// Prefer strategy engine's live config (updated via Strategy Studio)
+	maxPositions := 0
+	if at.strategyEngine != nil {
+		cfg := at.strategyEngine.GetConfig()
+		if cfg != nil {
+			maxPositions = cfg.RiskControl.MaxPositions
+		}
 	}
-
-	maxPositions := at.config.StrategyConfig.RiskControl.MaxPositions
+	// Fallback to trader's static config
+	if maxPositions <= 0 && at.config.StrategyConfig != nil {
+		maxPositions = at.config.StrategyConfig.RiskControl.MaxPositions
+	}
 	if maxPositions <= 0 {
 		maxPositions = 3 // Default: 3 positions
 	}
@@ -2497,7 +2565,9 @@ func (at *AutoTrader) isVWAPPreEntryTime() bool {
 	return currentMinutes >= marketOpenMinutes && currentMinutes < entryMinutes
 }
 
-// isVWAPEntryTime checks if it's exactly the entry time (e.g., 10:00 AM) - within a 1-minute window
+// isVWAPEntryTime checks if it's within the entry window.
+// The window spans from the configured entry time to entry time + 5 minutes,
+// ensuring the scan interval (typically 1-3 min) never skips the entry.
 func (at *AutoTrader) isVWAPEntryTime() bool {
 	if at.strategyEngine == nil {
 		return false
@@ -2513,6 +2583,7 @@ func (at *AutoTrader) isVWAPEntryTime() bool {
 		return false
 	}
 	now := time.Now().In(loc)
+	currentMinutes := now.Hour()*60 + now.Minute()
 
 	// Parse entry time
 	entryTime := config.Indicators.VWAPEntryTime
@@ -2522,8 +2593,11 @@ func (at *AutoTrader) isVWAPEntryTime() bool {
 
 	var entryHour, entryMin int
 	fmt.Sscanf(entryTime, "%d:%d", &entryHour, &entryMin)
+	entryMinutes := entryHour*60 + entryMin
 
-	return now.Hour() == entryHour && now.Minute() == entryMin
+	// Entry window: entry time to entry time + 5 minutes
+	// This ensures the scan interval (1-3 min) never skips the entry
+	return currentMinutes >= entryMinutes && currentMinutes < entryMinutes+5
 }
 
 // isVWAPPostEntryTime checks if we're past the entry time (no new buys allowed, only manage positions)
@@ -2554,8 +2628,8 @@ func (at *AutoTrader) isVWAPPostEntryTime() bool {
 	entryMinutes := entryHour*60 + entryMin
 	currentMinutes := now.Hour()*60 + now.Minute()
 
-	// If current time is after entry time, we're in post-entry mode
-	return currentMinutes > entryMinutes
+	// Post-entry starts after the 5-minute entry window closes
+	return currentMinutes >= entryMinutes+5
 }
 
 // runVWAPPositionManagement manages existing positions during post-entry phase

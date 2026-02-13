@@ -32,7 +32,7 @@ func GetLocalFunctionDecision(ctx *Context, engine *StrategyEngine, modelName st
 	logger.Infof("🔧 [Local Function] Algo: %s, Model: %s, Candidates: %d", algoType, modelName, len(ctx.CandidateStocks))
 
 	var decisions []Decision
-	var cotBuilder strings.Builder
+	cotBuilder := &strings.Builder{}
 
 	cotBuilder.WriteString("## Local Function Decision Engine\n\n")
 	cotBuilder.WriteString(fmt.Sprintf("**Algo:** %s | **Model:** %s | **Time:** %s\n\n", algoType, modelName, time.Now().Format("2006-01-02 15:04:05 MST")))
@@ -41,9 +41,9 @@ func GetLocalFunctionDecision(ctx *Context, engine *StrategyEngine, modelName st
 
 	switch algoType {
 	case "genetic":
-		decisions, cotBuilder = localFuncGenetic(ctx, engine, modelName, cotBuilder)
+		decisions = localFuncGenetic(ctx, engine, modelName, cotBuilder)
 	case "vwaper":
-		decisions, cotBuilder = localFuncVWAPer(ctx, engine, modelName, cotBuilder)
+		decisions = localFuncVWAPer(ctx, engine, modelName, cotBuilder)
 	case "scalper":
 		cotBuilder.WriteString("### Scalper Algorithm\n\n")
 		cotBuilder.WriteString(fmt.Sprintf("**%s** — Not yet implemented for Scalper.\n\n", modelName))
@@ -98,7 +98,7 @@ func GetLocalFunctionDecision(ctx *Context, engine *StrategyEngine, modelName st
 // VWAPer Models
 // ============================================================================
 
-func localFuncVWAPer(ctx *Context, engine *StrategyEngine, modelName string, cotBuilder strings.Builder) ([]Decision, strings.Builder) {
+func localFuncVWAPer(ctx *Context, engine *StrategyEngine, modelName string, cotBuilder *strings.Builder) []Decision {
 	cotBuilder.WriteString("### VWAPer Algorithm\n\n")
 
 	switch modelName {
@@ -106,18 +106,19 @@ func localFuncVWAPer(ctx *Context, engine *StrategyEngine, modelName string, cot
 		cotBuilder.WriteString("**Model 1** — Adaptive VWAP Entry\n\n")
 		return localFuncVWAPModel1(ctx, engine, cotBuilder)
 	case "model_2":
+
 		cotBuilder.WriteString("**Model 2** — Not yet implemented for VWAPer.\n\n")
-		return []Decision{{Symbol: "ALL", Action: "wait", Reasoning: "Local Function: VWAPer model_2 not yet implemented"}}, cotBuilder
+		return []Decision{{Symbol: "ALL", Action: "wait", Reasoning: "Local Function: VWAPer model_2 not yet implemented"}}
 	case "model_3":
 		cotBuilder.WriteString("**Model 3** — Not yet implemented for VWAPer.\n\n")
-		return []Decision{{Symbol: "ALL", Action: "wait", Reasoning: "Local Function: VWAPer model_3 not yet implemented"}}, cotBuilder
+		return []Decision{{Symbol: "ALL", Action: "wait", Reasoning: "Local Function: VWAPer model_3 not yet implemented"}}
 	default:
 		cotBuilder.WriteString(fmt.Sprintf("Unknown model '%s', defaulting to model_1.\n\n", modelName))
 		return localFuncVWAPModel1(ctx, engine, cotBuilder)
 	}
 }
 
-func localFuncVWAPModel1(ctx *Context, engine *StrategyEngine, cotBuilder strings.Builder) ([]Decision, strings.Builder) {
+func localFuncVWAPModel1(ctx *Context, engine *StrategyEngine, cotBuilder *strings.Builder) []Decision {
 	config := engine.GetConfig()
 	var decisions []Decision
 
@@ -142,7 +143,7 @@ func localFuncVWAPModel1(ctx *Context, engine *StrategyEngine, cotBuilder string
 		cotBuilder.WriteString("\n")
 	}
 
-	return decisions, cotBuilder
+	return decisions
 }
 
 // ============================================================================
@@ -192,7 +193,7 @@ var geneticChromosomes = map[string]geneticChromosome{
 	},
 }
 
-func localFuncGenetic(ctx *Context, engine *StrategyEngine, modelName string, cotBuilder strings.Builder) ([]Decision, strings.Builder) {
+func localFuncGenetic(ctx *Context, engine *StrategyEngine, modelName string, cotBuilder *strings.Builder) []Decision {
 	cotBuilder.WriteString("### Genetic Algorithm\n\n")
 
 	// Load chromosome for selected model
@@ -447,7 +448,7 @@ func localFuncGenetic(ctx *Context, engine *StrategyEngine, modelName string, co
 		cotBuilder.WriteString("\n")
 	}
 
-	return decisions, cotBuilder
+	return decisions
 }
 
 // ============================================================================

@@ -17,34 +17,42 @@ const ACTION_CONFIG: Record<string, { color: string; bg: string; icon: string; l
   wait: { color: '#9CA3AF', bg: 'rgba(132, 142, 156, 0.15)', icon: '⏳', label: 'WAIT' },
 }
 
-// Single Action Card Component - Compact chip style
+// Single Action Card Component - Shows action + reasoning
 function ActionCard({ action }: { action: DecisionAction; language: Language }) {
   const config = ACTION_CONFIG[action.action] || ACTION_CONFIG.wait
 
   return (
     <div
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg"
+      className="flex flex-col gap-1.5 px-3 py-2 rounded-lg w-full"
       style={{
         background: 'linear-gradient(135deg, rgba(22, 27, 34, 0.95) 0%, rgba(33, 38, 45, 0.92) 100%)',
         border: `1px solid ${config.color}33`,
       }}
     >
-      {/* Symbol */}
-      <span className="text-sm">⏳</span>
-      <span className="font-semibold text-sm" style={{ color: '#F9FAFB' }}>
-        {action.symbol.replace('USDT', '')}
-      </span>
-      <span
-        className="px-2 py-0.5 rounded text-xs font-bold uppercase"
-        style={{ background: config.bg, color: config.color, border: `1px solid ${config.color}55` }}
-      >
-        {config.label}
-      </span>
-      {/* Success indicator dot */}
-      <div
-        className="w-2 h-2 rounded-full"
-        style={{ background: action.success ? 'var(--primary)' : '#F6465D' }}
-      />
+      <div className="inline-flex items-center gap-2">
+        {/* Symbol */}
+        <span className="text-sm">⏳</span>
+        <span className="font-semibold text-sm" style={{ color: '#F9FAFB' }}>
+          {action.symbol.replace('USDT', '')}
+        </span>
+        <span
+          className="px-2 py-0.5 rounded text-xs font-bold uppercase"
+          style={{ background: config.bg, color: config.color, border: `1px solid ${config.color}55` }}
+        >
+          {config.label}
+        </span>
+        {/* Success indicator dot */}
+        <div
+          className="w-2 h-2 rounded-full"
+          style={{ background: action.success ? 'var(--primary)' : '#F6465D' }}
+        />
+      </div>
+      {/* Reasoning */}
+      {action.reasoning && (
+        <div className="text-xs leading-relaxed pl-6" style={{ color: '#9CA3AF' }}>
+          {action.reasoning}
+        </div>
+      )}
     </div>
   )
 }

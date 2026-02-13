@@ -197,7 +197,7 @@ func (s *PositionStore) GetOpenPositionBySymbol(traderID, symbol, side string) (
 			entry_time, exit_price, exit_order_id, exit_time, realized_pnl, fee,
 			leverage, status, close_reason, created_at, updated_at
 		FROM trader_positions
-		WHERE trader_id = ? AND symbol = ? AND side = ? AND status = 'OPEN'
+		WHERE trader_id = ? AND symbol = ? AND UPPER(side) = UPPER(?) AND status = 'OPEN'
 		ORDER BY entry_time DESC LIMIT 1
 	`, traderID, symbol, side).Scan(
 		&pos.ID, &pos.TraderID, &pos.ExchangeID, &pos.ExchangeType, &pos.Symbol, &pos.Side, &pos.Quantity,
